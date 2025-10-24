@@ -31,3 +31,16 @@ build/
 
 ### VS Code ###
 .vscode/
+target/
+*.log
+*.iml
+.idea/
+.vscode/
+.settings/
+.classpath
+.project
+bin/
+out/
+# OS
+.DS_Store
+Thumbs.db
