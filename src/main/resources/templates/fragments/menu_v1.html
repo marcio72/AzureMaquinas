@@ -1,0 +1,38 @@
+<!-- fragments/menu.html -->
+<div th:fragment="layout(content)">
+    <div class="d-flex">
+        <!-- MENU LATERAL FIXO -->
+        <div class="bg-dark text-white p-3" style="width: 220px; min-height: 100vh; position: fixed;">
+            <h5 class="mb-4">📊 Sistema</h5>
+            <ul class="nav flex-column">
+                <li class="nav-item"><a class="nav-link text-white" th:href="@{/clientes/novo}"><i class="bi bi-person-plus"></i> Novo Cliente</a></li>
+                <li class="nav-item"><a class="nav-link text-white" th:href="@{/clientes/listar}"><i class="bi bi-list-ul"></i> Lista de Clientes</a></li>
+                <li class="nav-item"><a class="nav-link text-white" th:href="@{/relatorio}"><i class="bi bi-table"></i> Relatório</a></li>
+                
+                <!-- MENU COM SUBMENU -->
+                <li class="nav-item">
+                    <a class="nav-link text-white" data-bs-toggle="collapse" href="#submenuMaquinas" role="button" aria-expanded="false" aria-controls="submenuMaquinas">
+                        <i class="bi bi-hdd"></i> Máquinas
+                    </a>
+                    <div class="collapse ps-3" id="submenuMaquinas">
+                        <ul class="nav flex-column">
+                            <li class="nav-item"><a class="nav-link text-white" th:href="@{/form_cadmaq}"><i class="bi bi-plus-circle"></i> Cadastro </a></li>
+                            <li class="nav-item"><a class="nav-link text-white" th:href="@{/form-maquinas}"><i class="bi bi-file-text"></i> Maquina </a></li>
+                            <li class="nav-item"><a class="nav-link text-white" th:href="@{/form-maquinas}"><i class="bi bi-list-ol"></i>Consulta</a></li>
+                            
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="nav-item"><a class="nav-link text-white" th:href="@{/dashboard}"><i class="bi bi-bar-chart"></i> Dashboard</a></li>
+            </ul>
+        </div>
+
+        <!-- CONTEÚDO PRINCIPAL -->
+        <div class="flex-grow-1" style="margin-left: 220px;">
+            <section class="p-4">
+                <div th:replace="${content}"></div>
+            </section>
+        </div>
+    </div>
+</div>

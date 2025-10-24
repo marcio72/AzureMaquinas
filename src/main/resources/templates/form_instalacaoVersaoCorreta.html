@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ficha de Instalação</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <script>
+    function enviarDadosDeVolta(event) {
+      event.preventDefault(); // Impede o envio padrão do formulário
+
+      const nomePonto = document.getElementById('nome_ponto').value;
+      const detalhes = document.getElementById('descricao_instalacao').value;
+
+      if (!nomePonto.trim() || !detalhes.trim()) {
+        alert("Preencha todos os campos.");
+        return;
+      }
+
+      // Formata o texto para ser inserido na outra tela
+      const textoFormatado = `PEDIDO DE INSTALAÇÃO\nNOVO PONTO: ${nomePonto}\n\nDETALHES:\n${detalhes}`;
+
+      // Verifica se a janela que abriu esta ainda existe
+      if (window.opener && !window.opener.closed) {
+        // Chama a função na janela principal, passando os dados
+        window.opener.receberDadosInstalacao(textoFormatado);
+        // Fecha esta janela popup
+        window.close();
+      } else {
+        alert("A janela de solicitação original foi fechada. Por favor, copie os dados manualmente.");
+      }
+    }
+  </script>
+</head>
+<body class="bg-light">
+  <div class="container py-5">
+    <div class="card shadow rounded-4">
+      <div class="card-header bg-info text-white">
+        <h5 class="mb-0"><i class="bi bi-pencil-square"></i> Preencher Ficha de Instalação</h5>
+      </div>
+      <div class="card-body">
+        <form onsubmit="enviarDadosDeVolta(event)">
+
+          <div class="mb-3">
+            <label for="nome_ponto" class="form-label">Nome do Novo Ponto</label>
+            <input type="text" id="nome_ponto" class="form-control" placeholder="Ex: Bar do Carlos 3" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="descricao_instalacao" class="form-label">Detalhes da Instalação (Equipamentos, Endereço, Contato)</label>
+            <textarea id="descricao_instalacao" class="form-control" rows="4" placeholder="Ex: Instalar 2 máquinas Multi-Sena e 1 SapoBomba.&#10;Endereço: Rua João Veloso, 296 - VL. Guilherme.&#10;Contato: Henrique - Tel.: 11 9 6655 1040" required></textarea>
+          </div>
+          
+          <div class="text-end mt-4">
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-send-check"></i> Enviar para Solicitação
+              </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

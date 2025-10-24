@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Execução de Manutenção</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    .btn-roxo {
+    background-color: #5a32a3; /* #6f42c1; */
+    color: #fff; /*#00000;*/
+    border: none;
+  }
+
+  .btn-roxo:hover {
+    background-color: #6f42c1; /* tom mais escuro no hover */
+  }
+
+    .troca-jogo-form {
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #f8f9fa;
+      border: 1px solid #ced4da;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body class="bg-light">
+  <div class="container py-5">
+    <div class="card shadow rounded-4">
+      <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-check2-square"></i> Execução de Serviço</h5>
+      </div>
+      <div class="card-body">
+        <form>
+          <div class="mb-3">
+            <label for="solicitacao_cliente" class="form-label">Selecione o Serviço</label>
+            <select id="solicitacao_cliente" class="form-select" onchange="atualizarFormulario()">
+            </select>
+          </div>
+          <div id="form-manutencao">
+            <div class="row mb-3">
+              <div class="col-md-10">
+                <label for="maquina_execucao_select" class="form-label">Máquina</label>
+                <select id="maquina_execucao_select" class="form-select" disabled>
+                  <option selected disabled>Escolha uma máquina</option>
+                </select>
+              </div>
+              <div class="col-md-2 d-flex align-items-end">
+                <button id="btn-adicionar-execucao" type="button" onclick="adicionarMaquinaExecucao()" class="btn btn-secondary w-100" disabled>
+                  <i class="bi bi-plus-circle"></i> Adicionar
+                </button>
+              </div>
+            </div>
+            <div id="execucoes_container"></div>
+          </div>
+          <div id="info-instalacao" style="display: none;" class="alert alert-info">
+              <h5 class="alert-heading">Pedido de Instalação</h5>
+              <p>Esta é uma solicitação para instalar equipamentos em um novo ponto...</p>
+              <hr>
+              <p class="mb-0 fw-bold">Detalhes:</p>
+              <p id="detalhes-instalacao" style="white-space: pre-wrap;"></p>
+          </div>
+          <div class="mt-4 d-flex justify-content-between">
+            <a href="/menu" class="btn btn-outline-secondary">Voltar ao Menu</a>
+            <div>
+              <button id="btn-confirmar-execucao" type="button" class="btn btn-success" onclick="confirmarExecucoes()" disabled>
+                <i class="bi bi-check-circle"></i> Confirmar Execuções
+              </button>
+              <button id="btn-efetivar-cadastro" type="button" class="btn btn-primary" onclick="iniciarCadastroDePonto()" style="display: none;">
+                <i class="bi bi-person-plus-fill"></i> Efetivar Cadastro do Ponto
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <script>
+    let solicitacoes = {};
+    const ID_CLIENTE_GENERICO_INSTALACAO = 1;
+
+    window.onload = () => {
+        fetch('/api/solicitacao')
+            .then(res => res.json())
+            .then(data => {
+                const select = document.getElementById('solicitacao_cliente');
+                select.innerHTML = '<option selected disabled value="">Selecione a solicitação...</option>';
+                data.forEach((solicitacao) => {
+                    const option = document.createElement('option');
+                    option.value = solicitacao.id;
+                    option.text = solicitacao.cliente;
+                    option.setAttribute('data-cliente-id', solicitacao.clienteId);
+                    select.appendChild(option);
+                    solicitacoes[solicitacao.id] = solicitacao;
+                });
+            })
+            .catch(err => {
+                console.error("Erro ao carregar solicitações:", err);
+                alert("Erro ao carregar solicitações de manutenção.");
+            });
+    };
+
+    function atualizarFormulario() {
+      const select = document.getElementById('solicitacao_cliente');
+      const solicitacaoId = select.value;
+      if (!solicitacaoId) return;
+
+      const clienteId = parseInt(select.options[select.selectedIndex].getAttribute('data-cliente-id'));
+      const formManutencao = document.getElementById('form-manutencao');
+      const infoInstalacao = document.getElementById('info-instalacao');
+      const btnConfirmar = document.getElementById('btn-confirmar-execucao');
+      const btnCadastrar = document.getElementById('btn-efetivar-cadastro');
+      const maquinaSelect = document.getElementById('maquina_execucao_select');
+      const btnAdicionar = document.getElementById('btn-adicionar-execucao');
+      document.getElementById('execucoes_container').innerHTML = '';
+
+      if (clienteId === ID_CLIENTE_GENERICO_INSTALACAO) {
+        formManutencao.style.display = 'none';
+        infoInstalacao.style.display = 'block';
+        btnConfirmar.style.display = 'none';
+        btnCadastrar.style.display = 'inline-block';
+        const descricaoInstalacao = solicitacoes[solicitacaoId].problemas[0].descricao;
+        document.getElementById('detalhes-instalacao').innerText = descricaoInstalacao;
+      } else {
+        formManutencao.style.display = 'block';
+        infoInstalacao.style.display = 'none';
+        btnConfirmar.style.display = 'inline-block';
+        btnCadastrar.style.display = 'none';
+        maquinaSelect.disabled = false;
+        btnAdicionar.disabled = false;
+        btnConfirmar.disabled = false;
+
+        maquinaSelect.innerHTML = '<option selected disabled value="">Escolha uma máquina</option>';
+        if (solicitacoes[solicitacaoId] && solicitacoes[solicitacaoId].problemas) {
+          solicitacoes[solicitacaoId].problemas.forEach((p) => {
+            const opt = document.createElement('option');
+            opt.value = p.idProblema;
+            opt.text = p.maquina;
+            opt.setAttribute('data-descricao', p.descricao);
+            maquinaSelect.appendChild(opt);
+          });
+        }
+      }
+    }
+
+    function adicionarMaquinaExecucao() {
+      const select = document.getElementById('maquina_execucao_select');
+      const container = document.getElementById('execucoes_container');
+      if (!select.value || select.value === "") return;
+
+      const selectedId = select.value;
+      const selectedText = select.options[select.selectedIndex].text;
+      const descricaoProblema = select.options[select.selectedIndex].getAttribute('data-descricao');
+
+      if (document.getElementById('execucao_' + selectedId)) return;
+
+      const tecnicoNome = new URLSearchParams(window.location.search).get('tecnico') || "";
+
+      const now = new Date();
+      function formatDateTimeLocal(date) {
+        const pad = n => n.toString().padStart(2, '0');
+        return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+      }
+
+      const dataHora = formatDateTimeLocal(now);
+
+      const div = document.createElement('div');
+      div.className = 'execucao-bloco mb-3 p-3 border rounded bg-light';
+      div.id = 'execucao_' + selectedId;
+      div.innerHTML = `
+        <label class="form-label fw-bold">${selectedText} - <span class="text-danger">${descricaoProblema}</span></label>
+        <div class="row mb-2">
+          <div class="col-md-4">
+            <label class="form-label small">Data da Execução</label>
+            <input type="datetime-local" class="form-control" name="data_execucao_${selectedId}" value="${dataHora}" readonly>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label small">Técnico</label>
+            <input type="text" class="form-control" name="tecnico_${selectedId}" value="${tecnicoNome}" readonly>
+          </div>
+        </div>
+        <label class="form-label small">O que foi feito</label>
+        <textarea class="form-control" name="descricao_execucao_${selectedId}" rows="4"></textarea>
+
+        <button type="button" class="btn btn-sm btn-roxo mt-2" onclick="abrirTrocaJogo(this)">
+          <i class="bi bi-arrow-left-right"></i> Trocar de Jogo
+        </button>
+
+        <button type="button" class="btn btn-sm btn-roxo mt-2" onclick="abrirTrocaColetor(this)">
+          <i class="bi bi-arrow-left-right"></i> Trocar Coletor
+        </button>
+
+        <button type="button" class="btn btn-sm btn-info mt-2 d-none" onclick="">
+          <i class="bi bi-arrow-left-right"></i> Trocar Placa
+        </button>
+
+        <button type="button" class="btn btn-sm btn-success mt-2 d-none" onclick="">
+          <i class="bi bi-arrow-left-right"></i> Trocar Fonte
+        </button>
+      `;
+      container.appendChild(div);
+    }
+
+    function abrirTrocaJogo(botao) {
+      const container = botao.closest('.execucao-bloco');
+
+      const label = container.querySelector('label.form-label');
+      const fullText = label?.childNodes[0]?.textContent.trim() || "";
+      const partes = fullText.split('-');
+       const nomeJogo = partes.length > 1 ? partes[1].trim() : fullText;
+
+      if (container.querySelector('.troca-jogo-form')) return;
+
+      const div = document.createElement('div');
+      div.className = 'troca-jogo-form';
+      div.innerHTML = `
+        <div class="row mb-2">
+          <div class="col-md-6">
+            <strong>Leitura Final:</strong><br>
+            <span>${nomeJogo}</span>
+            <div class="input-group mt-1">
+              <span class="input-group-text">Entrada</span>
+              <input type="text" class="form-control entrada-final">
+              <span class="input-group-text">Saída</span>
+              <input type="text" class="form-control saida-final">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <strong>Leitura Inicial:</strong><br>
+            <input type="text" class="form-control form-control-sm mt-1 nome-inicial" placeholder="Novo nome do jogo">
+            <div class="input-group mt-1">
+              <span class="input-group-text">Entrada</span>
+              <input type="text" class="form-control entrada-inicial" value="0000">
+              <span class="input-group-text">Saída</span>
+              <input type="text" class="form-control saida-inicial" value="0000">
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn btn-sm btn-primary" onclick="transferirTrocaJogo(this)">Transferir</button>
+      `;
+      container.appendChild(div);
+    }
+
+function abrirTrocaColetor(botao) {
+      const container = botao.closest('.execucao-bloco');
+
+     /* const label = container.querySelector('label.form-label');
+      const fullText = label?.childNodes[0]?.textContent.trim() || "";
+      const partes = fullText.split('-');
+       const nomeJogo = partes.length > 1 ? partes[1].trim() : fullText;*/
+
+      if (container.querySelector('.troca-jogo-form')) return;
+
+      const div = document.createElement('div');
+      div.className = 'troca-jogo-form';
+      div.innerHTML = `
+        <div class="row mb-2">
+          <div class="col-md-6">
+            <strong>TROCA DO COLETOR</strong><br>
+
+            <div class="input-group mt-1">
+              <span class="input-group-text">Anterior </span>
+              <input type="text" class="form-control entrada-final" value="S/N">
+              <span class="input-group-text">Atual </span>
+              <input type="text" class="form-control saida-final">
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn btn-sm btn-primary" onclick="transferirTrocaColetor(this)">Transferir</button>
+      `;
+      container.appendChild(div);
+    }
+
+
+
+
+    function transferirTrocaJogo(botao) {
+      const form = botao.closest('.troca-jogo-form');
+      const container = botao.closest('.execucao-bloco');
+
+      const label = container.querySelector('label.form-label');
+      const fullText = label?.childNodes[0]?.textContent.trim() || "";
+      const partes = fullText.split('-');
+      const leituraFinal  = partes.length > 1 ? partes[1].trim() : fullText;
+
+
+      const entradaFinal = form.querySelector('.entrada-final').value;
+      const saidaFinal = form.querySelector('.saida-final').value;
+      const nomeInicial = form.querySelector('.nome-inicial').value;
+      const entradaInicial = form.querySelector('.entrada-inicial').value;
+      const saidaInicial = form.querySelector('.saida-inicial').value;
+
+      const texto = `TROCA DE JOGO\nLeitura Final\n${leituraFinal}\nEntrada Final: ${entradaFinal}\nSaída Final: ${saidaFinal}\nLeitura Inicial\n${nomeInicial}\nEntrada Inicial: ${entradaInicial}\nSaida Inicial: ${saidaInicial}`;
+      const textarea = container.querySelector("textarea");
+      textarea.value += (textarea.value ? "\n\n" : "") + texto;
+
+      form.remove();
+    }
+
+function transferirTrocaColetor(botao) {
+      const form = botao.closest('.troca-jogo-form');
+      const container = botao.closest('.execucao-bloco');
+
+   /* const label = container.querySelector('label.form-label');
+      const fullText = label?.childNodes[0]?.textContent.trim() || "";
+      const partes = fullText.split('-');
+      const leituraFinal  = partes.length > 1 ? partes[1].trim() : fullText; */
+
+
+      const anterior = form.querySelector('.entrada-final').value;
+      const atual = form.querySelector('.saida-final').value;
+
+      const texto = `TROCA DE COLETOR\nSN.: ${anterior}\nSN.: ${atual}`;
+      const textarea = container.querySelector("textarea");
+      textarea.value += (textarea.value ? "\n\n" : "") + texto;
+
+      form.remove();
+    }
+
+
+
+    function confirmarExecucoes() {
+      const solicitacaoId = document.getElementById('solicitacao_cliente').value;
+      if (!solicitacaoId) {
+        alert("Selecione uma solicitação válida.");
+        return;
+      }
+
+      const execucoes = [];
+      const container = document.getElementById('execucoes_container');
+      Array.from(container.children).forEach(div => {
+        const id = div.id.split('_')[1];
+        const data = div.querySelector(`[name='data_execucao_${id}']`).value;
+        const tecnico = div.querySelector(`[name='tecnico_${id}']`).value;
+        const descricao = div.querySelector(`[name='descricao_execucao_${id}']`).value;
+
+        if (data && tecnico && descricao) {
+          execucoes.push({
+            problemaId: parseInt(id),
+            dataExecucao: data,
+            tecnico: tecnico,
+            descricao: descricao,
+            solicitacaoId: parseInt(solicitacaoId)
+          });
+        }
+      });
+
+      if (execucoes.length === 0) {
+        alert("Nenhuma execução foi preenchida corretamente. Preencha todos os campos.");
+        return;
+      }
+
+      fetch('/execucao/execucao', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(execucoes)
+      })
+      .then(res => {
+        if (res.ok) {
+          alert('Execuções registradas com sucesso!');
+          window.location.reload();
+        } else {
+          res.text().then(msg => alert('Erro: ' + msg));
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        alert('Erro ao conectar com o servidor.');
+      });
+    }
+
+    function iniciarCadastroDePonto() {
+      const solicitacaoId = document.getElementById('solicitacao_cliente').value;
+      if (!solicitacaoId) return;
+      const descricaoCompleta = solicitacoes[solicitacaoId].problemas[0].descricao;
+      let nomePonto = '';
+      const match = descricaoCompleta.match(/NOVO PONTO: (.*)/);
+      if (match && match[1]) {
+        nomePonto = match[1].split('\n')[0].trim();
+      }
+      window.location.href = `/clientes/novo-com-maquinas?nomePonto=${encodeURIComponent(nomePonto)}`;
+    }
+  </script>
+</body>
+</html>

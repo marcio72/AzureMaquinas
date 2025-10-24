@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Relatório de Execuções</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    .card-header-custom {
+      background-color: #0d6efd;
+      color: white;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-top-left-radius: 0.5rem;
+      border-top-right-radius: 0.5rem;
+      padding: 0.75rem 1rem;
+    }
+
+    .card {
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    @media (max-width: 767px) {
+      .table td, .table th {
+        font-size: 0.85rem;
+      }
+    }
+  </style>
+</head>
+<body class="bg-light">
+
+<div class="container py-4">
+  <div class="card">
+    <div class="card-header-custom">
+      <i class="bi bi-clipboard-data"></i> Relatório de Execuções
+    </div>
+
+    <div class="card-body">
+      <div class="mb-3 text-end">
+        <a th:if="${usuarioLogado != null and usuarioLogado.username == 'Admin' or usuarioLogado.username == 'Mirlania'}"
+           href="/relatorioExecucoesAvancado"
+           class="btn btn-outline-dark">
+          <i class="bi bi-shield-lock"></i> Modo Avançado
+        </a>
+      </div>
+
+      <!-- Filtros -->
+      <!-- Filtros -->
+      <form method="get" action="/relatorioExecucoes">
+        <div class="row row-cols-1 row-cols-md-4 g-3 mb-3">
+          <div class="col">
+            <input type="text" class="form-control" name="busca"
+                   placeholder="Cliente ou técnico" th:value="${busca}">
+          </div>
+
+          <div class="col">
+            <input type="text" class="form-control" name="problema"
+                   placeholder="Filtrar por problema" th:value="${problema}">
+          </div>
+
+          <div class="col">
+            <input type="text" class="form-control" name="execucao"
+                   placeholder="Filtrar por execução" th:value="${execucao}">
+          </div>
+
+          <div class="col">
+            <select class="form-select" name="pdf">
+              <option th:selected="${pdf == null}" value="">PDF Gerado: Todos</option>
+              <option th:selected="${pdf == 'true'}" value="true">Sim</option>
+              <option th:selected="${pdf == 'false'}" value="false">Não</option>
+            </select>
+          </div>
+
+
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 mb-4">
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-funnel"></i> Filtrar
+          </button>
+          <a href="/relatorioExecucoes" class="btn btn-outline-secondary">
+            <i class="bi bi-x-circle"></i> Limpar
+          </a>
+        </div>
+      </form>
+
+
+
+      <a href="/menu" class="btn btn-secondary mb-3">Voltar ao Menu</a>
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>ID</th>
+              <th>Cliente</th>
+              <th>Máquina</th>
+              <th>Problema</th>
+              <th>Execução</th>
+              <th>Técnico</th>
+              <th>Data</th>
+              <th>Relatório</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="exec : ${execucoes}"
+                th:classappend="${exec.pdfGerado} ? 'table-primary'">
+              <td th:text="${exec.id}">ID</td>
+              <td th:text="${exec.nomeCliente}">Cliente</td>
+              <td th:text="${exec.nomeMaquina}">Máquina</td>
+              <td th:text="${exec.descricaoProblema}">Problema</td>
+              <td th:text="${exec.descricao}">Execução</td>
+              <td th:text="${exec.tecnico}">Técnico</td>
+              <td th:text="${#temporals.format(exec.dataExecucao, 'dd/MM/yyyy HH:mm:ss')}">Data</td>
+              <td>
+                <a th:if="${!exec.pdfGerado}"
+                   th:href="@{'/execucao/' + ${exec.id} + '/pdf'}"
+                   class="btn btn-outline-primary btn-sm" title="Gerar PDF">
+                  <i class="bi bi-file-earmark-check"></i>
+                </a>
+                <span th:if="${exec.pdfGerado}" class="text-primary fs-5" title="PDF já gerado">
+                  <i class="bi bi-check-circle-fill"></i>
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Paginação -->
+      <div class="d-flex justify-content-between align-items-center mt-3">
+        <div th:if="${paginaAtual > 0}">
+          <a th:href="@{/relatorioExecucoes(page=${paginaAtual - 1}, size=5, busca=${busca}, pdf=${pdf}, problema=${problema}, execucao=${execucao})}"
+             class="btn btn-outline-secondary">← Anterior</a>
+        </div>
+        <div>
+          Página <span th:text="${paginaAtual + 1}">1</span> de <span th:text="${totalPaginas}">1</span>
+        </div>
+        <div th:if="${paginaAtual + 1 < totalPaginas}">
+          <a th:href="@{/relatorioExecucoes(page=${paginaAtual + 1}, size=5, busca=${busca}, pdf=${pdf}, problema=${problema}, execucao=${execucao})}"
+             class="btn btn-outline-secondary">Próxima →</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
