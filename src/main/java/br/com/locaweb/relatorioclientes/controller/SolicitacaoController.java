@@ -45,7 +45,15 @@ public class SolicitacaoController {
     @Autowired
     private SolicitacaoManutencaoRepository solicitacaoRepo;
 
+    @GetMapping("/teste-signal")
+    public ResponseEntity<String> testeSignal() {
 
+        signalService.enviarMensagemGrupo(
+                "🔥 TESTE FINAL – Azure App Service → VM → Signal"
+        );
+
+        return ResponseEntity.ok("ok");
+    }
     @PostMapping
     public ResponseEntity<?> criar(@RequestBody SolicitacaoDTO dto) {
 
