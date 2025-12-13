@@ -1,14 +1,15 @@
 package br.com.locaweb.relatorioclientes.DTO;
 
-import lombok.Getter;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+import lombok.Getter;
+import lombok.Setter;
+
 @Getter
 @Setter
-public class ExecucaoRequestDTO {
+public class ExecucaoCompletaDTO {
 
     private Long problemaId;
     private Long solicitacaoId;
@@ -17,6 +18,9 @@ public class ExecucaoRequestDTO {
     private String tecnico;
     private String descricao;
 
-    // NOVO → peças retiradas do estoque
-    private List<Long> pecasUsadas;
+    private List<Long> pecasUsadas;   // IDs vindos do modal de estoque
+
+    // adicionados porque o backend precisa deles
+    private Long maquinaId;
+    private Long clienteId;
 }

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Novo Lote</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Ícones -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+    <style>
+        body {
+            background: #f5f7fa;
+        }
+        .card-custom {
+            border-radius: 14px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+        }
+        .navbar-custom {
+            background-color: #003d80;
+        }
+        .navbar-custom .nav-link,
+        .navbar-custom .navbar-brand {
+            color: #fff !important;
+        }
+        .page-title {
+            font-weight: 600;
+            color: #333;
+        }
+        .form-label {
+            font-weight: 500;
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-custom">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="/">Systemor</a>
+    </div>
+</nav>
+
+<div class="container mt-4">
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Home</a></li>
+            <li class="breadcrumb-item"><a href="/lotes" class="text-decoration-none">Lotes</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Novo Lote</li>
+        </ol>
+    </nav>
+
+    <h2 class="page-title mb-4">📦 Cadastrar Novo Lote</h2>
+
+    <div class="card card-custom">
+
+        <div class="mb-3">
+            <a href="/lotes" class="btn btn-secondary">
+                <i class="bi bi-arrow-left-circle"></i> Voltar
+            </a>
+
+            <a href="/categorias" class="btn btn-primary">
+                <i class="bi bi-journal"></i> Categorias
+            </a>
+        </div>
+
+        <form th:action="@{/lotes/salvar}" th:object="${lote}" method="post" class="row g-3">
+
+            <!-- Categoria -->
+            <div class="col-md-6">
+                <label class="form-label">Categoria</label>
+                <select class="form-select" th:field="*{categoria}" required>
+                    <option value="">Selecione...</option>
+                    <option th:each="cat : ${categorias}"
+                            th:value="${cat.id}"
+                            th:text="${cat.nome}">
+                </select>
+            </div>
+
+            <!-- Fornecedor -->
+            <div class="col-md-6">
+                <label class="form-label">Fornecedor</label>
+                <input class="form-control" type="text" th:field="*{fornecedor}" required>
+            </div>
+
+            <!-- Alias -->
+            <div class="col-md-4">
+                <label class="form-label">Alias (prefixo)</label>
+                <input class="form-control" type="text" th:field="*{alias}" required>
+            </div>
+
+            <!-- Código do lote -->
+            <div class="col-md-4">
+                <label class="form-label">Código do Lote</label>
+                <input class="form-control" type="text" th:field="*{codigo}" placeholder="Opcional">
+            </div>
+
+            <!-- Quantidade -->
+            <div class="col-md-4">
+                <label class="form-label">Quantidade Comprada</label>
+                <input class="form-control" type="number" th:field="*{quantidadeComprada}" min="1" required>
+            </div>
+
+            <!-- Descrição -->
+            <div class="col-md-12">
+                <label class="form-label">Descrição</label>
+                <input class="form-control" type="text" th:field="*{descricao}" required>
+            </div>
+
+            <!-- Data de Entrada -->
+            <div class="col-md-4">
+                <label class="form-label">Data de Entrada</label>
+                <input class="form-control" type="date" th:field="*{dataEntrada}" required>
+            </div>
+
+            <!-- Botões -->
+            <div class="col-12 mt-3 d-flex justify-content-between">
+
+                <a href="/lotes" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left-circle"></i> Voltar
+                </a>
+
+                <button class="btn btn-success">
+                    <i class="bi bi-check-circle"></i> Salvar Lote
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

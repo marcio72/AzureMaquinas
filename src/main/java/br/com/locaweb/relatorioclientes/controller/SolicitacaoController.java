@@ -4,6 +4,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import br.com.locaweb.relatorioclientes.service.SignalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 
@@ -36,12 +37,59 @@ public class SolicitacaoController {
     private ClienteRepository clienteRepository;
 
     @Autowired
+    private SignalService signalService;
+
+    @Autowired
     private MaquinaRepository maquinaRepository;
 
     @Autowired
     private SolicitacaoManutencaoRepository solicitacaoRepo;
-    
+
+
     @PostMapping
+    public ResponseEntity<?> criar(@RequestBody SolicitacaoDTO dto) {
+
+        SolicitacaoManutencao solicitacao = new SolicitacaoManutencao();
+        solicitacao.setCliente(clienteRepository.findById(dto.getCliente()).orElseThrow());
+        solicitacao.setDataSolicitacao(dto.getDataSolicitacao());
+        solicitacao.setStatus(true);
+
+        List<ProblemaMaquina> problemas = dto.getProblemas().stream().map(p -> {
+            ProblemaMaquina problema = new ProblemaMaquina();
+            problema.setDescricao(p.getDescricao());
+            problema.setMaquina(maquinaRepository.findById(p.getNumeroMaquina()).orElseThrow());
+            problema.setSolicitacao(solicitacao);
+            return problema;
+        }).collect(Collectors.toList());
+
+        solicitacao.setProblemas(problemas);
+
+        solicitacaoRepo.save(solicitacao);
+
+        // 🔥 MONTAR MENSAGEM PARA O SIGNAL
+        ProblemaMaquina p = problemas.get(0);
+
+        String clienteNome = solicitacao.getCliente().getNomCliente();
+        String maquinaNumero = p.getMaquina().getNom_maq();
+        String jogo = p.getMaquina().getNom_jogo();
+        String problemaDesc = p.getDescricao();
+
+        String mensagemSignal =
+                "-------- CHAMADO ---------\n" +
+                        clienteNome + "\n" +
+                        "Maq. " + maquinaNumero + " - " + jogo + "\n" +
+                        problemaDesc + "\n" +
+                "---------------------------";
+
+        // 🔥 ENVIAR PARA O GRUPO
+        signalService.enviarMensagemGrupo(mensagemSignal);
+
+        return ResponseEntity.ok().build();
+    }
+
+
+    // ESTAVA FUNCIONANDO ANTES DE CRIAR O METODO COM O SIGNAL
+    /*@PostMapping
     public ResponseEntity<?> criar(@RequestBody SolicitacaoDTO dto) {
         SolicitacaoManutencao solicitacao = new SolicitacaoManutencao();
         solicitacao.setCliente(clienteRepository.findById(dto.getCliente()).orElseThrow());
@@ -62,7 +110,7 @@ public class SolicitacaoController {
         solicitacaoRepo.save(solicitacao);
 
         return ResponseEntity.ok().build();
-    }
+    }*/
     
     /*@GetMapping
     public ResponseEntity<List<SolicitacaoResponseDTO>> listarSolicitacoesComProblemas() {

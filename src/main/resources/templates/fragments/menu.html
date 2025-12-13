@@ -11,76 +11,108 @@
 
     <style>
         body {
-            padding-top: 70px; /* espaço para o menu fixo */
+            padding-top: 70px; /* deixa espaço para o menu fixo */
+            background: #f5f7fa;
         }
+
         .navbar-custom {
-            background-color: #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background-color: #003d80;
         }
-        .navbar-custom .nav-link {
-            color: #333;
+        .navbar-custom .nav-link,
+        .navbar-custom .navbar-brand {
+            color: #fff !important;
         }
         .navbar-custom .nav-link:hover {
-            color: #0d6efd;
+            color: #cce1ff !important;
         }
         .navbar-brand {
             font-weight: bold;
-            color: #0d6efd;
-        }
-        .navbar-brand i {
-            margin-right: 5px;
         }
     </style>
 </head>
 
 <body>
-<div class="container my-3 fixed-top">
 
-      <nav class="navbar navbar-expand-lg bg-dark  text-light" data-bs-theme="dark">
+<!-- MENU FIXO (APENAS O MENU!) -->
+<nav class="navbar navbar-expand-lg navbar-custom fixed-top">
     <div class="container-fluid">
-        <a class="navbar-brand" href="#">
+
+        <a class="navbar-brand" href="/">
             <i class="bi bi-bar-chart-line-fill"></i> Sistema
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSistema"
-                aria-controls="navbarSistema" aria-expanded="false" aria-label="Toggle navigation">
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarSistema">
             <span class="navbar-toggler-icon"></span>
         </button>
 
         <div class="collapse navbar-collapse" id="navbarSistema">
+
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
                 <li class="nav-item">
-                    <a class="nav-link" th:href="@{/clientes/novo}"><i class="bi bi-person-plus"></i> Novo Cliente</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" th:href="@{/clientes/listar}"><i class="bi bi-list-ul"></i> Lista de Clientes</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" th:href="@{/relatorio}"><i class="bi bi-table"></i> Relatório</a>
+                    <a class="nav-link" th:href="@{/clientes/novo}">
+                        <i class="bi bi-person-plus"></i> Novo Cliente
+                    </a>
                 </li>
 
-                <!-- Dropdown -->
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/clientes/listar}">
+                        <i class="bi bi-list-ul"></i> Lista de Clientes
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/relatorio}">
+                        <i class="bi bi-table"></i> Relatório
+                    </a>
+                </li>
+
+                <!-- DROPDOWN MÁQUINAS -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="maquinasDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle" href="#" role="button"
+                       data-bs-toggle="dropdown">
                         <i class="bi bi-hdd"></i> Máquinas
                     </a>
-                    <ul class="dropdown-menu" aria-labelledby="maquinasDropdown">
-                        <li><a class="dropdown-item" th:href="@{/maquinas/form}"><i class="bi bi-plus-circle"></i> Cadastro</a></li>
-                        <li><a class="dropdown-item" th:href="@{/form-maquinas}"><i class="bi bi-list-ol"></i> Consulta</a></li>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" th:href="@{/maquinas/form}">
+                            <i class="bi bi-plus-circle"></i> Cadastro</a></li>
+
+                        <li><a class="dropdown-item" th:href="@{/form-maquinas}">
+                            <i class="bi bi-list-ol"></i> Consulta</a></li>
                     </ul>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" th:href="@{/dashboard}"><i class="bi bi-bar-chart"></i> Dashboard</a>
+                    <a class="nav-link" th:href="@{/dashboard}">
+                        <i class="bi bi-bar-chart"></i> Dashboard
+                    </a>
                 </li>
+
+                <!-- ESTOQUE -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button"
+                       data-bs-toggle="dropdown">
+                        <i class="bi bi-box-seam"></i> Estoque
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" th:href="@{/categorias}">
+                            📚 Categorias</a></li>
+                        <li><a class="dropdown-item" th:href="@{/lotes}">
+                            📦 Lotes</a></li>
+                    </ul>
+                </li>
+
             </ul>
+
         </div>
     </div>
 </nav>
 
-<!-- CONTEÚDO -->
-<div class="container">
+<!-- CONTEÚDO DA PÁGINA -->
+<div class="container mt-4 mb-4">
     <div th:replace="${content}"></div>
 </div>
-</div>>
+
 </body>
 </html>
