@@ -80,7 +80,7 @@
 
               <p class="mb-3">
                 <strong>Status:</strong>
-                <span class="badge bg-success" th:if="${s.status}">Aberta</span>
+                <span class="badge bg-dark" th:if="${s.status}">Aberta</span>
                 <span class="badge bg-secondary" th:unless="${s.status}">Fechada</span>
               </p>
 
@@ -92,17 +92,20 @@
                   <strong>🕹 Máquina:</strong>
                   <span th:text="${p.maquina.nom_maq + ' - ' + p.maquina.nom_jogo}"></span>
                 </p>
-
-                <p class="mb-0 text-danger">
-                  <strong>❗ Problema:</strong>
-                  <span th:text="${p.descricao}"></span>
-                </p>
-              </div>
+				  
+				  <p class="mb-0">
+					  <span class="text-danger"><strong>❗ Problema: </strong></span>
+					  <span class="text-dark">
+    				 <span th:text="${p.descricao}"></span>
+  					</span>
+				  </p>
+			  
+			  </div>
 
             </div>
 
             <!-- FOOTER COM BOTÃO -->
-            <div class="card-footer bg-light text-end">
+            <div class="card-footer  bg-light text-end">
 
               <!-- ENVIA O ID DA SOLICITAÇÃO -->
               <a th:href="@{/execucao/solicitacao/{id}(id=${s.id})}"
@@ -110,8 +113,6 @@
                 <i class="bi bi-tools"></i>
                 Executar Manutenção
               </a>
-
-
             </div>
 
           </div>
