@@ -30,7 +30,7 @@ private Long id;
 private String nom_maq;
 
 
-@Column(name = "br/com/locaweb/relatorioclientes/jogo")
+@Column(name = "jogo")
 @JsonProperty("nom_jogo")
 private String nom_jogo;
 
