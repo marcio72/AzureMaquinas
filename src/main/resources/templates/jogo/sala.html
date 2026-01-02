@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<title>Sala do Jogo</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+	
+	<style>
+		:root {
+			--bg-dark: #1a1a1a;
+			--bg-panel: rgba(0,0,0,0.85);
+			--accent: #ffc107;
+		}
+ 
+		* { box-sizing: border-box; }
+ 
+		body {
+		   margin: 0;
+		   padding: 0;
+		   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+		   background: radial-gradient(circle at center, #2b2b2b, #000);
+		   color: #fff;
+		   height: 100vh;
+		   overflow: hidden;
+		   display: flex;
+		   flex-direction: column;
+		}
+ 
+		/* --- TOPO --- */
+		.top-bar {
+			background: var(--bg-panel);
+			padding: 10px;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+			z-index: 100;
+			height: 60px;
+			flex-shrink: 0; /* Impede de encolher */
+		}
+ 
+		.room-info h2 { margin: 0; font-size: 1rem; color: #ccc; }
+		.naipe-info { display: flex; align-items: center; gap: 8px; }
+		.naipe-mini { width: 30px; height: auto; background: white; border-radius: 4px; padding: 2px; }
+ 
+		.players-scroll {
+			display: flex;
+			gap: 10px;
+			overflow-x: auto;
+			padding: 0 10px;
+			align-items: center;
+			flex-grow: 1;
+			margin: 0 10px;
+		}
+		
+		.player-chip {
+			background: #333;
+			padding: 4px 10px;
+			border-radius: 20px;
+			font-size: 0.8rem;
+			border: 1px solid #444;
+			display: flex;
+			align-items: center;
+			gap: 5px;
+			white-space: nowrap;
+		}
+		.player-chip.vez-atual {
+			background: var(--accent);
+			color: #000;
+			font-weight: bold;
+			border-color: #fff;
+			box-shadow: 0 0 8px var(--accent);
+		}
+ 
+		/* --- MEIO: MESA DE JOGO --- */
+		.game-area {
+			flex-grow: 1;
+			position: relative;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			background: radial-gradient(circle, #1e5c30, #0a2912);
+			margin: 10px;
+			border-radius: 16px;
+			border: 4px solid #3e2723;
+			box-shadow: inset 0 0 40px rgba(0,0,0,0.8);
+			overflow: hidden; /* Corta cartas que saiam muito */
+		}
+ 
+		.mesa-centro {
+			position: relative;
+			width: 100%;
+			height: 100%;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+ 
+		/* --- CORREÇÃO DO TAMANHO DAS CARTAS NA MESA --- */
+		.mesa-carta {
+			position: absolute;
+			/* Tamanho fixo para evitar que fiquem gigantes */
+			width: 90px !important;
+			height: 135px !important;
+			
+			top: 50%;
+			left: 50%;
+			transform-origin: center center;
+			transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+			box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+			border-radius: 6px;
+			
+			/* Garante que a imagem caiba no tamanho definido */
+			object-fit: contain;
+		}
+		
+		/* Responsividade para celulares pequenos */
+		@media (max-width: 400px) {
+			.mesa-carta { width: 70px !important; height: 105px !important; }
+			.carta-img { width: 70px !important; height: 105px !important; }
+		}
+ 
+		/* --- FUNDO: MÃO DO JOGADOR --- */
+		.my-hand-area {
+			height: 180px;
+			background: linear-gradient(to top, rgba(0,0,0,1), transparent);
+			display: flex;
+			flex-direction: column;
+			justify-content: flex-end;
+			align-items: center;
+			padding-bottom: 20px;
+			z-index: 200;
+			flex-shrink: 0;
+		}
+		
+		.status-text { margin-bottom: 10px; font-size: 0.9rem; text-shadow: 0 2px 2px #000; }
+ 
+		.cartas-container {
+			display: flex;
+			justify-content: center;
+			align-items: flex-end;
+			padding: 0 20px;
+		}
+ 
+		/* --- CORREÇÃO DO TAMANHO DAS CARTAS NA MÃO --- */
+		.carta-img {
+			width: 100px; /* Tamanho base */
+			height: 150px;
+			border-radius: 8px;
+			box-shadow: -2px 2px 10px rgba(0,0,0,0.5);
+			cursor: pointer;
+			transition: transform 0.2s, margin 0.2s;
+			margin-left: -40px; /* Efeito Leque */
+			background: white; /* Fundo branco caso o PNG seja transparente */
+		}
+ 
+		.carta-img:first-child { margin-left: 0; }
+ 
+		.carta-img:hover {
+			transform: translateY(-40px) scale(1.1);
+			z-index: 1000;
+			margin-right: 20px; /* Abre espaço ao passar o mouse */
+			margin-left: 0;
+		}
+ 
+		/* Efeito Bloqueado */
+		.bloqueado {
+			opacity: 0.5;
+			pointer-events: none;
+			filter: grayscale(100%);
+		}
+ 
+		/* Botão Iniciar */
+		.btn-iniciar-flutuante {
+			position: absolute;
+			z-index: 300;
+			padding: 15px 40px;
+			font-size: 1.2rem;
+			background: #28a745;
+			color: white;
+			border: none;
+			border-radius: 50px;
+			box-shadow: 0 0 20px rgba(0,0,0,0.5);
+			cursor: pointer;
+			font-weight: bold;
+		}
+		
+		/* Carta Voando (Animação) */
+		.carta-voando {
+			position: fixed !important;
+			width: 90px !important;  /* Força tamanho durante o voo */
+			height: 135px !important;
+			z-index: 9999;
+			pointer-events: none;
+			transition: all 0.7s ease-in-out;
+			box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+		}
+		
+		/* --- TELA DE VITÓRIA (OVERLAY) --- */
+       .vitoria-overlay {
+           position: fixed;
+           top: 0;
+           left: 0;
+           width: 100%;
+           height: 100%;
+           background: rgba(0,0,0,0.92);
+           z-index: 10000;
+           display: flex;
+           flex-direction: column;
+           justify-content: center;
+           align-items: center;
+           color: white;
+           animation: fadeIn 0.5s ease;
+       }
+
+       .trofeu-animado {
+           font-size: 5rem;
+           color: #ffc107;
+           animation: bounce 2s infinite;
+           margin-bottom: 20px;
+           text-shadow: 0 0 30px rgba(255, 193, 7, 0.6);
+       }
+
+       .vencedor-nome {
+           font-size: 2rem;
+           font-weight: bold;
+           color: #ffc107;
+           margin-bottom: 10px;
+           text-align: center;
+       }
+
+       .podio-lista {
+           background: #222;
+           padding: 20px;
+           border-radius: 16px;
+           width: 80%;
+           max-width: 400px;
+           border: 1px solid #444;
+       }
+
+       .podio-item {
+           display: flex;
+           justify-content: space-between;
+           padding: 10px;
+           border-bottom: 1px solid #333;
+           font-size: 1.1rem;
+       }
+       .podio-item:last-child { border-bottom: none; }
+       .podio-item:first-child { color: #ffc107; font-weight: bold; } /* 1º Lugar Dourado */
+
+       .btn-sair-final {
+           margin-top: 30px;
+           background: #dc3545;
+           color: white;
+           border: none;
+           padding: 15px 40px;
+           font-size: 1.2rem;
+           border-radius: 50px;
+           cursor: pointer;
+           box-shadow: 0 0 20px rgba(220, 53, 69, 0.5);
+       }
+
+       @keyframes bounce {
+           0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+           40% {transform: translateY(-30px);}
+           60% {transform: translateY(-15px);}
+       }
+       @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+	</style>
+</head>
+
+<body>
+<div id="tela-vitoria" class="vitoria-overlay" style="display: none;">
+	<i class="fas fa-trophy trofeu-animado"></i>
+	<div style="font-size: 1.2rem; opacity: 0.8;">VENCEDOR DA PARTIDA</div>
+	<div id="vencedor-nome" class="vencedor-nome">NOME DO JOGADOR</div>
+	
+	<div class="podio-lista" id="lista-podio">
+	</div>
+	
+	<button class="btn-sair-final" onclick="sairDoJogo()">
+		<i class="fas fa-home"></i> Voltar ao Menu
+	</button>
+</div>
+
+<div class="top-bar">
+	
+	<div class="room-info">
+		<h2>Sala <span th:text="${partidaId.substring(0,4)}">#123</span></h2>
+	</div>
+	
+	<div class="players-scroll" id="lista-jogadores">
+		<div class="player-chip">Aguardando...</div>
+	</div>
+	
+	<div class="naipe-info">
+		<span style="font-size: 0.8rem; color: gold;">NAIPE</span>
+		<img id="naipe-img" class="naipe-mini" src="" style="display:none;">
+		<span id="naipe-text" style="font-weight:bold;">-</span>
+	</div>
+	<button onclick="sairDoJogo()" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
+		<i class="fas fa-sign-out-alt"></i> Sair
+	</button>
+</div>
+
+<div class="game-area">
+	<button id="btn-iniciar" onclick="iniciarPartida()" class="btn-iniciar-flutuante" style="display:none;">
+		<i class="fas fa-play"></i> Iniciar
+	</button>
+	
+	<div class="mesa-centro" id="mesa">
+	</div>
+</div>
+
+<div class="my-hand-area">
+	<div style="margin-bottom: 5px; font-size: 0.9rem; color: #aaa;">
+		<i class="fas fa-hand-holding"></i> <span th:text="${jogador.nome}">Você</span>
+	</div>
+	<div class="cartas-container" id="minhas-cartas">
+		<th:block th:if="${jogador.cartas != null}">
+			<img th:each="c : ${jogador.cartas}"
+				 class="carta-img"
+				 th:src="@{'/jogo/img/cartas/' + ${c.naipe.name().toLowerCase()} + '/' + ${c.valor.toLowerCase()} + '_' + ${c.naipe.name().toLowerCase()} + '.png'}"
+				 th:attr="data-naipe=${c.naipe}, data-valor=${c.valor}"
+				 onclick="jogarComAnimacao(this)">
+		</th:block>
+	</div>
+</div>
+
+<audio id="som-carta">
+	<source src="/jogo/sounds/card-drop.mp3" type="audio/mpeg">
+</audio>
+
+<script th:inline="javascript">
+	const PARTIDA_ID = [[${partidaId}]];
+	const NOME_JOGADOR = [[${jogador.nome}]];
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs/lib/stomp.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+
+<script>
+	const socket = new SockJS('/ws-jogo');
+    const stomp = Stomp.over(socket);
+    stomp.debug = null; // Limpa console
+
+    stomp.connect({}, () => {
+       console.log("✅ Conectado!");
+       stomp.subscribe(`/topic/partida/${PARTIDA_ID}`, msg => {
+          const data = JSON.parse(msg.body);
+          atualizarTela(data);
+       });
+       
+       // Verifica se precisa mostrar botão de iniciar
+       verificarStatusInicial();
+    });
+
+    function verificarStatusInicial() {
+       const cartasMao = document.getElementById("minhas-cartas").children.length;
+       if (cartasMao === 0) {
+          document.getElementById("btn-iniciar").style.display = "block";
+       }
+    }
+
+    function iniciarPartida() {
+       fetch(`/api/partidas/${PARTIDA_ID}/iniciar`, { method: 'POST' })
+       .then(res => {
+          if(res.ok) document.getElementById("btn-iniciar").style.display = "none";
+       });
+    }
+
+    // --- ATUALIZAÇÃO DA TELA ---
+    function atualizarTela(data) {
+        console.log("Estado:", data);
+
+        // 1. CHECAGEM DE VITÓRIA
+        if (data.status === 'FINALIZADA') {
+            mostrarVitoria(data.jogadores);
+            return; // Para de atualizar a mesa
+        }
+
+        // 0. Verifica de quem é a vez
+        const jogadorDaVez = data.jogadorDaVez;
+        const eMinhaVez = (jogadorDaVez === NOME_JOGADOR);
+
+        // 1. Jogadores
+        const divJogadores = document.getElementById("lista-jogadores");
+        if (data.jogadores) {
+            divJogadores.innerHTML = "";
+            data.jogadores.forEach(j => {
+                const div = document.createElement("div");
+                const isVezDesse = (j.nome === jogadorDaVez);
+                div.className = `player-chip ${isVezDesse ? 'vez-atual' : ''}`;
+                const icon = isVezDesse ? '<i class="fas fa-play"></i>' : '<i class="fas fa-user"></i>';
+                div.innerHTML = `${icon} ${j.nome} <b>${j.pontos}</b>`;
+                divJogadores.appendChild(div);
+            });
+        }
+        
+        if (data.status === 'EM_ANDAMENTO') {
+            document.getElementById("btn-iniciar").style.display = "none";
+        }
+
+        // 2. Naipe da Rodada
+        const naipeImg = document.getElementById("naipe-img");
+        const naipeText = document.getElementById("naipe-text");
+        if (data.naipeDaRodada) {
+            let n = data.naipeDaRodada.toLowerCase();
+            // Adapte aqui se sua pasta for singular (ex: 'copa' vs 'copas')
+            if (n !== 'paus' && n.endsWith('s')) n = n.slice(0, -1);
+            
+            naipeImg.src = `/jogo/img/cartas/${n}/a_${n}.png`;
+            naipeImg.style.display = "block";
+            naipeText.innerText = "";
+        } else {
+            naipeImg.style.display = "none";
+            naipeText.innerText = "Aguardando...";
+        }
+
+        // 3. MESA
+        const mesa = document.getElementById("mesa");
+        mesa.innerHTML = "";
+        
+        if (data.mesa && data.mesa.length > 0) {
+            const totalCartas = data.mesa.length;
+            
+            data.mesa.forEach((jogada, index) => {
+                const img = document.createElement("img");
+                img.className = "mesa-carta";
+                
+                let n = String(jogada.naipe).toLowerCase();
+                let v = String(jogada.valor).toLowerCase();
+
+                img.src = `/jogo/img/cartas/${n}/${v}_${n}.png`;
+                
+                // LÓGICA DE LEQUE
+                const meio = (totalCartas - 1) / 2;
+                const distanciaDoMeio = index - meio;
+                const offsetX = distanciaDoMeio * 15;
+                const rot = distanciaDoMeio * 10;
+                const z = 10 + index;
+
+                img.style.transform = `translate(-50%, -50%) translateX(${offsetX}px) rotate(${rot}deg)`;
+                img.style.zIndex = z;
+                img.title = `Jogada de ${jogada.jogador}`;
+                
+                mesa.appendChild(img);
+            });
+        }
+
+        // 4. MINHAS CARTAS
+        const minhasCartasDiv = document.getElementById("minhas-cartas");
+        const statusArea = document.querySelector(".my-hand-area div:first-child");
+        
+        if (eMinhaVez) {
+            statusArea.innerHTML = `<i class="fas fa-hand-point-up"></i> SUA VEZ DE JOGAR!`;
+            statusArea.style.color = "#ffc107";
+            minhasCartasDiv.classList.remove("bloqueado");
+        } else {
+            statusArea.innerHTML = `<i class="fas fa-clock"></i> Espere a vez de ${jogadorDaVez}...`;
+            statusArea.style.color = "#aaa";
+            minhasCartasDiv.classList.add("bloqueado");
+        }
+
+        const eu = data.jogadores.find(j => j.nome === NOME_JOGADOR);
+        
+        if (eu && eu.cartas) {
+            minhasCartasDiv.innerHTML = "";
+            eu.cartas.forEach(c => {
+                const img = document.createElement("img");
+                img.className = "carta-img";
+                
+                let n = String(c.naipe).toLowerCase();
+                let v = String(c.valor).toLowerCase();
+
+                img.src = `/jogo/img/cartas/${n}/${v}_${n}.png`;
+                img.dataset.naipe = c.naipe;
+                img.dataset.valor = c.valor;
+                
+                img.onclick = () => jogarComAnimacao(img);
+                minhasCartasDiv.appendChild(img);
+            });
+        }
+    }
+
+    // --- AÇÕES ---
+    function jogar(img) {
+       stomp.send(`/app/partida/${PARTIDA_ID}/jogar`, {}, JSON.stringify({
+          nomeJogador: NOME_JOGADOR,
+          carta: { naipe: img.dataset.naipe, valor: img.dataset.valor }
+       }));
+    }
+
+    function jogarComAnimacao(imgOriginal) {
+       const audio = document.getElementById("som-carta");
+       if(audio) { audio.currentTime = 0; audio.play().catch(()=>{}); }
+       animarVoo(imgOriginal);
+       jogar(imgOriginal);
+    }
+
+    function animarVoo(elementoOriginal) {
+       const rectOrigem = elementoOriginal.getBoundingClientRect();
+       const rectMesa = document.getElementById("mesa").getBoundingClientRect();
+       
+       const clone = elementoOriginal.cloneNode(true);
+       clone.style.width = rectOrigem.width + "px";
+       clone.style.height = rectOrigem.height + "px";
+       clone.style.position = "fixed";
+       clone.style.left = rectOrigem.left + "px";
+       clone.style.top = rectOrigem.top + "px";
+       clone.classList.add("carta-voando");
+       document.body.appendChild(clone);
+
+       elementoOriginal.style.opacity = "0";
+
+       requestAnimationFrame(() => {
+          const destinoX = rectMesa.left + (rectMesa.width / 2) - (rectOrigem.width / 2);
+          const destinoY = rectMesa.top + (rectMesa.height / 2) - (rectOrigem.height / 2);
+          clone.style.left = destinoX + "px";
+          clone.style.top = destinoY + "px";
+          clone.style.transform = "rotate(180deg) scale(0.8)";
+       });
+
+       setTimeout(() => clone.remove(), 700);
+    }
+    
+    function sairDoJogo() {
+        fetch(`/api/partidas/${PARTIDA_ID}/sair?nome=${NOME_JOGADOR}`, { method: 'POST' })
+        .then(() => window.location.href = "/jogo")
+        .catch(() => window.location.href = "/jogo");
+    }
+
+    // --- VITÓRIA ---
+    function mostrarVitoria(jogadores) {
+        const overlay = document.getElementById("tela-vitoria");
+        const divVencedor = document.getElementById("vencedor-nome");
+        const listaPodio = document.getElementById("lista-podio");
+        
+        // 1. Ordenar
+        const ranking = jogadores.sort((a, b) => b.pontos - a.pontos);
+        const campeao = ranking[0];
+
+        // 2. Preencher
+        divVencedor.innerText = campeao.nome;
+        listaPodio.innerHTML = "";
+        
+        ranking.forEach((j, index) => {
+            const item = document.createElement("div");
+            item.className = "podio-item";
+            let icone = `#${index + 1}`;
+            if (index === 0) icone = "👑";
+            if (index === 1) icone = "🥈";
+            if (index === 2) icone = "🥉";
+
+            item.innerHTML = `<span>${icone} ${j.nome}</span> <span>${j.pontos} pts</span>`;
+            listaPodio.appendChild(item);
+        });
+
+        // 3. Mostrar
+        overlay.style.display = "flex";
+        
+        // 4. Efeitos
+        iniciarShowDaVitoria();
+    }
+    
+    function iniciarShowDaVitoria() {
+        chuvaDeEmojisLenta();
+        explosaoDeConfetes();
+    }
+
+    function chuvaDeEmojisLenta() {
+        const container = document.body;
+        for(let i=0; i<40; i++) {
+            const confete = document.createElement("div");
+            confete.innerText = ["🎉", "🎊", "✨", "🏆"][Math.floor(Math.random()*4)];
+            confete.style.position = "fixed";
+            confete.style.left = Math.random() * 100 + "vw";
+            confete.style.top = "-10vh";
+            confete.style.fontSize = (Math.random() * 30 + 20) + "px";
+            confete.style.opacity = Math.random() + 0.5;
+            confete.style.zIndex = "10001";
+            
+            const duracao = Math.random() * 4 + 6;
+            confete.style.transition = `top ${duracao}s linear, transform ${duracao}s linear`;
+            container.appendChild(confete);
+            
+            setTimeout(() => {
+                confete.style.top = "110vh";
+                confete.style.transform = `rotate(${Math.random() * 720 - 360}deg)`;
+            }, Math.random() * 2000);
+
+            setTimeout(() => confete.remove(), duracao * 1000 + 2000);
+        }
+    }
+
+    function explosaoDeConfetes() {
+        const duration = 8 * 1000;
+        const animationEnd = Date.now() + duration;
+        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 10002 };
+
+        function randomInRange(min, max) { return Math.random() * (max - min) + min; }
+
+        var interval = setInterval(function() {
+          const timeLeft = animationEnd - Date.now();
+          if (timeLeft <= 0) return clearInterval(interval);
+
+          const particleCount = 50 * (timeLeft / duration);
+          confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+          confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+        }, 250);
+    }
+</script>
+</body>
+</html>
