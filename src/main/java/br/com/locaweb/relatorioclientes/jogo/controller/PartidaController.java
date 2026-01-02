@@ -101,18 +101,27 @@ public class PartidaController {
     }
     // Adicione no PartidaController
     
+    // No PartidaController.java
+    
     @PostMapping("/{id}/sair")
     public void sair(@PathVariable String id, @RequestParam String nome) {
         try {
             Partida partida = partidaService.getPartida(id);
-            partida.removerJogador(nome); // Já existe na sua classe Partida
+            partida.removerJogador(nome); // Remove o jogador da lista
             
-            // Avisa quem ficou que fulano saiu
-            messagingTemplate.convertAndSend("/topic/partida/" + id, partida.toDTO());
+            // 1. Se ainda tem gente, avisa que fulano saiu
+            if (!partida.getJogadores().isEmpty()) {
+                EstadoPartidaDTO estado = partida.toDTO();
+                messagingTemplate.convertAndSend("/topic/partida/" + id, estado);
+            }
+            // 2. 🔥 SE A SALA FICOU VAZIA, APAGA DA MEMÓRIA AGORA! 🔥
+            else {
+                partidaService.removerPartida(id);
+                System.out.println("🗑️ Partida vazia removida da memória: " + id);
+            }
             
-            // Se a partida ficou vazia ou terminou, o Service pode limpar depois
         } catch (Exception e) {
-            // Se a partida nem existe mais, apenas ignora
+            // Se a partida já não existe, não faz nada (já foi limpa)
         }
     }
 }
