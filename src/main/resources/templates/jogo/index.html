@@ -12,204 +12,226 @@
 		* { box-sizing: border-box; }
 		
 		body {
-			margin: 0;
-			min-height: 100vh;
-			font-family: 'Roboto', sans-serif;
-			background: radial-gradient(circle at center, #2a2a2a 0%, #000 100%);
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			overflow: hidden;
-			position: relative;
+		   margin: 0;
+		   min-height: 100vh;
+		   font-family: 'Roboto', sans-serif;
+		   background: radial-gradient(circle at center, #2a2a2a 0%, #000 100%);
+		   display: flex;
+		   align-items: center;
+		   justify-content: center;
+		   overflow: hidden;
+		   position: relative;
 		}
-
-		/* ===== ANIMAÇÃO 1: FUNDO COM NAIPES (CORRIGIDO) ===== */
+ 
+		/* ===== ANIMAÇÃO 1: FUNDO COM NAIPES ===== */
 		.area-animacao {
-			position: fixed; /* Mudado para fixed */
-			top: 0;
-			left: 0;
-			width: 100%;
-			height: 100%;
-			overflow: hidden;
-			z-index: 1; /* Garante que fique acima do fundo preto */
-			pointer-events: none;
+		   position: fixed;
+		   top: 0;
+		   left: 0;
+		   width: 100%;
+		   height: 100%;
+		   overflow: hidden;
+		   z-index: 1;
+		   pointer-events: none;
 		}
-
+ 
 		.naipe-bg {
-			position: absolute;
-			display: block;
-			color: rgba(245, 210, 122, 0.15); /* AGORA É DOURADO E MAIS VISÍVEL */
-			bottom: -100px;
-			animation: subir 10s linear infinite;
-			text-shadow: 0 0 5px rgba(245, 210, 122, 0.2);
+		   position: absolute;
+		   display: block;
+		   color: rgba(245, 210, 122, 0.15);
+		   bottom: -100px;
+		   animation: subir 10s linear infinite;
+		   text-shadow: 0 0 5px rgba(245, 210, 122, 0.2);
 		}
-
+ 
 		@keyframes subir {
-			0% {
-				transform: translateY(0) rotate(0deg);
-				opacity: 0;
-			}
-			10% { opacity: 0.2; } /* Aparece rápido */
-			90% { opacity: 0.2; }
-			100% {
-				transform: translateY(-120vh) rotate(360deg);
-				opacity: 0;
-			}
+		   0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+		   10% { opacity: 0.2; }
+		   90% { opacity: 0.2; }
+		   100% { transform: translateY(-120vh) rotate(360deg); opacity: 0; }
 		}
-
+ 
 		/* ===== OUTRAS ANIMAÇÕES ===== */
 		@keyframes entradaTriunfal {
-			from { opacity: 0; transform: translateY(40px) scale(0.9); }
-			to { opacity: 1; transform: translateY(0) scale(1); }
+		   from { opacity: 0; transform: translateY(40px) scale(0.9); }
+		   to { opacity: 1; transform: translateY(0) scale(1); }
 		}
-
+ 
 		@keyframes passarBrilho {
-			0% { background-position: -200%; }
-			100% { background-position: 200%; }
+		   0% { background-position: -200%; }
+		   100% { background-position: 200%; }
 		}
-
+ 
 		@keyframes pulsarBotao {
-			0% { box-shadow: 0 0 0 0 rgba(220, 185, 90, 0.4); }
-			70% { box-shadow: 0 0 0 10px rgba(220, 185, 90, 0); }
-			100% { box-shadow: 0 0 0 0 rgba(220, 185, 90, 0); }
+		   0% { box-shadow: 0 0 0 0 rgba(220, 185, 90, 0.4); }
+		   70% { box-shadow: 0 0 0 10px rgba(220, 185, 90, 0); }
+		   100% { box-shadow: 0 0 0 0 rgba(220, 185, 90, 0); }
 		}
-
-		/* ===== 1. CARD PAI ===== */
+ 
+		/* ===== 1. CARD PAI (O Quadro de Fora) ===== */
 		.card-pai {
-			position: relative;
-			z-index: 10; /* Fica NA FRENTE dos naipes */
-			background-color: #1f1f1f;
-			border-radius: 15px;
-			padding: 40px 30px;
-			width: 90%;
-			max-width: 450px;
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			box-shadow: 0 20px 60px rgba(0,0,0,0.8);
-			animation: entradaTriunfal 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+		   position: relative;
+		   z-index: 10;
+		   background-color: #1f1f1f;
+		   border-radius: 15px;
+		   padding: 40px 30px;
+		   width: 90%;
+		   max-width: 450px;
+		   display: flex;
+		   flex-direction: column;
+		   align-items: center;
+		   box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+		   animation: entradaTriunfal 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+		   transition: all 0.3s ease; /* Transição suave se redimensionar a tela */
 		}
-
+ 
 		.titulo-escuro {
-			font-family: 'Roboto', sans-serif;
-			font-weight: 900;
-			font-size: 2rem;
-			color: #2b2b2b;
-			text-shadow: 0 1px 1px rgba(255,255,255, 0.03);
-			margin-bottom: 25px;
-			text-transform: none;
-			letter-spacing: -1px;
+		   font-family: 'Roboto', sans-serif;
+		   font-weight: 900;
+		   font-size: 2rem;
+		   color: #2b2b2b;
+		   text-shadow: 0 1px 1px rgba(255,255,255, 0.03);
+		   margin-bottom: 25px;
+		   text-transform: none;
+		   letter-spacing: -1px;
 		}
-
-		/* ===== 2. CARD FILHO ===== */
+ 
+		/* ===== 2. CARD FILHO (O Cartão do Cassino) ===== */
 		.card-filho {
-			background-color: #111;
-			border: 1px solid #222;
-			border-radius: 12px;
-			padding: 30px 20px;
-			width: 100%;
-			text-align: center;
-			box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-			color: #fff;
+		   background-color: #111;
+		   border: 1px solid #222;
+		   border-radius: 12px;
+		   padding: 30px 20px;
+		   width: 100%;
+		   text-align: center;
+		   box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+		   color: #fff;
 		}
-
+ 
 		.logo-area {
-			font-family: 'Playfair Display', serif;
-			font-size: 32px;
-			font-weight: 700;
-			letter-spacing: 1px;
-			margin-bottom: 5px;
-			background: linear-gradient(90deg, #cfaa50 0%, #ffeec7 50%, #cfaa50 100%);
-			background-size: 200% auto;
-			-webkit-background-clip: text;
-			-webkit-text-fill-color: transparent;
-			animation: passarBrilho 4s linear infinite;
+		   font-family: 'Playfair Display', serif;
+		   font-size: 32px;
+		   font-weight: 700;
+		   letter-spacing: 1px;
+		   margin-bottom: 5px;
+		   background: linear-gradient(90deg, #cfaa50 0%, #ffeec7 50%, #cfaa50 100%);
+		   background-size: 200% auto;
+		   -webkit-background-clip: text;
+		   -webkit-text-fill-color: transparent;
+		   animation: passarBrilho 4s linear infinite;
 		}
-
+ 
 		.subtexto {
-			font-size: 14px;
-			color: #ccc;
-			margin-bottom: 15px;
-			margin-top: 10px;
-			font-weight: 300;
+		   font-size: 14px;
+		   color: #ccc;
+		   margin-bottom: 15px;
+		   margin-top: 10px;
+		   font-weight: 300;
 		}
-
+ 
 		.separador {
-			color: #444;
-			margin: 15px 0;
-			font-family: monospace;
-			letter-spacing: 3px;
-			font-size: 12px;
+		   color: #444;
+		   margin: 15px 0;
+		   font-family: monospace;
+		   letter-spacing: 3px;
+		   font-size: 12px;
 		}
-
+ 
 		form {
-			display: flex;
-			flex-direction: column;
-			gap: 15px;
-			margin-top: 10px;
+		   display: flex;
+		   flex-direction: column;
+		   gap: 15px;
+		   margin-top: 10px;
 		}
-
+ 
 		input[type="text"] {
-			background: #1a1a1a;
-			border: 1px solid #333;
-			border-radius: 8px;
-			padding: 15px;
-			color: #fff;
-			font-size: 15px;
-			outline: none;
-			transition: all 0.3s ease;
+		   background: #1a1a1a;
+		   border: 1px solid #333;
+		   border-radius: 8px;
+		   padding: 15px;
+		   color: #fff;
+		   font-size: 15px;
+		   outline: none;
+		   transition: all 0.3s ease;
 		}
 		
 		input::placeholder { color: #555; }
 		
 		input:focus {
-			border-color: #f5d27a;
-			background: #000;
-			box-shadow: 0 0 15px rgba(245, 210, 122, 0.15);
-			transform: scale(1.02);
+		   border-color: #f5d27a;
+		   background: #000;
+		   box-shadow: 0 0 15px rgba(245, 210, 122, 0.15);
+		   transform: scale(1.02);
 		}
-
+ 
 		button {
-			background: linear-gradient(135deg, #dcb95a, #b89535);
-			color: #111;
-			font-weight: bold;
-			border: none;
-			padding: 14px;
-			border-radius: 8px;
-			font-size: 16px;
-			cursor: pointer;
-			margin-top: 5px;
-			transition: all 0.3s;
-			text-transform: uppercase;
-			letter-spacing: 1px;
-			animation: pulsarBotao 2s infinite;
+		   background: linear-gradient(135deg, #dcb95a, #b89535);
+		   color: #111;
+		   font-weight: bold;
+		   border: none;
+		   padding: 14px;
+		   border-radius: 8px;
+		   font-size: 16px;
+		   cursor: pointer;
+		   margin-top: 5px;
+		   transition: all 0.3s;
+		   text-transform: uppercase;
+		   letter-spacing: 1px;
+		   animation: pulsarBotao 2s infinite;
 		}
 		
 		button:hover {
-			background: linear-gradient(135deg, #edd17d, #cfa845);
-			transform: scale(1.03);
-			animation: none;
-			box-shadow: 0 5px 20px rgba(220, 185, 90, 0.4);
+		   background: linear-gradient(135deg, #edd17d, #cfa845);
+		   transform: scale(1.03);
+		   animation: none;
+		   box-shadow: 0 5px 20px rgba(220, 185, 90, 0.4);
 		}
-
+ 
 		.footer-interno {
-			font-size: 10px;
-			color: #666;
-			margin-top: 25px;
-			text-transform: uppercase;
-			letter-spacing: 1px;
+		   font-size: 10px;
+		   color: #666;
+		   margin-top: 25px;
+		   text-transform: uppercase;
+		   letter-spacing: 1px;
 		}
-
+ 
 		.hint-externo {
-			margin-top: 30px;
-			font-size: 13px;
-			color: #666;
-			font-style: italic;
-			opacity: 0;
-			animation: fadeIn 1s 1.5s forwards;
+		   margin-top: 30px;
+		   font-size: 13px;
+		   color: #666;
+		   font-style: italic;
+		   opacity: 0;
+		   animation: fadeIn 1s 1.5s forwards;
 		}
 		
 		@keyframes fadeIn { to { opacity: 1; } }
+ 
+		/* ==========================================================
+		   MOBILE FIX: REMOVE O QUADRO EXTERNO EM TELAS PEQUENAS
+		========================================================== */
+		@media (max-width: 480px) {
+			.card-pai {
+				background-color: transparent; /* Fundo invisível */
+				box-shadow: none;              /* Sem sombra externa */
+				padding: 0;                    /* Sem espaçamento extra */
+				width: 95%;                    /* Ocupa quase toda a largura */
+			}
+ 
+			/* Esconde o título "Entrar no Jogo" cinza no mobile para economizar espaço */
+			.titulo-escuro {
+				display: none;
+			}
+ 
+			/* Esconde a dica externa para limpar o visual */
+			.hint-externo {
+				display: none;
+			}
+			
+			/* Ajusta o card filho para ter uma sombra mais forte já que é o único card */
+			.card-filho {
+				box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+			}
+		}
 	
 	</style>
 </head>
@@ -220,25 +242,15 @@
 	const naipes = ['♠', '♥', '♣', '♦'];
 	const container = document.getElementById('bg-animation');
 	
-	// Aumentei para 20 elementos
 	for(let i=0; i<20; i++) {
-		const el = document.createElement('div');
-		el.classList.add('naipe-bg');
-		el.innerText = naipes[Math.floor(Math.random() * naipes.length)];
-		
-		// Posição aleatória na tela
-		el.style.left = Math.random() * 95 + '%';
-		
-		// Tamanho variado (alguns maiores para ver melhor)
-		el.style.fontSize = (Math.random() * 30 + 20) + 'px';
-		
-		// Velocidade variada
-		el.style.animationDuration = (Math.random() * 15 + 8) + 's';
-		
-		// Delay reduzido (alguns começam negativos para já estarem na tela)
-		el.style.animationDelay = (Math.random() * 10 - 5) + 's';
-		
-		container.appendChild(el);
+	   const el = document.createElement('div');
+	   el.classList.add('naipe-bg');
+	   el.innerText = naipes[Math.floor(Math.random() * naipes.length)];
+	   el.style.left = Math.random() * 95 + '%';
+	   el.style.fontSize = (Math.random() * 30 + 20) + 'px';
+	   el.style.animationDuration = (Math.random() * 15 + 8) + 's';
+	   el.style.animationDelay = (Math.random() * 10 - 5) + 's';
+	   container.appendChild(el);
 	}
 </script>
 

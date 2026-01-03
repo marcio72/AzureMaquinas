@@ -9,26 +9,16 @@
 	
 	<style>
 		:root {
-           /* CORES - MESA VERDE ROYAL */
-           --bg-dark: #121212;
-           --bg-panel: rgba(20, 20, 20, 0.95);
-           --accent: #dcb95a; /* Dourado */
-           --wood-border: #3e2723;
-           
-           /* EFEITO DE LUZ DE MESA (Vignette) */
-           --table-gradient: radial-gradient(circle at center, #2e5c38 0%, #1a3c22 40%, #0a180d 100%);
-        }
-		/*:root {
-           /* CORES - MESA VINHO RED VELVET */
-           --bg-dark: #0f0505; /* Fundo geral quase preto avermelhado */
-           --bg-panel: rgba(30, 10, 10, 0.95);
-           --accent: #dcb95a; /* Dourado (Mantido pois combina com vinho) */
-           --wood-border: #2b110e; /* Madeira avermelhada */
-           
-           /* EFEITO DE LUZ DE MESA (Vignette Vinho) */
-           --table-gradient: radial-gradient(circle at center, #701c2a 0%, #3d0a13 45%, #1a0205 100%);
-        }*/
-  
+			/* CORES - MESA VERDE ROYAL */
+			--bg-dark: #121212;
+			--bg-panel: rgba(20, 20, 20, 0.95);
+			--accent: #dcb95a; /* Dourado */
+			--wood-border: #3e2723;
+			
+			/* EFEITO DE LUZ DE MESA (Vignette) */
+			--table-gradient: radial-gradient(circle at center, #2e5c38 0%, #1a3c22 40%, #0a180d 100%);
+		 }
+   
 		* { box-sizing: border-box; }
   
 		body {
@@ -58,12 +48,12 @@
 		}
   
 		.room-info {
-			font-family: 'Playfair Display', serif;
-			font-size: 1.1rem;
-			color: var(--accent);
-			margin-right: 15px;
-			text-transform: uppercase;
-			letter-spacing: 1px;
+		   font-family: 'Playfair Display', serif;
+		   font-size: 1.1rem;
+		   color: var(--accent);
+		   margin-right: 15px;
+		   text-transform: uppercase;
+		   letter-spacing: 1px;
 		}
 		
 		.players-scroll {
@@ -77,7 +67,7 @@
 		}
 		.players-scroll::-webkit-scrollbar { display: none; }
 		
-		/* CHIP DO JOGADOR (Estilo novo) */
+		/* CHIP DO JOGADOR */
 		.player-chip {
 		   background: #1a1a1a;
 		   padding: 6px 12px;
@@ -122,18 +112,13 @@
 		   display: flex;
 		   justify-content: center;
 		   align-items: center;
-		   
-		   /* AQUI ESTÁ A MESA NOVA */
 		   background: var(--table-gradient);
 		   margin: 10px;
-		   
-		   /* BORDA DE MADEIRA/COURO */
 		   border-radius: 30px;
 		   border: 12px solid var(--wood-border);
 		   box-shadow:
-				inset 0 0 80px rgba(0,0,0,0.9), /* Sombra interna forte */
-				0 10px 30px rgba(0,0,0,0.5);   /* Sombra externa */
-		   
+			  inset 0 0 80px rgba(0,0,0,0.9),
+			  0 10px 30px rgba(0,0,0,0.5);
 		   overflow: hidden;
 		}
   
@@ -146,23 +131,22 @@
 		   align-items: center;
 		}
   
-		/* CARTAS NA MESA (Com mais sombra para "flutuar") */
+		/* --- [ALTERAÇÃO 1] CARTAS NA MESA --- */
+		/* Aumentado para 120px de largura */
 		.mesa-carta {
 		   position: absolute;
-		   width: 95px; /* Um pouco maior */
-		   height: 142px;
+		   width: 120px;   /* <--- AUMENTADO */
+		   height: 169px;  /* <--- Proporção mantida */
 		   top: 50%;
 		   left: 50%;
 		   transform-origin: center center;
 		   transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-		   
-		   /* Sombra realista de carta */
 		   box-shadow: 0 10px 20px rgba(0,0,0,0.6);
 		   border-radius: 6px;
 		   object-fit: contain;
 		}
 		
-		/* --- ÁREA DA MÃO (Degradê preto suave) --- */
+		/* --- ÁREA DA MÃO --- */
 		.my-hand-area {
 		   height: 180px;
 		   background: linear-gradient(to top, #000 20%, transparent);
@@ -173,18 +157,18 @@
 		   padding-bottom: 20px;
 		   z-index: 200;
 		   flex-shrink: 0;
-		   pointer-events: none; /* Deixa clicar através nas bordas */
+		   pointer-events: none;
 		}
 		
 		.my-hand-area > * {
-			pointer-events: auto; /* Reativa cliques nos elementos filhos */
+		   pointer-events: auto;
 		}
- 
-		/* MOBILE */
+  
+		/* MOBILE - Ajustes proporcionais */
 		@media (max-width: 480px) {
-		   .mesa-carta { width: 70px !important; height: 105px !important; }
+		   .mesa-carta { width: 90px !important; height: 127px !important; }
 		   .my-hand-area { height: 160px !important; padding-bottom: 30px !important; }
-		   .carta-img { width: 85px !important; height: 127px !important; }
+		   .carta-img { width: 80px !important; height: 113px !important; }
 		   .room-info { font-size: 0.9rem; }
 		}
 		
@@ -208,15 +192,16 @@
 		   max-width: 100%;
 		}
   
-		/* CARTAS DA MÃO */
+		/* --- [ALTERAÇÃO 2] CARTAS DA MÃO --- */
+		/* Fixado em 100x141 como solicitado */
 		.carta-img {
-		   width: 110px;
-		   height: 165px;
+		   width: 100px;   /* <--- FIXADO */
+		   height: 141px;  /* <--- FIXADO */
 		   border-radius: 8px;
-		   box-shadow: -5px 5px 15px rgba(0,0,0,0.7); /* Sombra Profunda */
+		   box-shadow: -5px 5px 15px rgba(0,0,0,0.7);
 		   cursor: pointer;
 		   transition: transform 0.2s, margin 0.2s, filter 0.2s;
-		   margin-left: -45px; /* Mais sobreposição para ficar bonito */
+		   margin-left: -45px;
 		   background: white;
 		   border: 1px solid #aaa;
 		}
@@ -231,22 +216,19 @@
 		}
 		
 		.bloqueado {
-			opacity: 0.5;
-			pointer-events: none;
-			filter: grayscale(90%) brightness(0.7);
+		   opacity: 0.5;
+		   pointer-events: none;
+		   filter: grayscale(90%) brightness(0.7);
 		}
   
-		/* BOTÃO INICIAR (Igual ao Login) */
+		/* BOTÃO INICIAR */
 		.btn-iniciar-flutuante {
 		   position: absolute;
 		   z-index: 300;
 		   padding: 15px 40px;
 		   font-size: 1.1rem;
-		   
-		   /* DOURADO PREMIUM */
 		   background: linear-gradient(135deg, #dcb95a, #b89535);
 		   color: #111;
-		   
 		   border: none;
 		   border-radius: 50px;
 		   box-shadow: 0 10px 30px rgba(0,0,0,0.7);
@@ -258,22 +240,24 @@
 		}
 		
 		@keyframes pulsar {
-			0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 185, 90, 0.7); }
-			70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(220, 185, 90, 0); }
-			100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 185, 90, 0); }
+		   0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 185, 90, 0.7); }
+		   70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(220, 185, 90, 0); }
+		   100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 185, 90, 0); }
 		}
 		
+		/* --- [ALTERAÇÃO 3] ANIMAÇÃO --- */
+		/* Ajustado para corresponder ao tamanho final da mesa */
 		.carta-voando {
 		   position: fixed !important;
-		   width: 70px !important;
-		   height: 105px !important;
+		   width: 120px !important;  /* Alvo: tamanho da mesa */
+		   height: 169px !important; /* Alvo: tamanho da mesa */
 		   z-index: 9999;
 		   pointer-events: none;
-		   transition: all 0.6s ease-in-out;
+		   transition: all 0.6s ease-in-out; /* Transição suave de tamanho e posição */
 		   box-shadow: 0 15px 30px rgba(0,0,0,0.5);
 		}
 		
-		/* --- TELA DE VITÓRIA (Preto translúcido) --- */
+		/* TELA DE VITÓRIA */
 		.vitoria-overlay {
 		   position: fixed;
 		   top: 0;
@@ -305,51 +289,51 @@
 		.btn-sair-topo:hover { background: #ef5350; color: white; }
   
 		.trofeu-animado {
-			font-size: 5rem;
-			color: var(--accent);
-			animation: bounce 2s infinite;
-			margin-bottom: 20px;
-			text-shadow: 0 0 30px rgba(220, 185, 90, 0.4);
+		   font-size: 5rem;
+		   color: var(--accent);
+		   animation: bounce 2s infinite;
+		   margin-bottom: 20px;
+		   text-shadow: 0 0 30px rgba(220, 185, 90, 0.4);
 		}
 		
 		.vencedor-nome {
-			font-family: 'Playfair Display', serif;
-			font-size: 2.5rem;
-			font-weight: bold;
-			color: #fff;
-			margin-bottom: 20px;
+		   font-family: 'Playfair Display', serif;
+		   font-size: 2.5rem;
+		   font-weight: bold;
+		   color: #fff;
+		   margin-bottom: 20px;
 		}
 		
 		.podio-lista {
-			background: #1a1a1a;
-			padding: 20px;
-			border-radius: 15px;
-			width: 85%;
-			max-width: 350px;
-			border: 1px solid #333;
-			box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+		   background: #1a1a1a;
+		   padding: 20px;
+		   border-radius: 15px;
+		   width: 85%;
+		   max-width: 350px;
+		   border: 1px solid #333;
+		   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 		}
 		
 		.podio-item {
-			display: flex;
-			justify-content: space-between;
-			padding: 10px;
-			border-bottom: 1px solid #333;
-			font-size: 1.1rem;
+		   display: flex;
+		   justify-content: space-between;
+		   padding: 10px;
+		   border-bottom: 1px solid #333;
+		   font-size: 1.1rem;
 		}
 		.podio-item:last-child { border-bottom: none; }
 		.podio-item:first-child { color: var(--accent); font-weight: bold; font-size: 1.2rem; }
 		
 		.btn-sair-final {
-			margin-top: 30px;
-			background: #d32f2f;
-			color: white;
-			border: none;
-			padding: 15px 40px;
-			font-size: 1.1rem;
-			border-radius: 50px;
-			cursor: pointer;
-			box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+		   margin-top: 30px;
+		   background: #d32f2f;
+		   color: white;
+		   border: none;
+		   padding: 15px 40px;
+		   font-size: 1.1rem;
+		   border-radius: 50px;
+		   cursor: pointer;
+		   box-shadow: 0 5px 15px rgba(0,0,0,0.4);
 		}
   
 		@keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-20px);} 60% {transform: translateY(-10px);} }
@@ -430,8 +414,8 @@
 	stomp.connect({}, () => {
 	   console.log("✅ Conectado!");
 	   stomp.subscribe(`/topic/partida/${PARTIDA_ID}`, msg => {
-		 const data = JSON.parse(msg.body);
-		 atualizarTela(data);
+		const data = JSON.parse(msg.body);
+		atualizarTela(data);
 	   });
 	   verificarStatusInicial();
 	});
@@ -439,21 +423,21 @@
 	function verificarStatusInicial() {
 	   const cartasMao = document.getElementById("minhas-cartas").children.length;
 	   if (cartasMao === 0) {
-		 document.getElementById("btn-iniciar").style.display = "block";
+		document.getElementById("btn-iniciar").style.display = "block";
 	   }
 	}
 
 	function iniciarPartida() {
 	   fetch(`/api/partidas/${PARTIDA_ID}/iniciar`, { method: 'POST' })
 	   .then(res => {
-		 if(res.ok) document.getElementById("btn-iniciar").style.display = "none";
+		if(res.ok) document.getElementById("btn-iniciar").style.display = "none";
 	   });
 	}
 
 	function atualizarTela(data) {
 	   if (data.status === 'FINALIZADA') {
-		  mostrarVitoria(data.jogadores);
-		  return;
+		 mostrarVitoria(data.jogadores);
+		 return;
 	   }
 
 	   const jogadorDaVez = data.jogadorDaVez;
@@ -461,99 +445,99 @@
 
 	   const divJogadores = document.getElementById("lista-jogadores");
 	   if (data.jogadores) {
-		  divJogadores.innerHTML = "";
-		  data.jogadores.forEach(j => {
-			 const div = document.createElement("div");
-			 const isVezDesse = (j.nome === jogadorDaVez);
-			 div.className = `player-chip ${isVezDesse ? 'vez-atual' : ''}`;
+		 divJogadores.innerHTML = "";
+		 data.jogadores.forEach(j => {
+		   const div = document.createElement("div");
+		   const isVezDesse = (j.nome === jogadorDaVez);
+		   div.className = `player-chip ${isVezDesse ? 'vez-atual' : ''}`;
+		   
+		   // Ícone diferente se for a vez (Gira)
+		   const icon = isVezDesse
+			 ? '<i class="fas fa-dharmachakra fa-spin"></i>'
+			 : '<i class="fas fa-user"></i>';
 			 
-			 // Ícone diferente se for a vez (Gira)
-			 const icon = isVezDesse
-				? '<i class="fas fa-dharmachakra fa-spin"></i>'
-				: '<i class="fas fa-user"></i>';
-				
-			 div.innerHTML = `${icon} ${j.nome} &nbsp;<b style="color: ${isVezDesse ? '#000' : '#dcb95a'}">${j.pontos}</b>`;
-			 divJogadores.appendChild(div);
-		  });
+		   div.innerHTML = `${icon} ${j.nome} &nbsp;<b style="color: ${isVezDesse ? '#000' : '#dcb95a'}">${j.pontos}</b>`;
+		   divJogadores.appendChild(div);
+		 });
 	   }
 	   
 	   if (data.status === 'EM_ANDAMENTO') {
-		  document.getElementById("btn-iniciar").style.display = "none";
+		 document.getElementById("btn-iniciar").style.display = "none";
 	   }
 
 	   const boxNaipe = document.getElementById("box-naipe");
 	   const naipeImg = document.getElementById("naipe-img");
 	   if (data.naipeDaRodada) {
-		  let n = data.naipeDaRodada.toLowerCase();
-		  if (n !== 'paus' && n.endsWith('s')) n = n.slice(0, -1);
-		  naipeImg.src = `/jogo/img/cartas/${n}/a_${n}.png`;
-		  boxNaipe.style.display = "flex";
+		 let n = data.naipeDaRodada.toLowerCase();
+		 if (n !== 'paus' && n.endsWith('s')) n = n.slice(0, -1);
+		 naipeImg.src = `/jogo/img/cartas/${n}/a_${n}.png`;
+		 boxNaipe.style.display = "flex";
 	   } else {
-		  boxNaipe.style.display = "none";
+		 boxNaipe.style.display = "none";
 	   }
 
 	   const mesa = document.getElementById("mesa");
 	   mesa.innerHTML = "";
 	   if (data.mesa && data.mesa.length > 0) {
-		  const totalCartas = data.mesa.length;
-		  const isMobile = window.innerWidth < 500;
-		  const spreadFactor = isMobile ? 15 : 30; // Aumentei o espaço
-		  
-		  data.mesa.forEach((jogada, index) => {
-			 const img = document.createElement("img");
-			 img.className = "mesa-carta";
-			 let n = String(jogada.naipe).toLowerCase();
-			 let v = String(jogada.valor).toLowerCase();
-			 img.src = `/jogo/img/cartas/${n}/${v}_${n}.png`;
-			 
-			 const meio = (totalCartas - 1) / 2;
-			 const distanciaDoMeio = index - meio;
-			 const offsetX = distanciaDoMeio * spreadFactor;
-			 const rot = distanciaDoMeio * (isMobile ? 5 : 8);
-			 const z = 10 + index;
+		 const totalCartas = data.mesa.length;
+		 const isMobile = window.innerWidth < 500;
+		 const spreadFactor = isMobile ? 15 : 30; // Aumentei o espaço
+		 
+		 data.mesa.forEach((jogada, index) => {
+		   const img = document.createElement("img");
+		   img.className = "mesa-carta";
+		   let n = String(jogada.naipe).toLowerCase();
+		   let v = String(jogada.valor).toLowerCase();
+		   img.src = `/jogo/img/cartas/${n}/${v}_${n}.png`;
+		   
+		   const meio = (totalCartas - 1) / 2;
+		   const distanciaDoMeio = index - meio;
+		   const offsetX = distanciaDoMeio * spreadFactor;
+		   const rot = distanciaDoMeio * (isMobile ? 5 : 8);
+		   const z = 10 + index;
 
-			 img.style.transform = `translate(-50%, -50%) translateX(${offsetX}px) rotate(${rot}deg)`;
-			 img.style.zIndex = z;
-			 mesa.appendChild(img);
-		  });
+		   img.style.transform = `translate(-50%, -50%) translateX(${offsetX}px) rotate(${rot}deg)`;
+		   img.style.zIndex = z;
+		   mesa.appendChild(img);
+		 });
 	   }
 
 	   const minhasCartasDiv = document.getElementById("minhas-cartas");
 	   const statusArea = document.querySelector(".status-text");
 	   
 	   if (eMinhaVez) {
-		  statusArea.innerHTML = `<i class="fas fa-exclamation-circle" style="color: #dcb95a"></i> SUA VEZ DE JOGAR!`;
-		  statusArea.style.border = "1px solid #dcb95a";
-		  statusArea.style.color = "#dcb95a";
-		  minhasCartasDiv.classList.remove("bloqueado");
+		 statusArea.innerHTML = `<i class="fas fa-exclamation-circle" style="color: #dcb95a"></i> SUA VEZ DE JOGAR!`;
+		 statusArea.style.border = "1px solid #dcb95a";
+		 statusArea.style.color = "#dcb95a";
+		 minhasCartasDiv.classList.remove("bloqueado");
 	   } else {
-		  statusArea.innerHTML = `Aguardando ${jogadorDaVez}...`;
-		  statusArea.style.border = "1px solid #333";
-		  statusArea.style.color = "#888";
-		  minhasCartasDiv.classList.add("bloqueado");
+		 statusArea.innerHTML = `Aguardando ${jogadorDaVez}...`;
+		 statusArea.style.border = "1px solid #333";
+		 statusArea.style.color = "#888";
+		 minhasCartasDiv.classList.add("bloqueado");
 	   }
 
 	   const eu = data.jogadores.find(j => j.nome === NOME_JOGADOR);
 	   if (eu && eu.cartas) {
-		  minhasCartasDiv.innerHTML = "";
-		  eu.cartas.forEach(c => {
-			 const img = document.createElement("img");
-			 img.className = "carta-img";
-			 let n = String(c.naipe).toLowerCase();
-			 let v = String(c.valor).toLowerCase();
-			 img.src = `/jogo/img/cartas/${n}/${v}_${n}.png`;
-			 img.dataset.naipe = c.naipe;
-			 img.dataset.valor = c.valor;
-			 img.onclick = () => jogarComAnimacao(img);
-			 minhasCartasDiv.appendChild(img);
-		  });
+		 minhasCartasDiv.innerHTML = "";
+		 eu.cartas.forEach(c => {
+		   const img = document.createElement("img");
+		   img.className = "carta-img";
+		   let n = String(c.naipe).toLowerCase();
+		   let v = String(c.valor).toLowerCase();
+		   img.src = `/jogo/img/cartas/${n}/${v}_${n}.png`;
+		   img.dataset.naipe = c.naipe;
+		   img.dataset.valor = c.valor;
+		   img.onclick = () => jogarComAnimacao(img);
+		   minhasCartasDiv.appendChild(img);
+		 });
 	   }
 	}
 
 	function jogar(img) {
 	   stomp.send(`/app/partida/${PARTIDA_ID}/jogar`, {}, JSON.stringify({
-		  nomeJogador: NOME_JOGADOR,
-		  carta: { naipe: img.dataset.naipe, valor: img.dataset.valor }
+		 nomeJogador: NOME_JOGADOR,
+		 carta: { naipe: img.dataset.naipe, valor: img.dataset.valor }
 	   }));
 	}
 
@@ -580,107 +564,107 @@
 	   elementoOriginal.style.opacity = "0";
 
 	   requestAnimationFrame(() => {
-		  const destinoX = rectMesa.left + (rectMesa.width / 2) - (rectOrigem.width / 2);
-		  const destinoY = rectMesa.top + (rectMesa.height / 2) - (rectOrigem.height / 2);
-		  clone.style.left = destinoX + "px";
-		  clone.style.top = destinoY + "px";
-		  clone.style.transform = "rotate(180deg) scale(0.9)";
+		 const destinoX = rectMesa.left + (rectMesa.width / 2) - (rectOrigem.width / 2);
+		 const destinoY = rectMesa.top + (rectMesa.height / 2) - (rectOrigem.height / 2);
+		 clone.style.left = destinoX + "px";
+		 clone.style.top = destinoY + "px";
+		 clone.style.transform = "rotate(180deg) scale(0.9)";
 	   });
 	   setTimeout(() => clone.remove(), 700);
 	}
 	
 	function sairDoJogo() {
-		fetch(`/api/partidas/${PARTIDA_ID}/sair?nome=${NOME_JOGADOR}`, { method: 'POST' })
-		.then(() => window.location.href = "/jogo")
-		.catch(() => window.location.href = "/jogo");
+	   fetch(`/api/partidas/${PARTIDA_ID}/sair?nome=${NOME_JOGADOR}`, { method: 'POST' })
+	   .then(() => window.location.href = "/jogo")
+	   .catch(() => window.location.href = "/jogo");
 	}
 
 	function mostrarVitoria(jogadores) {
-		const overlay = document.getElementById("tela-vitoria");
-		const divVencedor = document.getElementById("vencedor-nome");
-		const listaPodio = document.getElementById("lista-podio");
-		
-		const ranking = jogadores.sort((a, b) => b.pontos - a.pontos);
-		const campeao = ranking[0];
+	   const overlay = document.getElementById("tela-vitoria");
+	   const divVencedor = document.getElementById("vencedor-nome");
+	   const listaPodio = document.getElementById("lista-podio");
+	   
+	   const ranking = jogadores.sort((a, b) => b.pontos - a.pontos);
+	   const campeao = ranking[0];
 
-		divVencedor.innerText = campeao.nome;
-		listaPodio.innerHTML = "";
-		
-		ranking.forEach((j, index) => {
-			const item = document.createElement("div");
-			item.className = "podio-item";
-			let icone = index === 0 ? "👑" : `#${index + 1}`;
-			let cor = index === 0 ? "var(--accent)" : "#fff";
-			item.innerHTML = `<span style="color:${cor}">${icone} ${j.nome}</span> <span>${j.pontos} pts</span>`;
-			listaPodio.appendChild(item);
-		});
+	   divVencedor.innerText = campeao.nome;
+	   listaPodio.innerHTML = "";
+	   
+	   ranking.forEach((j, index) => {
+		  const item = document.createElement("div");
+		  item.className = "podio-item";
+		  let icone = index === 0 ? "👑" : `#${index + 1}`;
+		  let cor = index === 0 ? "var(--accent)" : "#fff";
+		  item.innerHTML = `<span style="color:${cor}">${icone} ${j.nome}</span> <span>${j.pontos} pts</span>`;
+		  listaPodio.appendChild(item);
+	   });
 
-		overlay.style.display = "flex";
-		iniciarShowDaVitoria();
+	   overlay.style.display = "flex";
+	   iniciarShowDaVitoria();
 	}
 	
 	function iniciarShowDaVitoria() {
-		chuvaDeEmojisLenta();
-		dispararConfetes();
+	   chuvaDeEmojisLenta();
+	   dispararConfetes();
 	}
 	
 	function dispararConfetes() {
-		const end = Date.now() + (3 * 1000);
-		const zIndexConfete = 9999;
-		const colors = ['#dcb95a', '#ffffff', '#ff0000'];
+	   const end = Date.now() + (3 * 1000);
+	   const zIndexConfete = 9999;
+	   const colors = ['#dcb95a', '#ffffff', '#ff0000'];
 
-		(function frame() {
-			confetti({
-				particleCount: 5,
-				angle: 60,
-				spread: 55,
-				origin: { x: 0 },
-				zIndex: zIndexConfete,
-				colors: colors
-			});
-			confetti({
-				particleCount: 5,
-				angle: 120,
-				spread: 55,
-				origin: { x: 1 },
-				zIndex: zIndexConfete,
-				colors: colors
-			});
+	   (function frame() {
+		  confetti({
+			 particleCount: 5,
+			 angle: 60,
+			 spread: 55,
+			 origin: { x: 0 },
+			 zIndex: zIndexConfete,
+			 colors: colors
+		  });
+		  confetti({
+			 particleCount: 5,
+			 angle: 120,
+			 spread: 55,
+			 origin: { x: 1 },
+			 zIndex: zIndexConfete,
+			 colors: colors
+		  });
 
-			if (Date.now() < end) {
-				requestAnimationFrame(frame);
-			}
-		}());
+		  if (Date.now() < end) {
+			 requestAnimationFrame(frame);
+		  }
+	   }());
 	}
 
 	function chuvaDeEmojisLenta() {
-		const container = document.body;
-		const emojis = ["🏆", "🃏", "✨", "💰", "👑"];
-		
-		for(let i=0; i<30; i++) {
-			const el = document.createElement("div");
-			el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
-			el.style.position = "fixed";
-			el.style.left = Math.random() * 100 + "vw";
-			el.style.top = "-10vh";
-			el.style.fontSize = (Math.random() * 30 + 30) + "px";
-			el.style.opacity = Math.random() + 0.5;
-			el.style.zIndex = "10000";
-			
-			const duracao = Math.random() * 3 + 4;
-			el.style.transition = `top ${duracao}s linear, transform ${duracao}s ease-in-out`;
-			
-			container.appendChild(el);
-			
-			requestAnimationFrame(() => {
-				setTimeout(() => {
-					el.style.top = "110vh";
-					el.style.transform = `rotate(${Math.random() * 360}deg)`;
-				}, Math.random() * 2000);
-			});
+	   const container = document.body;
+	   const emojis = ["🏆", "🃏", "✨", "💰", "👑"];
+	   
+	   for(let i=0; i<30; i++) {
+		  const el = document.createElement("div");
+		  el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+		  el.style.position = "fixed";
+		  el.style.left = Math.random() * 100 + "vw";
+		  el.style.top = "-10vh";
+		  el.style.fontSize = (Math.random() * 30 + 30) + "px";
+		  el.style.opacity = Math.random() + 0.5;
+		  el.style.zIndex = "10000";
+		  
+		  const duracao = Math.random() * 3 + 4;
+		  el.style.transition = `top ${duracao}s linear, transform ${duracao}s ease-in-out`;
+		  
+		  container.appendChild(el);
+		  
+		  requestAnimationFrame(() => {
+			 setTimeout(() => {
+				el.style.top = "110vh";
+				el.style.transform = `rotate(${Math.random() * 360}deg)`;
+			 }, Math.random() * 2000);
+		  });
 
-			setTimeout(() => el.remove(), duracao * 1000 + 3000);
-		}
+		  setTimeout(() => el.remove(), duracao * 1000 + 3000);
+	   }
 	}
 </script>
 </body>
