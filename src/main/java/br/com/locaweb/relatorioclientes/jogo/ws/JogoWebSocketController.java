@@ -6,6 +6,7 @@ import br.com.locaweb.relatorioclientes.jogo.model.*;
 import br.com.locaweb.relatorioclientes.jogo.service.PartidaService;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 
 @Controller
@@ -80,5 +81,16 @@ public class JogoWebSocketController {
         if (partida.getJogadores().isEmpty()) {
             partidaService.removerPartida(id);
         }
+    }
+    
+    @MessageMapping("/chat/{id}/enviar")
+    @SendTo("/topic/chat/{id}")
+    public MensagemChat receberMensagemChat(
+            @DestinationVariable String id,
+            MensagemChat mensagem
+    ) {
+        // O servidor recebe a mensagem e devolve exatamente a mesma coisa
+        // para todo mundo que está inscrito no tópico da sala
+        return mensagem;
     }
 }

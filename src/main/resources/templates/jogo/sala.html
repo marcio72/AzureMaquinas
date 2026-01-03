@@ -12,10 +12,8 @@
 			/* CORES - MESA VERDE ROYAL */
 			--bg-dark: #121212;
 			--bg-panel: rgba(20, 20, 20, 0.95);
-			--accent: #dcb95a; /* Dourado */
+			--accent: #dcb95a;
 			--wood-border: #3e2723;
-			
-			/* EFEITO DE LUZ DE MESA (Vignette) */
 			--table-gradient: radial-gradient(circle at center, #2e5c38 0%, #1a3c22 40%, #0a180d 100%);
 		 }
    
@@ -40,7 +38,7 @@
 		   display: flex;
 		   justify-content: space-between;
 		   align-items: center;
-		   border-bottom: 1px solid rgba(220, 185, 90, 0.3); /* Borda Dourada sutil */
+		   border-bottom: 1px solid rgba(220, 185, 90, 0.3);
 		   height: 60px;
 		   flex-shrink: 0;
 		   z-index: 100;
@@ -67,7 +65,6 @@
 		}
 		.players-scroll::-webkit-scrollbar { display: none; }
 		
-		/* CHIP DO JOGADOR */
 		.player-chip {
 		   background: #1a1a1a;
 		   padding: 6px 12px;
@@ -83,7 +80,6 @@
 		   box-shadow: 0 2px 5px rgba(0,0,0,0.3);
 		}
 		
-		/* Jogador da Vez - BRILHA DOURADO */
 		.player-chip.vez-atual {
 		   background: linear-gradient(135deg, #dcb95a, #b89535);
 		   color: #111;
@@ -105,7 +101,7 @@
 		}
 		.naipe-mini { width: 22px; height: auto; background: white; border-radius: 3px; }
   
-		/* --- MESA (O feltro novo) --- */
+		/* --- MESA --- */
 		.game-area {
 		   flex-grow: 1;
 		   position: relative;
@@ -116,9 +112,7 @@
 		   margin: 10px;
 		   border-radius: 30px;
 		   border: 12px solid var(--wood-border);
-		   box-shadow:
-			  inset 0 0 80px rgba(0,0,0,0.9),
-			  0 10px 30px rgba(0,0,0,0.5);
+		   box-shadow: inset 0 0 80px rgba(0,0,0,0.9), 0 10px 30px rgba(0,0,0,0.5);
 		   overflow: hidden;
 		}
   
@@ -131,12 +125,10 @@
 		   align-items: center;
 		}
   
-		/* --- [ALTERAÇÃO 1] CARTAS NA MESA --- */
-		/* Aumentado para 120px de largura */
 		.mesa-carta {
 		   position: absolute;
-		   width: 120px;   /* <--- AUMENTADO */
-		   height: 169px;  /* <--- Proporção mantida */
+		   width: 120px;
+		   height: 169px;
 		   top: 50%;
 		   left: 50%;
 		   transform-origin: center center;
@@ -146,13 +138,13 @@
 		   object-fit: contain;
 		}
 		
-		/* --- ÁREA DA MÃO --- */
+		/* --- ÁREA DA MÃO (Onde estava o problema) --- */
 		.my-hand-area {
-		   height: 180px;
-		   background: linear-gradient(to top, #000 20%, transparent);
+		   height: 180px; /* Altura padrão Desktop */
+		   background: linear-gradient(to top, #000 30%, transparent);
 		   display: flex;
 		   flex-direction: column;
-		   justify-content: flex-end;
+		   justify-content: flex-end; /* Alinha no fundo */
 		   align-items: center;
 		   padding-bottom: 20px;
 		   z-index: 200;
@@ -160,15 +152,23 @@
 		   pointer-events: none;
 		}
 		
-		.my-hand-area > * {
-		   pointer-events: auto;
-		}
+		.my-hand-area > * { pointer-events: auto; }
   
-		/* MOBILE - Ajustes proporcionais */
+		/* MOBILE FIX - Aumentar altura e padding para não cortar */
 		@media (max-width: 480px) {
 		   .mesa-carta { width: 90px !important; height: 127px !important; }
-		   .my-hand-area { height: 160px !important; padding-bottom: 30px !important; }
-		   .carta-img { width: 80px !important; height: 113px !important; }
+		   
+		   /* AQUI ESTÁ A CORREÇÃO DO CORTE */
+		   .my-hand-area {
+			   height: 230px !important; /* Muito mais altura para caber a carta */
+			   padding-bottom: 50px !important; /* Empurra as cartas pra cima fugindo da borda do celular */
+		   }
+		   
+		   .carta-img {
+			   width: 100px !important;
+			   height: 141px !important;
+		   }
+		   
 		   .room-info { font-size: 0.9rem; }
 		}
 		
@@ -187,16 +187,15 @@
 		.cartas-container {
 		   display: flex;
 		   justify-content: center;
-		   align-items: flex-end;
+		   align-items: flex-end; /* Garante que a base das cartas fique alinhada */
 		   padding: 0 10px;
 		   max-width: 100%;
+		   height: 150px; /* Altura fixa para o container das cartas */
 		}
   
-		/* --- [ALTERAÇÃO 2] CARTAS DA MÃO --- */
-		/* Fixado em 100x141 como solicitado */
 		.carta-img {
-		   width: 100px;   /* <--- FIXADO */
-		   height: 141px;  /* <--- FIXADO */
+		   width: 100px;
+		   height: 141px;
 		   border-radius: 8px;
 		   box-shadow: -5px 5px 15px rgba(0,0,0,0.7);
 		   cursor: pointer;
@@ -204,6 +203,9 @@
 		   margin-left: -45px;
 		   background: white;
 		   border: 1px solid #aaa;
+		   
+		   /* Garante que a imagem não seja esticada estranhamente */
+		   flex-shrink: 0;
 		}
 		.carta-img:first-child { margin-left: 0; }
 		
@@ -245,15 +247,13 @@
 		   100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 185, 90, 0); }
 		}
 		
-		/* --- [ALTERAÇÃO 3] ANIMAÇÃO --- */
-		/* Ajustado para corresponder ao tamanho final da mesa */
 		.carta-voando {
 		   position: fixed !important;
-		   width: 120px !important;  /* Alvo: tamanho da mesa */
-		   height: 169px !important; /* Alvo: tamanho da mesa */
+		   width: 120px !important;
+		   height: 169px !important;
 		   z-index: 9999;
 		   pointer-events: none;
-		   transition: all 0.6s ease-in-out; /* Transição suave de tamanho e posição */
+		   transition: all 0.6s ease-in-out;
 		   box-shadow: 0 15px 30px rgba(0,0,0,0.5);
 		}
 		
@@ -338,6 +338,65 @@
   
 		@keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-20px);} 60% {transform: translateY(-10px);} }
 		@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+		
+		/* --- ESTILO NOVO: CHAT / MENSAGEIRO --- */
+       .chat-btn-float {
+           position: fixed; bottom: 20px; right: 20px;
+           width: 60px; height: 60px;
+           background: var(--accent); color: #111;
+           border-radius: 50%; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+           display: flex; justify-content: center; align-items: center;
+           font-size: 1.5rem; cursor: pointer; z-index: 500;
+           transition: transform 0.2s;
+       }
+       .chat-btn-float:active { transform: scale(0.9); }
+       
+       .chat-window {
+           position: fixed; bottom: 90px; right: 20px;
+           width: 320px; height: 400px;
+           background: #1a1a1a; border: 1px solid #444;
+           border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+           z-index: 500; display: flex; flex-direction: column;
+           overflow: hidden; opacity: 0; pointer-events: none; transform: translateY(20px);
+           transition: all 0.3s ease;
+       }
+       .chat-window.ativo { opacity: 1; pointer-events: auto; transform: translateY(0); }
+       
+       /* Mobile Chat */
+       @media (max-width: 480px) {
+           .chat-window {
+               width: 90%; right: 5%; bottom: 90px; height: 50vh;
+           }
+       }
+
+       .chat-header {
+           background: #222; padding: 10px 15px; border-bottom: 1px solid #333;
+           display: flex; justify-content: space-between; align-items: center;
+           font-weight: bold; color: var(--accent);
+       }
+       .chat-body {
+           flex-grow: 1; padding: 10px; overflow-y: auto; background: #121212;
+           display: flex; flex-direction: column; gap: 8px;
+       }
+       .chat-footer {
+           padding: 10px; background: #222; border-top: 1px solid #333;
+           display: flex; gap: 5px;
+       }
+       .chat-input {
+           flex-grow: 1; background: #333; border: 1px solid #444; color: white;
+           padding: 8px; border-radius: 20px; outline: none;
+       }
+       .chat-send-btn {
+           background: var(--accent); color: #111; border: none;
+           width: 35px; height: 35px; border-radius: 50%; cursor: pointer;
+           display: flex; justify-content: center; align-items: center;
+       }
+
+       /* Balões de Mensagem */
+       .msg { max-width: 80%; padding: 8px 12px; border-radius: 15px; font-size: 0.9rem; line-height: 1.3; }
+       .msg.eu { align-self: flex-end; background: #2e5c38; color: white; border-bottom-right-radius: 2px; }
+       .msg.outro { align-self: flex-start; background: #333; color: #ddd; border-bottom-left-radius: 2px; }
+       .msg-nome { font-size: 0.7rem; color: rgba(255,255,255,0.6); margin-bottom: 2px; display: block; }
 	</style>
 </head>
 
@@ -352,7 +411,27 @@
 		<i class="fas fa-home"></i> Voltar ao Menu
 	</button>
 </div>
+<div class="chat-btn-float" onclick="toggleChat()">
+	<i class="fas fa-comment-alt"></i>
+</div>
 
+<div class="chat-window" id="janelaChat">
+	<div class="chat-header">
+		<span><i class="fas fa-comments"></i> Mensageiro</span>
+		<i class="fas fa-times" style="cursor:pointer; color:#888;" onclick="toggleChat()"></i>
+	</div>
+	<div class="chat-body" id="chatBody">
+		<div style="text-align: center; color: #555; font-size: 0.8rem; margin-top: 10px;">
+			Bem-vindo ao chat da sala!
+		</div>
+	</div>
+	<div class="chat-footer">
+		<input type="text" class="chat-input" id="chatInput" placeholder="Digite..." onkeypress="handleEnter(event)">
+		<button class="chat-send-btn" onclick="enviarMensagem()">
+			<i class="fas fa-paper-plane"></i>
+		</button>
+	</div>
+</div>
 <div class="top-bar">
 	<div class="room-info">
 		<i class="fas fa-crown"></i> Mesa <span th:text="${partidaId.substring(0,4)}"></span>
@@ -417,6 +496,14 @@
 		const data = JSON.parse(msg.body);
 		atualizarTela(data);
 	   });
+	   
+	   // --- CÓDIGO DO CHAT ---
+       // 2. Canal do CHAT (NOVO)
+       		stomp.subscribe(`/topic/chat/${PARTIDA_ID}`, msg => {
+            const chatData = JSON.parse(msg.body);
+            receberMensagem(chatData);
+       });
+       // ---------------------------------------
 	   verificarStatusInicial();
 	});
 
@@ -450,12 +537,7 @@
 		   const div = document.createElement("div");
 		   const isVezDesse = (j.nome === jogadorDaVez);
 		   div.className = `player-chip ${isVezDesse ? 'vez-atual' : ''}`;
-		   
-		   // Ícone diferente se for a vez (Gira)
-		   const icon = isVezDesse
-			 ? '<i class="fas fa-dharmachakra fa-spin"></i>'
-			 : '<i class="fas fa-user"></i>';
-			 
+		   const icon = isVezDesse ? '<i class="fas fa-dharmachakra fa-spin"></i>' : '<i class="fas fa-user"></i>';
 		   div.innerHTML = `${icon} ${j.nome} &nbsp;<b style="color: ${isVezDesse ? '#000' : '#dcb95a'}">${j.pontos}</b>`;
 		   divJogadores.appendChild(div);
 		 });
@@ -481,7 +563,7 @@
 	   if (data.mesa && data.mesa.length > 0) {
 		 const totalCartas = data.mesa.length;
 		 const isMobile = window.innerWidth < 500;
-		 const spreadFactor = isMobile ? 15 : 30; // Aumentei o espaço
+		 const spreadFactor = isMobile ? 15 : 30;
 		 
 		 data.mesa.forEach((jogada, index) => {
 		   const img = document.createElement("img");
@@ -489,13 +571,11 @@
 		   let n = String(jogada.naipe).toLowerCase();
 		   let v = String(jogada.valor).toLowerCase();
 		   img.src = `/jogo/img/cartas/${n}/${v}_${n}.png`;
-		   
 		   const meio = (totalCartas - 1) / 2;
 		   const distanciaDoMeio = index - meio;
 		   const offsetX = distanciaDoMeio * spreadFactor;
 		   const rot = distanciaDoMeio * (isMobile ? 5 : 8);
 		   const z = 10 + index;
-
 		   img.style.transform = `translate(-50%, -50%) translateX(${offsetX}px) rotate(${rot}deg)`;
 		   img.style.zIndex = z;
 		   mesa.appendChild(img);
@@ -666,6 +746,47 @@
 		  setTimeout(() => el.remove(), duracao * 1000 + 3000);
 	   }
 	}
+	
+	// --- FUNÇÕES DO CHAT ---
+    function toggleChat() {
+        document.getElementById('janelaChat').classList.toggle('ativo');
+    }
+
+    function handleEnter(e) {
+        if(e.key === 'Enter') enviarMensagem();
+    }
+
+    function enviarMensagem() {
+        const input = document.getElementById('chatInput');
+        const texto = input.value.trim();
+        if(!texto) return;
+
+        // Envia para o Backend
+        stomp.send(`/app/chat/${PARTIDA_ID}/enviar`, {}, JSON.stringify({
+            remetente: NOME_JOGADOR,
+            conteudo: texto
+        }));
+
+        input.value = "";
+        input.focus();
+    }
+
+    function receberMensagem(msg) {
+        const chatBody = document.getElementById('chatBody');
+        const isMe = (msg.remetente === NOME_JOGADOR);
+        
+        const div = document.createElement('div');
+        div.className = `msg ${isMe ? 'eu' : 'outro'}`;
+        
+        // Se não for eu, mostra o nome acima da mensagem
+        let htmlNome = isMe ? '' : `<span class="msg-nome">${msg.remetente}</span>`;
+        
+        div.innerHTML = `${htmlNome}${msg.conteudo}`;
+        chatBody.appendChild(div);
+        
+        // Auto-scroll para o final
+        chatBody.scrollTop = chatBody.scrollHeight;
+    }
 </script>
 </body>
 </html>
