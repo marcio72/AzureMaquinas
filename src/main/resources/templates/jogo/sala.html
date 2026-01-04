@@ -397,6 +397,26 @@
        .msg.eu { align-self: flex-end; background: #2e5c38; color: white; border-bottom-right-radius: 2px; }
        .msg.outro { align-self: flex-start; background: #333; color: #ddd; border-bottom-left-radius: 2px; }
        .msg-nome { font-size: 0.7rem; color: rgba(255,255,255,0.6); margin-bottom: 2px; display: block; }
+		
+		/* Bolinha de notificação no botão */
+			.notification-badge {
+				position: absolute;
+				top: -5px;
+				right: -5px;
+				width: 15px;
+				height: 15px;
+				background-color: #ff4444;
+				border-radius: 50%;
+				border: 2px solid #1a1a1a;
+				display: none; /* Começa escondido */
+				animation: bounce 0.5s;
+			}
+
+/* Animaçãozinha pro botão pular */
+	@keyframes bounce {
+			0%, 100% { transform: scale(1); }
+			50% { transform: scale(1.2); }
+		}
 	</style>
 </head>
 
@@ -411,9 +431,12 @@
 		<i class="fas fa-home"></i> Voltar ao Menu
 	</button>
 </div>
-<div class="chat-btn-float" onclick="toggleChat()">
+<div class="chat-btn-float" id="botaoChat" onclick="abrirChatELimpar()" style="display: none;">
 	<i class="fas fa-comment-alt"></i>
+	<span id="notificacaoMsg" class="notification-badge"></span>
 </div>
+
+<audio id="audio-chat" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
 
 <div class="chat-window" id="janelaChat">
 	<div class="chat-header">
@@ -426,6 +449,10 @@
 		</div>
 	</div>
 	<div class="chat-footer">
+		<select id="chatDestino" class="chat-select" style="max-width: 80px; background: #333; color: white; border: 1px solid #555; border-radius: 5px; margin-right: 5px;">
+			<option value="TODOS">Todos</option>
+		</select>
+		
 		<input type="text" class="chat-input" id="chatInput" placeholder="Digite..." onkeypress="handleEnter(event)">
 		<button class="chat-send-btn" onclick="enviarMensagem()">
 			<i class="fas fa-paper-plane"></i>
@@ -491,21 +518,28 @@
 	stomp.debug = null;
 
 	stomp.connect({}, () => {
-	   console.log("✅ Conectado!");
-	   stomp.subscribe(`/topic/partida/${PARTIDA_ID}`, msg => {
-		const data = JSON.parse(msg.body);
-		atualizarTela(data);
-	   });
-	   
-	   // --- CÓDIGO DO CHAT ---
-       // 2. Canal do CHAT (NOVO)
-       		stomp.subscribe(`/topic/chat/${PARTIDA_ID}`, msg => {
-            const chatData = JSON.parse(msg.body);
-            receberMensagem(chatData);
+       console.log("✅ Conectado!");
+       
+       // 1. Canal do JOGO (Mesa e Cartas)
+       stomp.subscribe(`/topic/partida/${PARTIDA_ID}`, msg => {
+           const data = JSON.parse(msg.body);
+           atualizarTela(data);
        });
-       // ---------------------------------------
-	   verificarStatusInicial();
-	});
+
+       // 2. Canal de CHAT PÚBLICO (Geral)
+       stomp.subscribe(`/topic/chat/${PARTIDA_ID}`, msg => {
+           const chatData = JSON.parse(msg.body);
+           receberMensagem(chatData);
+       });
+
+       // 3. Canal de CHAT PRIVADO (NOVO - Só eu escuto)
+       stomp.subscribe(`/topic/chat/${PARTIDA_ID}/privado/${NOME_JOGADOR}`, msg => {
+           const chatData = JSON.parse(msg.body);
+           receberMensagem(chatData);
+       });
+
+       verificarStatusInicial();
+    });
 
 	function verificarStatusInicial() {
 	   const cartasMao = document.getElementById("minhas-cartas").children.length;
@@ -522,6 +556,21 @@
 	}
 
 	function atualizarTela(data) {
+	
+	// --- CONTROLE DE VISIBILIDADE DO CHAT ---
+       const btnChat = document.getElementById('botaoChat');
+       const janelaChat = document.getElementById('janelaChat');
+
+       // Se o jogo está ROLANDO ou ACABOU, libera o chat
+       if (data.status === 'EM_ANDAMENTO' || data.status === 'FINALIZADA') {
+           btnChat.style.display = 'flex'; // Mostra o botão
+       }
+       // Se ainda está AGUARDANDO, esconde tudo
+       else {
+           btnChat.style.display = 'none'; // Esconde o botão
+           janelaChat.classList.remove('ativo'); // Fecha a janela se estiver aberta
+       }
+       
 	   if (data.status === 'FINALIZADA') {
 		 mostrarVitoria(data.jogadores);
 		 return;
@@ -612,6 +661,31 @@
 		   minhasCartasDiv.appendChild(img);
 		 });
 	   }
+	   
+	   const select = document.getElementById('chatDestino');
+       if (select) { // Proteção para não dar erro se o html não carregar
+           const valorAtual = select.value;
+           
+           // Limpa tudo e recria a opção TODOS
+           select.innerHTML = '<option value="TODOS">Todos</option>';
+           
+           if (data.jogadores) {
+               data.jogadores.forEach(j => {
+                   // Adiciona todos MENOS eu mesmo
+                   if (j.nome !== NOME_JOGADOR) {
+                       const opt = document.createElement('option');
+                       opt.value = j.nome;
+                       opt.innerText = j.nome;
+                       select.appendChild(opt);
+                   }
+               });
+           }
+           
+           // Se eu tinha selecionado alguém que ainda está na sala, mantém selecionado
+           if ([...select.options].some(o => o.value === valorAtual)) {
+               select.value = valorAtual;
+           }
+       }
 	}
 
 	function jogar(img) {
@@ -758,13 +832,18 @@
 
     function enviarMensagem() {
         const input = document.getElementById('chatInput');
+        const selectDestino = document.getElementById('chatDestino');
+        
+        // Pega o valor do select (ou 'TODOS' se der erro)
+        const destino = selectDestino ? selectDestino.value : "TODOS";
         const texto = input.value.trim();
+        
         if(!texto) return;
 
-        // Envia para o Backend
         stomp.send(`/app/chat/${PARTIDA_ID}/enviar`, {}, JSON.stringify({
             remetente: NOME_JOGADOR,
-            conteudo: texto
+            conteudo: texto,
+            destinatario: destino // <--- AQUI VAI O DESTINO (Nome ou TODOS)
         }));
 
         input.value = "";
@@ -773,20 +852,46 @@
 
     function receberMensagem(msg) {
         const chatBody = document.getElementById('chatBody');
+        const janela = document.getElementById('janelaChat');
         const isMe = (msg.remetente === NOME_JOGADOR);
         
+        // 1. Cria o HTML da mensagem (igual antes)
         const div = document.createElement('div');
         div.className = `msg ${isMe ? 'eu' : 'outro'}`;
         
-        // Se não for eu, mostra o nome acima da mensagem
-        let htmlNome = isMe ? '' : `<span class="msg-nome">${msg.remetente}</span>`;
+        // Se for privada, muda a cor ou coloca um aviso
+        if (msg.tipo === 'PRIVADA') {
+            div.style.border = "1px solid #dcb95a"; // Borda dourada para privada
+            div.innerHTML = `<span class="msg-nome">[PRIVADO] ${msg.remetente}</span>${msg.conteudo}`;
+        } else {
+            let htmlNome = isMe ? '' : `<span class="msg-nome">${msg.remetente}</span>`;
+            div.innerHTML = `${htmlNome}${msg.conteudo}`;
+        }
         
-        div.innerHTML = `${htmlNome}${msg.conteudo}`;
         chatBody.appendChild(div);
-        
-        // Auto-scroll para o final
         chatBody.scrollTop = chatBody.scrollHeight;
+
+        // --- NOVO: NOTIFICAÇÃO ---
+        // Se a janela NÃO tem a classe 'ativo' (está fechada), avisa o usuário
+        if (!janela.classList.contains('ativo') && !isMe) {
+            // Toca som
+            const audio = document.getElementById('audio-chat');
+            if(audio) audio.play().catch(e => console.log("Erro som", e));
+            
+            // Mostra bolinha
+            document.getElementById('notificacaoMsg').style.display = 'block';
+        }
     }
+
+    // Função para abrir o chat e sumir com a notificação
+    function abrirChatELimpar() {
+        toggleChat(); // Abre a janela
+        // Esconde a bolinha vermelha
+        const notificacao = document.getElementById('notificacaoMsg');
+        if (notificacao) notificacao.style.display = 'none';
+    }
+	
+	
 </script>
 </body>
 </html>

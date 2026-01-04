@@ -6,7 +6,7 @@ import br.com.locaweb.relatorioclientes.jogo.model.*;
 import br.com.locaweb.relatorioclientes.jogo.service.PartidaService;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate; // <--- IMPORTANTE: Importe isso
 import org.springframework.stereotype.Controller;
 
 @Controller
@@ -14,13 +14,18 @@ public class JogoWebSocketController {
     
     private final PartidaService partidaService;
     private final JogoBroadcaster broadcaster;
+    // 1. Declarando a ferramenta de envio de mensagens
+    private final SimpMessagingTemplate messagingTemplate;
     
+    // 2. Injetando no Construtor
     public JogoWebSocketController(
             PartidaService partidaService,
-            JogoBroadcaster broadcaster
+            JogoBroadcaster broadcaster,
+            SimpMessagingTemplate messagingTemplate // <--- Recebe aqui
     ) {
         this.partidaService = partidaService;
         this.broadcaster = broadcaster;
+        this.messagingTemplate = messagingTemplate; // <--- Guarda aqui
     }
     
     /* =========================
@@ -46,8 +51,6 @@ public class JogoWebSocketController {
         );
         
         partida.jogarCarta(jogador, carta);
-        
-        // 🔊 ENVIA ESTADO DIRETO (SEM JogoEvent)
         broadcaster.enviarEstado(id, partida.toDTO());
     }
     
@@ -61,7 +64,6 @@ public class JogoWebSocketController {
     ) {
         Partida partida = partidaService.getPartida(id);
         partida.adicionarJogador(new Jogador(nomeJogador));
-        
         broadcaster.enviarEstado(id, partida.toDTO());
     }
     
@@ -75,7 +77,6 @@ public class JogoWebSocketController {
     ) {
         Partida partida = partidaService.getPartida(id);
         partida.removerJogador(nomeJogador);
-        
         broadcaster.enviarEstado(id, partida.toDTO());
         
         if (partida.getJogadores().isEmpty()) {
@@ -83,14 +84,27 @@ public class JogoWebSocketController {
         }
     }
     
+    /* =========================
+       CHAT (Com Privado)
+       ========================= */
     @MessageMapping("/chat/{id}/enviar")
-    @SendTo("/topic/chat/{id}")
-    public MensagemChat receberMensagemChat(
-            @DestinationVariable String id,
-            MensagemChat mensagem
-    ) {
-        // O servidor recebe a mensagem e devolve exatamente a mesma coisa
-        // para todo mundo que está inscrito no tópico da sala
-        return mensagem;
+    public void receberMensagemChat(@DestinationVariable String id, MensagemChat mensagem) {
+        
+        // Verifica se é para TODOS ou é NULO
+        if (mensagem.getDestinatario() == null || mensagem.getDestinatario().equals("TODOS")) {
+            mensagem.setTipo("PUBLICO");
+            // Agora o messagingTemplate existe e vai funcionar
+            messagingTemplate.convertAndSend("/topic/chat/" + id, mensagem);
+            
+        } else {
+            // Mensagem PRIVADA
+            mensagem.setTipo("PRIVADA");
+            
+            // Envia para o destinatário
+            messagingTemplate.convertAndSend("/topic/chat/" + id + "/privado/" + mensagem.getDestinatario(), mensagem);
+            
+            // Envia para mim mesmo (para aparecer no meu chat)
+            messagingTemplate.convertAndSend("/topic/chat/" + id + "/privado/" + mensagem.getRemetente(), mensagem);
+        }
     }
 }
