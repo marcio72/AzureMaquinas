@@ -13,18 +13,13 @@ public class Lote {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_lote")
     private Long idLote;
-
     // Agora mapeado para a coluna correta: tipo_peca
     @ManyToOne
     @JoinColumn(name = "tipo_peca", nullable = false)
     private Categoria categoria;
-
     private String fornecedor;
-
     private String alias;
-
     private String codigo; // <-- coluna existente no banco
-
     private String descricao;
 
     @Column(name = "quantidade_comprada")

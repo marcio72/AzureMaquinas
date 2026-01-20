@@ -63,6 +63,4 @@ public class Cliente {
     public void setMaquinas(List<Maquina> maquinas) {
         this.maquinas = maquinas;
     }
-
-
 }

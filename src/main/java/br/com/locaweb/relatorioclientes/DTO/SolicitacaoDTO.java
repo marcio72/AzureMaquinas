@@ -18,4 +18,8 @@ public class SolicitacaoDTO {
 
     // Removido o campo 'status', pois o backend sempre define como true
     private List<ProblemaDTO> problemas;
+    private String nomeTecnico;
+    
+    
+    
 }

@@ -20,7 +20,6 @@ import lombok.Setter;
 
 public class Maquina {
 
-
 @Id
 @GeneratedValue(strategy = GenerationType.IDENTITY)	
 private Long id;
@@ -29,15 +28,12 @@ private Long id;
 @JsonProperty("nom_maq")
 private String nom_maq;
 
-
 @Column(name = "jogo")
 @JsonProperty("nom_jogo")
 private String nom_jogo;
 
 @Column(name = "numplaca")
 private String numeroPlaca;
-
 private String obs;
-
 private Integer codCliente;
 }
