@@ -240,7 +240,7 @@
 						<a class="page-link"
 						   th:href="@{/relatorioExecucoes(page=0, size=10, nf=${nf}, busca=${busca}, pdf=${pdf}, problema=${problema}, execucao=${execucao})}"
 						   title="Ir para a primeira página">
-							Primeira
+							<span aria-hidden="true">&laquo;</span>
 						</a>
 					</li>
 					
@@ -276,7 +276,7 @@
 						<a class="page-link"
 						   th:href="@{/relatorioExecucoes(page=${totalPaginas - 1}, size=10, nf=${nf}, busca=${busca}, pdf=${pdf}, problema=${problema}, execucao=${execucao})}"
 						   title="Ir para a última página">
-							Última
+							<span aria-hidden="true">&raquo;</span>
 						</a>
 					</li>
 				

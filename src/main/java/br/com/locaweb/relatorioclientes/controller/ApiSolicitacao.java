@@ -113,21 +113,18 @@ public class ApiSolicitacao {
     public String listarComPaginacao(Model model,
                                      HttpSession session,
                                      @RequestParam(defaultValue = "0") int page,
-                                     @RequestParam(defaultValue = "10") int size, // <--- MUDE AQUI PARA 10
+                                     @RequestParam(defaultValue = "10") int size,
                                      @RequestParam(required = false) Long nf,
                                      @RequestParam(required = false) String busca,
                                      @RequestParam(required = false) String pdf,
                                      @RequestParam(required = false) String problema,
                                      @RequestParam(required = false) String execucao) {
         
-        // ... o resto do código continua igual ...
-        
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogado");
         model.addAttribute("usuarioLogado", usuario);
         
         List<ExecucaoDTO> todos = execucaoRepository.findAllWithCliente()
                                           .stream()
-                                          // 1. FILTRO DE NF AQUI
                                           .filter(e -> nf == null || e.getId().equals(nf))
                                           .sorted((a, b) -> Long.compare(b.getId(), a.getId()))
                                           .map(exec -> {
@@ -229,8 +226,7 @@ public class ApiSolicitacao {
     @GetMapping("/relatorioExecucoesAvancado")
     public String mostrarRelatorioAvancado(Model model,
                                            HttpSession session,
-                                           @RequestParam(required = false) Long nf) { // <--- 1. Recebe o NF
-        
+                                           @RequestParam(required = false) Long nf) {
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogado");
         
         // Se não estiver logado, redireciona para login
