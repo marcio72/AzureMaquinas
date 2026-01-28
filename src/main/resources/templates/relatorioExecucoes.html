@@ -25,6 +25,40 @@
 		  border-radius: 0.5rem;
 		  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 		}
+		
+		.table td, .table th {
+		  padding: 0.4rem 0.5rem;
+		  vertical-align: middle;
+		}
+		
+		/* Popover - fundo e contorno */
+		.popover {
+		  background-color: #000;      /* fundo preto */
+		  color: #39ff14;              /* texto verde (terminal) */
+		  border: 1px solid #000;      /* CONTORNO PRETO */
+		  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+		}
+		/* Corpo do texto */
+		.popover-body {
+		  color: #39ff14;
+		  font-family: "Courier New", monospace;
+		  font-size: 0.9rem;
+		  line-height: 1.4;
+		  text-shadow: 0 0 4px #39ff14;
+		}
+		/* SETA PRETA - todos os lados (seguro) */
+		.popover .popover-arrow::before,
+		.popover .popover-arrow::after {
+		  border-color: #000 !important;
+		}
+		/* Garantia extra para posição à direita */
+		.bs-popover-end .popover-arrow::before,
+		.bs-popover-end .popover-arrow::after {
+		  border-right-color: #000 !important;
+		}
+
+
+
 
 		/* Hover no desktop */
 		.toggle-btn:hover .text-primary { color: #004085 !important; }
@@ -73,6 +107,13 @@
 		  background-color: #f8f9fa;           /* mesma base do .table-light */
 		  box-shadow: 0 1px 0 rgba(0,0,0,0.06); /* sombra bem suave */
 		}
+		.text-limit {
+		  max-width: 420px;
+		  white-space: nowrap;
+		  overflow: hidden;
+		  text-overflow: ellipsis;
+		}
+
 
 		/* ===== Estilo retrô para execução (apenas no <pre>.execucao-detalhe) ===== */
 		.execucao-detalhe {
@@ -106,8 +147,9 @@
 						data-bs-toggle="collapse"
 						data-bs-target="#filtrosCollapse"
 						aria-expanded="false"
-						aria-controls="filtrosCollapse">
-					<i class="bi bi-funnel"></i> Mostrar filtros
+						aria-controls="filtrosCollapse"
+						id="btnFiltros">
+					<i class="bi bi-funnel"></i> Filtros
 				</button>
 			</div>
 			<div class="collapse" id="filtrosCollapse">
@@ -162,7 +204,7 @@
 			<a href="/menu" class="btn btn-secondary mb-3">Voltar ao Menu</a>
 			
 			<div class="table-responsive">
-				<table class="table table-bordered table-hover align-middle">
+				<table class="table table-sm table-bordered table-hover align-middle">
 					<thead class="table-light">
 					<tr>
 						<th>NF</th>
@@ -178,21 +220,29 @@
 							<span class="d-none execucao-text" th:text="${exec.descricao}"></span>
 							
 							<td th:text="${exec.id}">ID</td>
-							<td th:text="${exec.nomeCliente}">Cliente</td>
-							<td th:text="${exec.nomeMaquina}">Máquina</td>
-							<td th:text="${exec.descricaoProblema}">Problema</td>
-							
-							<td class="text-center">
+							<td class="text-limit" th:text="${exec.nomeCliente}" th:title="${exec.nomeCliente}"></td>
+							<td class="text-limit" th:text="${exec.nomeMaquina}" th:title="${exec.nomeMaquina}"></td>
+							<td class="text-limit" th:text="${exec.descricaoProblema}" th:title="${exec.descricaoProblema}"></td>
+							<td class="text-center"
+								data-bs-toggle="popover"
+								data-bs-placement="right"
+								data-bs-trigger="hover focus"
+								th:attr="data-bs-content=${#strings.abbreviate(exec.descricao, 300)}"
+								th:attrappend="data-exec-id=${exec.id}">
 								<button
 										class="btn btn-link p-0 toggle-btn bg-primary-subtle"
 										type="button"
 										data-bs-toggle="collapse"
 										th:attr="data-bs-target='#execDesc__' + ${exec.id}"
-										aria-expanded="false"
-										th:attrappend="aria-controls='execDesc__' + ${exec.id}">
-									<i class="bi bi-eye text-primary fs-5"></i> <span class="fw-bold">Ver</span>
+										th:attrappend="aria-controls='execDesc__' + ${exec.id}"
+										aria-expanded="false">
+									<i class="bi bi-eye text-primary fs-5"></i>
+									<span class="fw-bold">Ver</span>
 								</button>
 							</td>
+							
+							
+							
 							
 							<td class="d-none d-md-table-cell" th:text="${exec.tecnico}">Técnico</td>
 							<td th:text="${#temporals.format(exec.dataExecucao, 'dd/MM/yyyy HH:mm:ss')}">Data</td>
@@ -364,6 +414,83 @@
 		}
 	  });
 	});
+	
+		document.addEventListener('DOMContentLoaded', function () {
+		  const filtros = document.getElementById('filtrosCollapse');
+		  const btn = document.getElementById('btnFiltros');
+		
+		  if (!filtros || !btn) return;
+		
+		  filtros.addEventListener('show.bs.collapse', function () {
+			btn.innerHTML = '<i class="bi bi-x"></i> Ocultar';
+		  });
+		
+		  filtros.addEventListener('hide.bs.collapse', function () {
+			btn.innerHTML = '<i class="bi bi-funnel"></i> Filtros';
+		  });
+		});
+	
+		document.addEventListener('DOMContentLoaded', function () {
+		  const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+		  tooltipTriggerList.forEach(function (el) {
+			new bootstrap.Tooltip(el);
+		  });
+		});
+	
+	
+		document.addEventListener('DOMContentLoaded', function () {
+		  document.querySelectorAll('[title]').forEach(el => {
+			new bootstrap.Tooltip(el, {
+			  html: false,
+			  boundary: 'window'
+			});
+		  });
+		});
+		
+
+		
+				document.addEventListener('DOMContentLoaded', function () {
+				  const isMobile = window.matchMedia('(hover: none)').matches;
+				  const popoverMap = new Map();
+				  if (!isMobile) {
+					// DESKTOP — inicializa popovers
+					document.querySelectorAll('[data-bs-toggle="popover"]').forEach(td => {
+					  const pop = new bootstrap.Popover(td, {
+						container: 'body',
+						html: false,
+						trigger: 'hover focus'
+					  });
+					  const execId = td.getAttribute('data-exec-id');
+					  popoverMap.set(execId, { pop, td });
+					});
+					// Integração popover x collapse
+					document.querySelectorAll('tr.collapse').forEach(row => {
+					  const execId = row.id.replace('execDesc__', '');
+					  const item = popoverMap.get(execId);
+					  if (!item) return;
+					  const { pop, td } = item;
+					  row.addEventListener('show.bs.collapse', () => {
+						pop.hide();
+						pop.disable();
+						td.removeAttribute('data-bs-toggle');
+					  });
+					  row.addEventListener('hide.bs.collapse', () => {
+						td.setAttribute('data-bs-toggle', 'popover');
+						pop.enable();
+					  });
+					});
+				  } else {
+					// MOBILE — remove completamente popover
+					document.querySelectorAll('[data-bs-toggle="popover"]').forEach(td => {
+					  td.removeAttribute('data-bs-toggle');
+					  td.removeAttribute('data-bs-content');
+					});
+				  }
+				});
+
+
+
+
 </script>
 
 </body>

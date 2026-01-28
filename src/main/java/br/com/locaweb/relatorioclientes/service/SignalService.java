@@ -32,7 +32,7 @@ public class SignalService {
     public void enviarMensagemGrupo(String mensagem) {
 
         try {
-            // 🔧 Timeout explícito (importante no Azure)
+            //  Timeout explícito (importante no Azure)
             SimpleClientHttpRequestFactory factory =
                     new SimpleClientHttpRequestFactory();
             factory.setConnectTimeout(5000);
@@ -58,7 +58,6 @@ public class SignalService {
                     request,
                     Void.class
             );
-
             System.out.println("✅ Signal enviado com sucesso via VM Azure");
 
         } catch (Exception e) {
