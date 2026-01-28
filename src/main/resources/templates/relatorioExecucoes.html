@@ -100,6 +100,17 @@
 					<i class="bi bi-shield-lock"></i> Modo Avançado
 				</a>
 			</div>
+			<div class="d-flex justify-content-between align-items-center mb-3">
+				<button class="btn btn-outline-dark"
+						type="button"
+						data-bs-toggle="collapse"
+						data-bs-target="#filtrosCollapse"
+						aria-expanded="false"
+						aria-controls="filtrosCollapse">
+					<i class="bi bi-funnel"></i> Mostrar filtros
+				</button>
+			</div>
+			<div class="collapse" id="filtrosCollapse">
 			
 			<form method="get" action="/relatorioExecucoes">
 				<div class="row row-cols-1 row-cols-md-5 g-2 mb-3 align-items-end">
@@ -147,7 +158,7 @@
 					</a>
 				</div>
 			</form>
-			
+			</div>
 			<a href="/menu" class="btn btn-secondary mb-3">Voltar ao Menu</a>
 			
 			<div class="table-responsive">
