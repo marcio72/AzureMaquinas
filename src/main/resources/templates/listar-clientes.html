@@ -1,141 +1,211 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Listagem de Clientes</title>
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <style>
-  html, body {
-    height: auto;
-    min-height: 100%;
-    overflow-y: scroll;
-  }
-</style>
-    
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<title>Clientes - Sistema Pro</title>
+	
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+	
+	<style>
+		:root {
+		   --bg-body: #081418;
+		   --bg-card: #10242a;
+		   --primary-green: #1ee4ac;
+		   --accent-blue: #3d8bff;
+		   --text-white: #ffffff;
+		   --text-gray: #8ea1a7;
+		   --border-color: rgba(255, 255, 255, 0.05);
+		}
+ 
+		body {
+		   background-color: var(--bg-body) !important; /* Força o fundo escuro */
+		   color: var(--text-white);
+		   font-family: 'Inter', sans-serif;
+		   padding-bottom: 50px;
+		}
+ 
+		.card-custom {
+		   background: var(--bg-card);
+		   border-radius: 20px;
+		   border: 1px solid var(--border-color);
+		   box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+		   margin-top: 20px;
+		}
+ 
+		.form-control {
+		   background: rgba(255,255,255,0.05);
+		   border: 1px solid var(--border-color);
+		   color: white !important;
+		   border-radius: 10px;
+		}
+ 
+		/* Remove qualquer fundo branco residual da tabela */
+		.table-responsive {
+		   background: transparent !important;
+		}
+ 
+		.table {
+		   color: white !important;
+		   margin-bottom: 0;
+		   background-color: transparent !important;
+		}
+ 
+		.table thead th {
+		   background: rgba(255,255,255,0.02) !important;
+		   color: var(--text-gray);
+		   font-size: 11px;
+		   text-transform: uppercase;
+		   border-bottom: 1px solid var(--border-color);
+		   padding: 15px;
+		}
+ 
+		.table td {
+		   padding: 15px;
+		   border-bottom: 1px solid var(--border-color);
+		   vertical-align: middle;
+		   background: transparent !important; /* Garante que as células sejam transparentes */
+		}
+ 
+		/* Efeito de hover escuro para as linhas */
+		.table tbody tr:hover {
+		   background-color: rgba(255, 255, 255, 0.03) !important;
+		   transition: background 0.2s ease;
+		}
+ 
+		/* Paginação Customizada */
+		.pagination .page-link {
+		   background: var(--bg-card);
+		   border: 1px solid var(--border-color);
+		   color: var(--text-gray);
+		   margin: 0 3px;
+		   border-radius: 8px;
+		}
+		
+		.pagination .page-link:hover {
+		   background: rgba(255,255,255,0.1);
+		   color: white;
+		}
+ 
+		.pagination .active .page-link {
+		   background: var(--primary-green) !important;
+		   border-color: var(--primary-green) !important;
+		   color: #081418 !important;
+		   font-weight: bold;
+		}
+	</style>
 </head>
-<body class="bg-light">
-
-<!-- Menu -->
+<body>
 
 <div th:replace="~{fragments/menu :: layout(~{::section})}">
-    <section>
-
-
-<!-- Alerta -->
-<div class="container mt-3">
-    <div th:if="${mensagem}" class="alert alert-success alert-dismissible fade show" role="alert">
-        <span th:text="${mensagem}"></span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
-    </div>
+	<section class="container mt-4">
+		
+		<div class="d-flex justify-content-between align-items-center mb-4">
+			<h2 class="fw-bold m-0 text-white"><i class="bi bi-people-fill text-primary me-2"></i> Clientes</h2>
+			<a href="/clientes/novo" class="btn btn-success rounded-pill px-4 fw-bold">
+				<i class="bi bi-plus-lg"></i> Novo
+			</a>
+		</div>
+		
+		<div class="card-custom p-4 mb-4">
+			<form th:action="@{/clientes/listar}" method="get" class="row g-3">
+				<div class="col-6 col-md-3">
+					<label class="small text-secondary fw-bold">Início</label>
+					<input type="date" name="dataInicio" class="form-control" th:value="${dataInicio}">
+				</div>
+				<div class="col-6 col-md-3">
+					<label class="small text-secondary fw-bold">Fim</label>
+					<input type="date" name="dataFim" class="form-control" th:value="${dataFim}">
+				</div>
+				<div class="col-md-4">
+					<label class="small text-secondary fw-bold">Nome do Cliente</label>
+					<input type="text" class="form-control" name="nome" th:value="${nome}" placeholder="Ex: João Silva...">
+				</div>
+				<div class="col-md-2 d-flex align-items-end">
+					<button class="btn btn-primary w-100 py-2 fw-bold" type="submit">
+						<i class="bi bi-search"></i> Filtrar
+					</button>
+				</div>
+			</form>
+		</div>
+		
+		<div class="card-custom overflow-hidden">
+			<div class="table-responsive">
+				<table class="table table-borderless"> <thead>
+				<tr>
+					<th>Código</th>
+					<th>Nome</th>
+					<th>Localidade</th>
+					<th>Região</th>
+					<th class="text-end">Ações</th>
+				</tr>
+				</thead>
+					<tbody>
+					<tr th:each="cliente : ${clientes}">
+						<td data-label="Código" th:text="${cliente.codCliente}"></td>
+						<td data-label="Nome">
+							<div class="fw-bold text-white" th:text="${cliente.nomCliente}"></div>
+							<div class="small text-secondary" th:text="${cliente.telefone}"></div>
+						</td>
+						<td data-label="Localidade">
+							<div class="text-white" th:text="${cliente.bairro}"></div>
+							<div class="small text-secondary" th:text="${cliente.logradouro}"></div>
+						</td>
+						<td data-label="Região">
+                        <span class="badge bg-dark border border-secondary text-gray"
+							  th:text="${T(br.com.locaweb.relatorioclientes.util.ConvertRegiao).exibirNome(cliente.regiao)}"></span>
+						</td>
+						<td data-label="Ações" class="text-end">
+							<div class="btn-group-mobile">
+								<a th:href="@{'/clientes/editar/' + ${cliente.codCliente}}" class="btn btn-outline-warning btn-sm border-0">
+									<i class="bi bi-pencil-square"></i>
+								</a>
+								<a th:href="@{'/clientes/historico/' + ${cliente.codCliente}}" class="btn btn-outline-info btn-sm border-0">
+									<i class="bi bi-clock-history"></i>
+								</a>
+								<form th:action="@{'/clientes/excluir/' + ${cliente.codCliente}}" method="post" class="d-inline">
+									<button type="submit" class="btn btn-outline-danger btn-sm border-0" onclick="return confirm('Excluir cliente?')">
+										<i class="bi bi-trash3"></i>
+									</button>
+								</form>
+							</div>
+						</td>
+					</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		
+		<nav th:if="${totalPages > 1}" class="mt-4">
+			<ul class="pagination justify-content-center">
+				<li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+					<a class="page-link" th:href="@{/clientes/listar(nome=${nome}, dataInicio=${dataInicio}, dataFim=${dataFim}, page=${currentPage - 1})}">
+						<i class="bi bi-chevron-left"></i>
+					</a>
+				</li>
+				
+				<li th:each="i : ${#numbers.sequence(
+                    currentPage > 2 ? currentPage - 2 : 0,
+                    currentPage + 2 < totalPages - 1 ? currentPage + 2 : totalPages - 1
+                )}"
+					class="page-item" th:classappend="${i == currentPage} ? 'active'">
+					<a class="page-link" th:text="${i + 1}"
+					   th:href="@{/clientes/listar(nome=${nome}, dataInicio=${dataInicio}, dataFim=${dataFim}, page=${i})}"></a>
+				</li>
+				
+				<li class="page-item" th:classappend="${currentPage + 1 == totalPages} ? 'disabled'">
+					<a class="page-link" th:href="@{/clientes/listar(nome=${nome}, dataInicio=${dataInicio}, dataFim=${dataFim}, page=${currentPage + 1})}">
+						<i class="bi bi-chevron-right"></i>
+					</a>
+				</li>
+			</ul>
+		</nav>
+	
+	</section>
 </div>
 
-<div class="container mt-4">
-    <div class="card shadow">
-        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-            <h4 class="mb-0">Clientes </h4>
-            <a href="/clientes/novo" class="btn btn-success btn-sm">
-                <i class="bi bi-plus-circle"></i> Novo Cliente
-            </a>
-        </div>
-        <div class="card-body">
-            <!-- Formulário de busca -->
-            <form class="row mb-4" th:action="@{/clientes/listar}" method="get">
- 				<div class="col-md-3">
-            		<input type="date" name="dataInicio" class="form-control" th:value="${dataInicio}">
-        		</div>
-        			<div class="col-md-3">
-            			<input type="date" name="dataFim" class="form-control" th:value="${dataFim}">
-        			</div>           
-            
-                <div class="col-md-10">
-                    <input type="text" class="form-control" name="nome" th:value="${nome}" placeholder="Buscar por nome...">
-                </div>
-                 
-                <div class="col-md-2">
-                    <button class="btn btn-outline-primary w-100" type="submit">
-                        <i class="bi bi-search"></i> Buscar
-                    </button>
-                </div>
-            </form>
-
-            <div class="table-responsive">
-                <table class="table table-striped table-bordered align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Código</th>
-                            <th>Nome</th>
-                            <th>Telefone</th>
-                            <th>Logradouro</th>
-                            <th>Bairro</th>
-                            <th>Região</th>
-                            <th>Cadastro</th>
-                            <th class="text-center">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="cliente : ${clientes}">
-                            <td th:text="${cliente.codCliente}"></td>
-                            <td th:text="${cliente.nomCliente}"></td>
-                            <td th:text="${cliente.telefone}"></td>
-                            <td th:text="${cliente.logradouro}"></td>
-                            <td th:text="${cliente.bairro}"></td>
-                            <td th:text="${T(br.com.locaweb.relatorioclientes.util.ConvertRegiao).exibirNome(cliente.regiao)}"></td>
-                            <td th:text="${#temporals.format(cliente.dtCadastro, 'dd/MM/yyyy HH:mm')}"></td>
-                            <td class="text-center">
-                                <a th:href="@{'/clientes/editar/' + ${cliente.codCliente}}" class="btn btn-warning btn-sm me-1">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <form th:action="@{'/clientes/excluir/' + ${cliente.codCliente}}" method="post" class="d-inline">
-                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Confirma a exclusão?')">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
-                                <a th:href="@{'/clientes/historico/' + ${cliente.codCliente}}" class="btn btn-info btn-sm">
-        							<i class="bi bi-clock-history"></i>
-    							</a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Paginação -->
-<nav th:if="${totalPages > 1}" aria-label="Paginação">
-    <ul class="pagination justify-content-center">
-        <!-- Botão Anterior -->
-        <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
-            <a class="page-link"
-               th:href="@{'/clientes/listar'(nome=${nome}, page=${currentPage - 1})}">
-                Anterior
-            </a>
-        </li>
-
-        <!-- Botões de páginas -->
-        <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
-            th:classappend="${i == currentPage} ? 'active'">
-            <a class="page-link"
-               th:href="@{'/clientes/listar'(nome=${nome}, page=${i})}"
-               th:text="${i + 1}">
-            </a>
-        </li>
-
-        <!-- Botão Próxima -->
-        <li class="page-item" th:classappend="${currentPage + 1 == totalPages} ? 'disabled'">
-            <a class="page-link"
-               th:href="@{'/clientes/listar'(nome=${nome}, page=${currentPage + 1})}">
-                Próxima
-            </a>
-        </li>
-    	</ul>
-	</nav>
-	</div>
-   </div>
-</div>
-</section>
-</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

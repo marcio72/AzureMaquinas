@@ -47,7 +47,11 @@ public class Peca {
     @JoinColumn(name = "maquina_id")
     @JsonIgnore
     private Maquina maquina;
-
+    
+    
+    // Dentro da sua classe Peca
+    @OneToOne(mappedBy = "peca")
+    private MovimentoEstoque movimento;
 
 
     // ========= GETTERS / SETTERS ============
@@ -130,5 +134,13 @@ public class Peca {
 
     public void setMaquina(Maquina maquina) {
         this.maquina = maquina;
+    }
+    
+    public MovimentoEstoque getMovimento() {
+        return movimento;
+    }
+    
+    public void setMovimento(MovimentoEstoque movimento) {
+        this.movimento = movimento;
     }
 }

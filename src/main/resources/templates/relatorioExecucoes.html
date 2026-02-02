@@ -57,12 +57,30 @@
 		  border-right-color: #000 !important;
 		}
 
-
-
-
 		/* Hover no desktop */
 		.toggle-btn:hover .text-primary { color: #004085 !important; }
 		.toggle-btn:hover .text-danger  { color: #8b0000 !important; }
+		
+		@media (max-width: 767px) {
+		  .cliente-mobile {
+			max-width: 140px;
+			font-size: 0.85rem;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		  }
+		}
+		
+		@media (max-width: 767px) {
+		  .problema-mobile {
+			max-width: 160px;
+			font-size: 0.8rem;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		  }
+		}
+
 
 		/* Mobile: botão redondo e texto oculto */
 		@media (max-width: 767px) {
@@ -220,9 +238,9 @@
 							<span class="d-none execucao-text" th:text="${exec.descricao}"></span>
 							
 							<td th:text="${exec.id}">ID</td>
-							<td class="text-limit" th:text="${exec.nomeCliente}" th:title="${exec.nomeCliente}"></td>
-							<td class="text-limit" th:text="${exec.nomeMaquina}" th:title="${exec.nomeMaquina}"></td>
-							<td class="text-limit" th:text="${exec.descricaoProblema}" th:title="${exec.descricaoProblema}"></td>
+							<td class="text-limit cliente-mobile" th:text="${exec.nomeCliente}" th:title="${exec.nomeCliente}"></td>
+							<td class="text-limit maquina-mobile" th:text="${exec.nomeMaquina}" th:title="${exec.nomeMaquina}"></td>
+							<td class="text-limit d-none d-md-table-cell" th:text="${exec.descricaoProblema}" th:title="${exec.descricaoProblema}"></td>
 							<td class="text-center"
 								data-bs-toggle="popover"
 								data-bs-placement="right"
@@ -240,9 +258,6 @@
 									<span class="fw-bold">Ver</span>
 								</button>
 							</td>
-							
-							
-							
 							
 							<td class="d-none d-md-table-cell" th:text="${exec.tecnico}">Técnico</td>
 							<td th:text="${#temporals.format(exec.dataExecucao, 'dd/MM/yyyy HH:mm:ss')}">Data</td>
@@ -296,7 +311,6 @@
 			
 			<nav aria-label="Navegação de páginas" th:if="${totalPaginas > 1}" class="mt-4">
 				<ul class="pagination justify-content-center flex-wrap">
-					
 					<li class="page-item" th:classappend="${paginaAtual == 0} ? 'disabled'">
 						<a class="page-link"
 						   th:href="@{/relatorioExecucoes(page=0, size=10, nf=${nf}, busca=${busca}, pdf=${pdf}, problema=${problema}, execucao=${execucao})}"
@@ -311,7 +325,6 @@
 						   aria-label="Anterior">
 							<span aria-hidden="true">&lsaquo;</span> </a>
 					</li>
-					
 					<th:block th:with="inicio=${paginaAtual > 2 ? paginaAtual - 2 : 0},
                                        fim=${paginaAtual + 4 < totalPaginas ? (paginaAtual > 2 ? paginaAtual + 2 : 4) : totalPaginas - 1}">
 						
@@ -487,11 +500,6 @@
 					});
 				  }
 				});
-
-
-
-
 </script>
-
 </body>
 </html>

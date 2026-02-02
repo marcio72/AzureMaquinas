@@ -1,139 +1,174 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-
 <head>
-    <title>Categorias</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<title>Lista de Categorias - Sistema Pro</title>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+	
+	<style>
+		:root {
+			--bg-body: #081418;
+			--bg-card: #10242a;
+			--primary-green: #1ee4ac;
+			--accent-blue: #3d8bff;
+			--accent-red: #ff4d4d;
+			--text-white: #ffffff;
+			--text-gray: #8ea1a7;
+			--border-color: rgba(255, 255, 255, 0.05);
+		}
 
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+		* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
 
-    <!-- Ícones -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+		body {
+			background-color: var(--bg-body);
+			color: var(--text-white);
+			padding: 15px;
+		}
 
-    <style>
-        body {
-            background: #f5f7fa;
-        }
-        .navbar-custom {
-            background-color: #003d80;
-        }
-        .navbar-custom .navbar-brand,
-        .navbar-custom .nav-link {
-            color: #fff !important;
-        }
-        .card-custom {
-            border-radius: 14px;
-            padding: 25px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.07);
-            background: #fff;
-        }
-        .page-title {
-            font-weight: 600;
-            color: #333;
-        }
-    </style>
+		.container { max-width: 1000px; margin: 0 auto; }
+
+		/* HEADER */
+		header { margin-bottom: 25px; }
+		.breadcrumb { font-size: 12px; color: var(--text-gray); margin-bottom: 10px; list-style: none; display: flex; gap: 5px; }
+		.breadcrumb a { color: var(--primary-green); text-decoration: none; }
+		.page-title { font-size: 22px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+
+		/* CARD PRINCIPAL */
+		.card-custom {
+			background: var(--bg-card);
+			border-radius: 24px;
+			padding: 20px;
+			border: 1px solid var(--border-color);
+			box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+		}
+
+		/* AÇÕES DO TOPO */
+		.top-actions {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 25px;
+			flex-wrap: wrap;
+			gap: 15px;
+		}
+
+		.btn-group-nav { display: flex; gap: 10px; }
+
+		.btn-custom {
+			padding: 10px 20px;
+			border-radius: 12px;
+			font-size: 13px;
+			font-weight: 600;
+			text-decoration: none;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			transition: 0.2s;
+			border: none;
+			cursor: pointer;
+		}
+
+		.btn-blue { background: rgba(61, 139, 255, 0.1); color: var(--accent-blue); border: 1px solid rgba(61, 139, 255, 0.2); }
+		.btn-green { background: var(--primary-green); color: #081418; }
+		.btn-custom:hover { transform: translateY(-2px); opacity: 0.9; }
+
+		/* TABELA RESPONSIVA */
+		.table-responsive { width: 100%; overflow-x: auto; border-radius: 15px; }
+		table { width: 100%; border-collapse: collapse; text-align: left; }
+
+		@media (min-width: 768px) {
+			th { background: rgba(255,255,255,0.02); padding: 15px 20px; font-size: 11px; text-transform: uppercase; color: var(--text-gray); letter-spacing: 0.5px; border-bottom: 1px solid var(--border-color); }
+			td { padding: 15px 20px; border-bottom: 1px solid var(--border-color); font-size: 14px; }
+			tr:last-child td { border-bottom: none; }
+			tr:hover td { background: rgba(255,255,255,0.01); }
+		}
+
+		/* MOBILE: TRANSFORMAR EM CARDS */
+		@media (max-width: 767px) {
+			table, thead, tbody, th, td, tr { display: block; }
+			thead { display: none; }
+			tr { background: rgba(255,255,255,0.02); margin-bottom: 15px; border-radius: 15px; padding: 15px; border: 1px solid var(--border-color); }
+			td { display: flex; justify-content: space-between; padding: 8px 0; border: none; font-size: 14px; }
+			td::before { content: attr(data-label); font-weight: 600; color: var(--text-gray); font-size: 11px; text-transform: uppercase; }
+			.actions-cell { border-top: 1px solid var(--border-color); margin-top: 10px; padding-top: 15px !important; justify-content: center !important; gap: 10px; }
+		}
+
+		/* BOTÕES DE AÇÃO NA TABELA */
+		.btn-action {
+			padding: 6px 12px;
+			border-radius: 8px;
+			font-size: 12px;
+			font-weight: 600;
+			text-decoration: none;
+			display: inline-flex;
+			align-items: center;
+			gap: 5px;
+			transition: 0.2s;
+		}
+		.btn-edit { background: rgba(61, 139, 255, 0.1); color: var(--accent-blue); }
+		.btn-delete { background: rgba(255, 77, 77, 0.1); color: var(--accent-red); }
+		.btn-action:hover { filter: brightness(1.2); }
+
+		.id-badge { background: #081418; padding: 2px 8px; border-radius: 6px; font-family: monospace; color: var(--primary-green); font-weight: 700; }
+	</style>
 </head>
 
 <body>
 
-<!-- NAVBAR -->
-<nav class="navbar navbar-expand-lg navbar-custom">
-    <div class="container-fluid">
-        <a class="navbar-brand fw-bold" href="/">Systemor</a>
-
-        <button class="navbar-toggler" type="button"
-                data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-
-                <li class="nav-item">
-                    <a class="nav-link" href="/">🏠 Home</a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link" href="/categorias">📚 Categorias</a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link" href="/lotes">📦 Lotes</a>
-                </li>
-
-            </ul>
-        </div>
-    </div>
-</nav>
-
-<div class="container mt-4">
-
-    <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Home</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Categorias</li>
-        </ol>
-    </nav>
-
-    <h2 class="page-title mb-4">📚 Lista de Categorias</h2>
-
-    <div class="card card-custom">
-
-        <div class="d-flex justify-content-between mb-3">
-            <h5 class="fw-semibold">Categorias cadastradas</h5>
-        </div>
-
-        <div class="d-flex gap-2 mb-3">
-            <a href="/lotes" class="btn btn-primary">
-                <i class="bi bi-box"></i> Lotes
-            </a>
-
-            <a href="/categorias/novo" class="btn btn-success">
-                <i class="bi bi-plus-circle"></i> Nova Categoria
-            </a>
-        </div>
-
-        <div class="table-responsive">
-            <table class="table table-hover table-bordered align-middle">
-                <thead class="table-primary">
-                <tr>
-                    <th>ID</th>
-                    <th>Nome</th>
-                    <th>Alias</th>
-                    <th class="text-center">Ações</th>
-                </tr>
-                </thead>
-
-                <tbody>
-                <tr th:each="categoria : ${categorias}">
-                    <td th:text="${categoria.id}"></td>
-                    <td th:text="${categoria.nome}"></td>
-                    <td th:text="${categoria.alias}"></td>
-
-                    <td class="text-center">
-                        <a th:href="@{/categorias/editar/{id}(id=${categoria.id})}"
-                           class="btn btn-sm btn-primary">
-                            <i class="bi bi-pencil-square"></i> Editar
-                        </a>
-
-                        <a th:href="@{/categorias/excluir/{id}(id=${categoria.id})}"
-                           class="btn btn-sm btn-danger"
-                           onclick="return confirm('Tem certeza que deseja excluir?');">
-                            <i class="bi bi-trash"></i> Excluir
-                        </a>
-                    </td>
-                </tr>
-                </tbody>
-
-            </table>
-        </div>
-
-    </div>
-
+<div class="container">
+	<header>
+		<ul class="breadcrumb">
+			<li><a href="/">Home</a> /</li>
+			<li style="color: var(--text-gray)">Categorias</li>
+		</ul>
+		<h1 class="page-title"><span>📚</span> Lista de Categorias</h1>
+	</header>
+	
+	<div class="card-custom">
+		<div class="top-actions">
+			<div class="btn-group-nav">
+				<a href="/lotes" class="btn-custom btn-blue">
+					<i class="bi bi-box-seam"></i> Lotes
+				</a>
+			</div>
+			<a href="/categorias/novo" class="btn-custom btn-green">
+				<i class="bi bi-plus-circle"></i> Nova Categoria
+			</a>
+		</div>
+		
+		<div class="table-responsive">
+			<table>
+				<thead>
+				<tr>
+					<th>ID</th>
+					<th>Nome</th>
+					<th>Alias</th>
+					<th style="text-align: center;">Ações</th>
+				</tr>
+				</thead>
+				<tbody>
+				<tr th:each="categoria : ${categorias}">
+					<td data-label="ID"><span class="id-badge" th:text="${categoria.id}"></span></td>
+					<td data-label="Nome"><strong th:text="${categoria.nome}"></strong></td>
+					<td data-label="Alias" th:text="${categoria.alias}"></td>
+					<td data-label="Ações" class="actions-cell" style="text-align: center;">
+						<a th:href="@{/categorias/editar/{id}(id=${categoria.id})}" class="btn-action btn-edit">
+							<i class="bi bi-pencil-square"></i> Editar
+						</a>
+						<a th:href="@{/categorias/excluir/{id}(id=${categoria.id})}"
+						   class="btn-action btn-delete"
+						   onclick="return confirm('Tem certeza que deseja excluir esta categoria?');">
+							<i class="bi bi-trash"></i>
+						</a>
+					</td>
+				</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>

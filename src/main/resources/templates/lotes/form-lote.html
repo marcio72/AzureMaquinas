@@ -1,142 +1,193 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-
 <head>
-    <title>Novo Lote</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<title>Novo Lote - Sistema Pro</title>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+	
+	<style>
+		:root {
+			--bg-body: #081418;
+			--bg-card: #10242a;
+			--primary-green: #1ee4ac;
+			--accent-blue: #3d8bff;
+			--text-white: #ffffff;
+			--text-gray: #8ea1a7;
+			--border-color: rgba(255, 255, 255, 0.05);
+			--input-bg: #081418;
+		}
 
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+		* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
 
-    <!-- Ícones -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+		body {
+			background-color: var(--bg-body);
+			color: var(--text-white);
+			padding: 15px;
+		}
 
-    <style>
-        body {
-            background: #f5f7fa;
-        }
-        .card-custom {
-            border-radius: 14px;
-            padding: 25px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.07);
-        }
-        .navbar-custom {
-            background-color: #003d80;
-        }
-        .navbar-custom .nav-link,
-        .navbar-custom .navbar-brand {
-            color: #fff !important;
-        }
-        .page-title {
-            font-weight: 600;
-            color: #333;
-        }
-        .form-label {
-            font-weight: 500;
-        }
-    </style>
+		.container { max-width: 850px; margin: 0 auto; }
+
+		/* NAVEGAÇÃO / BREADCRUMB */
+		header { margin-bottom: 25px; }
+		.breadcrumb { font-size: 12px; color: var(--text-gray); margin-bottom: 10px; list-style: none; display: flex; gap: 5px; }
+		.breadcrumb a { color: var(--primary-green); text-decoration: none; }
+		.page-title { font-size: 22px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+
+		/* CARD DO FORMULÁRIO */
+		.card-custom {
+			background: var(--bg-card);
+			border-radius: 24px;
+			padding: 25px;
+			border: 1px solid var(--border-color);
+			box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+		}
+
+		.top-actions { display: flex; gap: 10px; margin-bottom: 25px; }
+		.btn-mini {
+			padding: 8px 15px; border-radius: 8px; font-size: 12px; font-weight: 600;
+			text-decoration: none; display: flex; align-items: center; gap: 5px; transition: 0.2s;
+		}
+		.btn-secondary-custom { background: rgba(255,255,255,0.05); color: var(--text-white); }
+		.btn-blue-soft { background: rgba(61, 139, 255, 0.1); color: var(--accent-blue); border: 1px solid rgba(61, 139, 255, 0.2); }
+
+		/* GRID DO FORMULÁRIO */
+		.form-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 20px; }
+		.col-span-12 { grid-column: span 12; }
+		.col-span-6 { grid-column: span 12; }
+		.col-span-4 { grid-column: span 12; }
+
+		@media (min-width: 768px) {
+			.col-span-6 { grid-column: span 6; }
+			.col-span-4 { grid-column: span 4; }
+		}
+
+		.form-group { display: flex; flex-direction: column; gap: 8px; }
+		label { font-size: 11px; font-weight: 600; color: var(--text-gray); text-transform: uppercase; letter-spacing: 0.5px; }
+
+		input, select {
+			background: var(--input-bg);
+			border: 1px solid var(--border-color);
+			color: white;
+			padding: 12px 15px;
+			border-radius: 10px;
+			font-size: 14px;
+			outline: none;
+			transition: 0.3s;
+			width: 100%;
+		}
+
+		input:focus, select:focus { border-color: var(--primary-green); box-shadow: 0 0 10px rgba(30, 228, 172, 0.1); }
+
+		/* AÇÕES FINAIS */
+		.footer-actions {
+			margin-top: 30px;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			border-top: 1px solid var(--border-color);
+			padding-top: 25px;
+		}
+
+		.btn-save {
+			background: var(--primary-green);
+			color: #081418;
+			padding: 14px 28px;
+			border-radius: 12px;
+			border: none;
+			font-weight: 700;
+			font-size: 14px;
+			cursor: pointer;
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			transition: 0.3s;
+		}
+		.btn-save:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(30, 228, 172, 0.3); }
+
+		.btn-link-cancel { color: var(--text-gray); text-decoration: none; font-size: 14px; font-weight: 500; }
+		.btn-link-cancel:hover { color: var(--text-white); }
+	
+	</style>
 </head>
 
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-custom">
-    <div class="container-fluid">
-        <a class="navbar-brand fw-bold" href="/">Systemor</a>
-    </div>
-</nav>
-
-<div class="container mt-4">
-
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Home</a></li>
-            <li class="breadcrumb-item"><a href="/lotes" class="text-decoration-none">Lotes</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Novo Lote</li>
-        </ol>
-    </nav>
-
-    <h2 class="page-title mb-4">📦 Cadastrar Novo Lote</h2>
-
-    <div class="card card-custom">
-
-        <div class="mb-3">
-            <a href="/lotes" class="btn btn-secondary">
-                <i class="bi bi-arrow-left-circle"></i> Voltar
-            </a>
-
-            <a href="/categorias" class="btn btn-primary">
-                <i class="bi bi-journal"></i> Categorias
-            </a>
-        </div>
-
-        <form th:action="@{/lotes/salvar}" th:object="${lote}" method="post" class="row g-3">
-
-            <!-- Categoria -->
-            <div class="col-md-6">
-                <label class="form-label">Categoria</label>
-                <select class="form-select" th:field="*{categoria}" required>
-                    <option value="">Selecione...</option>
-                    <option th:each="cat : ${categorias}"
-                            th:value="${cat.id}"
-                            th:text="${cat.nome}">
-                </select>
-            </div>
-
-            <!-- Fornecedor -->
-            <div class="col-md-6">
-                <label class="form-label">Fornecedor</label>
-                <input class="form-control" type="text" th:field="*{fornecedor}" required>
-            </div>
-
-            <!-- Alias -->
-            <div class="col-md-4">
-                <label class="form-label">Alias (prefixo)</label>
-                <input class="form-control" type="text" th:field="*{alias}" required>
-            </div>
-
-            <!-- Código do lote -->
-            <div class="col-md-4">
-                <label class="form-label">Código do Lote</label>
-                <input class="form-control" type="text" th:field="*{codigo}" placeholder="Opcional">
-            </div>
-
-            <!-- Quantidade -->
-            <div class="col-md-4">
-                <label class="form-label">Quantidade Comprada</label>
-                <input class="form-control" type="number" th:field="*{quantidadeComprada}" min="1" required>
-            </div>
-
-            <!-- Descrição -->
-            <div class="col-md-12">
-                <label class="form-label">Descrição</label>
-                <input class="form-control" type="text" th:field="*{descricao}" required>
-            </div>
-
-            <!-- Data de Entrada -->
-            <div class="col-md-4">
-                <label class="form-label">Data de Entrada</label>
-                <input class="form-control" type="date" th:field="*{dataEntrada}" required>
-            </div>
-
-            <!-- Botões -->
-            <div class="col-12 mt-3 d-flex justify-content-between">
-
-                <a href="/lotes" class="btn btn-secondary">
-                    <i class="bi bi-arrow-left-circle"></i> Voltar
-                </a>
-
-                <button class="btn btn-success">
-                    <i class="bi bi-check-circle"></i> Salvar Lote
-                </button>
-
-            </div>
-
-        </form>
-
-    </div>
-
+<div class="container">
+	<header>
+		<ul class="breadcrumb">
+			<li><a href="/">Home</a> /</li>
+			<li><a href="/lotes">Lotes</a> /</li>
+			<li style="color: var(--text-gray)">Novo Cadastro</li>
+		</ul>
+		<h1 class="page-title"><span>📦</span> Cadastrar Novo Lote</h1>
+	</header>
+	
+	<div class="card-custom">
+		<div class="top-actions">
+			<a href="/lotes" class="btn-mini btn-secondary-custom">
+				<i class="bi bi-arrow-left"></i> Voltar
+			</a>
+			<a href="/categorias" class="btn-mini btn-blue-soft">
+				<i class="bi bi-journal"></i> Categorias
+			</a>
+		</div>
+		
+		<form th:action="@{/lotes/salvar}" th:object="${lote}" method="post">
+			<div class="form-grid">
+				
+				<div class="form-group col-span-6">
+					<label>Categoria</label>
+					<select th:field="*{categoria}" required>
+						<option value="">Selecione uma categoria...</option>
+						<option th:each="cat : ${categorias}"
+								th:value="${cat.id}"
+								th:text="${cat.nome}"></option>
+					</select>
+				</div>
+				
+				<div class="form-group col-span-6">
+					<label>Fornecedor</label>
+					<input type="text" th:field="*{fornecedor}" required placeholder="Nome do fornecedor">
+				</div>
+				
+				<div class="form-group col-span-4">
+					<label>Alias (Prefixo)</label>
+					<input type="text" th:field="*{alias}" required placeholder="Ex: SBF">
+				</div>
+				
+				<div class="form-group col-span-4">
+					<label>Código do Lote</label>
+					<input type="text" th:field="*{codigo}" placeholder="Opcional">
+				</div>
+				
+				<div class="form-group col-span-4">
+					<label>Qtd Comprada</label>
+					<input type="number" th:field="*{quantidadeComprada}" min="1" required>
+				</div>
+				
+				<div class="form-group col-span-12">
+					<label>Descrição Detalhada</label>
+					<input type="text" th:field="*{descricao}" required placeholder="Informe os detalhes do lote">
+				</div>
+				
+				<div class="form-group col-span-4">
+					<label>Data de Entrada</label>
+					<input type="date" th:field="*{dataEntrada}" required>
+				</div>
+			
+			</div>
+			
+			<div class="footer-actions">
+				<a href="/lotes" class="btn-link-cancel">Cancelar</a>
+				<button type="submit" class="btn-save">
+					<i class="bi bi-check-lg"></i> SALVAR LOTE
+				</button>
+			</div>
+		</form>
+	</div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>

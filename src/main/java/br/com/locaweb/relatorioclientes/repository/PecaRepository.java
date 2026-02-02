@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PecaRepository extends JpaRepository<Peca, Long> {
 
@@ -37,4 +38,10 @@ public interface PecaRepository extends JpaRepository<Peca, Long> {
            ORDER BY p.codigo DESC
            """)
     List<String> findCodigosOrdenados(@Param("categoriaId") Long categoriaId);
+    
+    List<Peca> findAllByLoteIdLote(Long idLote);
+    
+    // Busca exata pelo código da peça
+    Optional<Peca> findByCodigo(String codigo);
+    
 }
