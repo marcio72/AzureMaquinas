@@ -6,6 +6,10 @@ import br.com.locaweb.relatorioclientes.model.Maquina;
 import br.com.locaweb.relatorioclientes.repository.ClienteRepository;
 import br.com.locaweb.relatorioclientes.repository.MaquinaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -30,12 +34,20 @@ public class MaquinaCrudController {
     
     
     @GetMapping("/cliente/{codCliente}")
-    public ResponseEntity<List<Maquina>> listarPorCodCliente(@PathVariable Integer codCliente) {
-        List<Maquina> maquinas = maquinaRepository.findByCodCliente(codCliente);
+    public ResponseEntity<Page<Maquina>> listarPorCodClientePaginado(
+            @PathVariable Integer codCliente,
+            @RequestParam(required = false) String jogo,
+            @RequestParam(required = false) String maq,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "8") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        Page<Maquina> maquinas = maquinaRepository.buscarPaginadoPorCliente(codCliente, jogo, maq, pageable);
+        
         if (maquinas.isEmpty()) {
-            return ResponseEntity.noContent().build(); // retorna 204 se não encontrar
+            return ResponseEntity.noContent().build(); // 204
         }
-        return ResponseEntity.ok(maquinas); // retorna 200 com a lista de máquinas
+        return ResponseEntity.ok(maquinas); // 200 com Page
     }
     @GetMapping("/form")
     public String exibirFormularioCadastro(Model model) {
@@ -81,6 +93,18 @@ public class MaquinaCrudController {
                     return ResponseEntity.noContent().build(); // 204 No Content
                 })
                 .orElse(ResponseEntity.notFound().build()); // 404 Not Found
+    }
+    
+    @GetMapping("/total")
+    public long totalMaquinasGeral() {
+        return maquinaRepository.count();
+    }
+    
+    @GetMapping("/cliente/{codCliente}/total")
+    public ResponseEntity<Long> totalRealPorCliente(@PathVariable Integer codCliente) {
+        long total = maquinaRepository.countTotalPorCliente(codCliente);
+        long real = Math.max(total - 1, 0);
+        return ResponseEntity.ok(real);
     }
     
     

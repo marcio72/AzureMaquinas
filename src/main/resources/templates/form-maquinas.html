@@ -20,6 +20,12 @@
 		   color: var(--text-white);
 		   font-family: 'Inter', sans-serif;
 		}
+		.select-compact {
+			  padding: 10px 12px !important;
+			  font-size: 0.95rem;
+			  border-radius: 12px;
+			}
+
  
 		.card-custom {
 		   background: var(--bg-card);
@@ -80,6 +86,11 @@
 		   border-bottom: 1px solid var(--border-color);
 		   background: transparent !important;
 		}
+		
+			.table tbody td {
+			color: #0dcaf0 !important; /* mesma cor do text-info */
+		}
+
  
 		/* Botão de Edição Verde Pro */
 		.btn-edit {
@@ -129,55 +140,169 @@
 	</style>
 	
 	<script>
+		let page = 0;
+		const size = 8;
+		let totalPages = 0;
+		let debounceTimer = null;
+	 
+		function aplicarFiltros() {
+		  page = 0;
+		  carregarMaquinas();
+		}
+	 
+		function aplicarFiltrosDebounced() {
+		  clearTimeout(debounceTimer);
+		  debounceTimer = setTimeout(() => {
+			page = 0;
+			carregarMaquinas();
+		  }, 300);
+		}
+	 
+		function limparFiltros() {
+		  document.getElementById("filtroJogo").value = "";
+		  document.getElementById("filtroMaquina").value = "";
+		  page = 0;
+		  carregarMaquinas();
+		}
+	 
+		function prevPage() {
+		  if (page > 0) {
+			page--;
+			carregarMaquinas();
+		  }
+		}
+	 
+		function nextPage() {
+		  if (page + 1 < totalPages) {
+			page++;
+			carregarMaquinas();
+		  }
+		}
+	 
+		function atualizarPaginacao(totalElements) {
+		  const info = document.getElementById("paginacaoInfo");
+		  const btnPrev = document.getElementById("btnPrev");
+		  const btnNext = document.getElementById("btnNext");
+	  
+		  const paginaHumana = totalPages > 0 ? (page + 1) : 0;
+		  if (info) info.textContent = `Página ${paginaHumana} de ${totalPages} — Total: ${totalElements}`;
+	  
+		  if (btnPrev) btnPrev.disabled = page <= 0;
+		  if (btnNext) btnNext.disabled = totalPages === 0 || (page + 1 >= totalPages);
+		}
+	 
+		// ✅ Total FIXO do cliente (não muda com filtro) — backend deve retornar count-1
+		function carregarTotalClienteFixo(codCliente) {
+		  fetch(`/maquinas/cliente/${codCliente}/total`)
+			.then(r => r.ok ? r.json() : Promise.reject())
+			.then(total => {
+			  const el = document.getElementById("totalCliente");
+			  if (el) el.textContent = total;
+			})
+			.catch(() => {
+			  const el = document.getElementById("totalCliente");
+			  if (el) el.textContent = "—";
+			});
+		}
+	 
 		function carregarMaquinas() {
-			const codCliente = document.getElementById("clienteSelect").value;
-			if (!codCliente) return;
-
-			fetch(`/maquinas/cliente/${codCliente}`)
-				.then(response => {
-					if (!response.ok) throw new Error("Erro");
-					return response.json();
-				})
-				.then(data => {
-					const tabela = document.getElementById("tabelaMaquinas");
-					tabela.innerHTML = "";
-
-					data.forEach(maquina => {
-						const row = `<tr>
-							<td data-label="ID">${maquina.id}</td>
-							<td data-label="Máquina" class="fw-bold text-info">${maquina.nom_maq}</td>
-							<td data-label="Jogo">${maquina.nom_jogo}</td>
-							<td data-label="Placa">${maquina.numeroPlaca || '-'}</td>
-							<td data-label="Obs" class="small text-secondary text-truncate" style="max-width: 150px;">${maquina.obs || ''}</td>
-							<td data-label="Ação">
-								<a href="/maquinas/editar/${maquina.id}" class="btn btn-edit">
-									<i class="bi bi-pencil-square"></i> <span>Editar</span>
-								</a>
-							</td>
-						</tr>`;
-						tabela.innerHTML += row;
-					});
-				})
-				.catch(() => {
-					document.getElementById("tabelaMaquinas").innerHTML =
-						`<tr><td colspan="6" class="text-center py-4 text-danger">Nenhuma máquina encontrada.</td></tr>`;
-				});
+		  const codCliente = document.getElementById("clienteSelect").value;
+		  if (!codCliente) return;
+	  
+		  // ✅ chama o total fixo sempre que listar (não muda com filtro)
+		  carregarTotalClienteFixo(codCliente);
+	  
+		  const jogo = document.getElementById("filtroJogo").value.trim();
+		  const maq  = document.getElementById("filtroMaquina").value.trim();
+	  
+		  const params = new URLSearchParams();
+		  if (jogo) params.append("jogo", jogo);
+		  if (maq)  params.append("maq", maq);
+		  params.append("page", page);
+		  params.append("size", size);
+	  
+		  fetch(`/maquinas/cliente/${codCliente}?${params.toString()}`)
+			.then(async (response) => {
+			  if (response.status === 204) return null;
+			  if (!response.ok) throw new Error("Erro");
+			  return response.json();
+			})
+			.then(data => {
+			  const tabela = document.getElementById("tabelaMaquinas");
+			  tabela.innerHTML = "";
+	  
+			  const lista = Array.isArray(data) ? data : (data?.content ?? []);
+			  const totalElements = Array.isArray(data) ? lista.length : (data?.totalElements ?? 0);
+	  
+			  // Paginação
+			  if (Array.isArray(data)) {
+				totalPages = totalElements > 0 ? 1 : 0;
+				page = 0;
+			  } else {
+				totalPages = data?.totalPages ?? 0;
+				page = data?.number ?? 0;
+			  }
+	  
+			  if (!lista || lista.length === 0) {
+				tabela.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-danger">
+				  Nenhuma máquina encontrada.
+				</td></tr>`;
+				atualizarPaginacao(0);
+				return;
+			  }
+	  
+			  lista.forEach(maquina => {
+				tabela.innerHTML += `<tr>
+				  <td data-label="ID">${maquina.id}</td>
+				  <td data-label="Máquina" class="fw-bold text-info">${maquina.nom_maq}</td>
+				  <td data-label="Jogo">${maquina.nom_jogo}</td>
+				  <td data-label="Placa">${maquina.numeroPlaca || '-'}</td>
+				  <td data-label="Obs" class="small text-secondary text-truncate" style="max-width: 150px;">
+					${maquina.obs || ''}
+				  </td>
+				  <td data-label="Ação">
+					<a href="/maquinas/editar/${maquina.id}" class="btn btn-edit">
+					  <i class="bi bi-pencil-square"></i> <span>Editar</span>
+					</a>
+				  </td>
+				</tr>`;
+			  });
+	  
+			  atualizarPaginacao(totalElements);
+			})
+			.catch((e) => {
+			  console.error(e);
+			  document.getElementById("tabelaMaquinas").innerHTML =
+				`<tr><td colspan="6" class="text-center py-4 text-danger">Erro ao carregar.</td></tr>`;
+			  totalPages = 0;
+			  atualizarPaginacao(0);
+			});
 		}
 	</script>
+
+
+
 </head>
 <body>
 <div th:replace="~{fragments/menu :: layout(~{::section})}">
 	<section class="container py-4">
 		<div class="mb-4">
-			<h2 class="fw-bold m-0"><i class="bi bi-pc-display text-success me-2"></i> Consulta de Máquinas</h2>
+			<h2 class="fw-bold m-0">
+				<i class="bi bi-pc-display text-success me-2"></i> Consulta de Máquinas
+			</h2>
 			<p class="text-secondary small">Selecione o cliente para gerenciar as máquinas instaladas.</p>
 		</div>
 		
+		<!-- CARD: CLIENTE + NOVA + FILTROS (organizado sem remover nada) -->
 		<div class="card-custom p-4 mb-4">
-			<div class="row align-items-end">
-				<div class="col-md-9 mb-3 mb-md-0">
+			
+			<!-- LINHA 1: CLIENTE + RESUMO + BOTÃO NOVA -->
+			<div class="row align-items-end g-3">
+				
+				<!-- Select do cliente -->
+				<div class="col-md-5">
 					<label for="clienteSelect" class="form-label">Ponto de Atendimento (Cliente)</label>
-					<select class="form-select" id="clienteSelect" onchange="carregarMaquinas()">
+					<select class="form-select select-compact" id="clienteSelect" onchange="carregarMaquinas()">
 						<option value="">-- Escolha um cliente para listar --</option>
 						<option th:each="cliente : ${clientes}"
 								th:value="${cliente.codCliente}"
@@ -185,14 +310,53 @@
 						</option>
 					</select>
 				</div>
-				<div class="col-md-3 text-end">
-					<a href="/maquinas/form" class="btn btn-outline-light w-100 py-2 border-secondary">
+				
+				<!-- Total de máquinas (maior e central) -->
+				<!-- Total de máquinas (centralizado) -->
+				<div class="col-md-3 d-flex justify-content-center">
+					<div class="text-center">
+						<div class="text-secondary small fw-bold">Máquinas do cliente (Total)</div>
+						<div class="fw-bold text-info" style="font-size: 2.4rem; line-height: 1;">
+							<span id="totalCliente">—</span>
+						</div>
+					</div>
+				</div>
+				
+				
+				<!-- Botão Nova -->
+				<div class="col-md-2 ms-auto text-end">
+					<a href="/maquinas/form"
+					   class="btn btn-outline-light px-4 py-2 border-secondary">
 						<i class="bi bi-plus-circle me-1"></i> Nova
 					</a>
+				</div>
+			
+			</div>
+			
+			
+			
+			<!-- LINHA 2: FILTROS -->
+			<div class="row g-3 mt-2">
+				<div class="col-md-4">
+					<label class="form-label">Filtrar por Jogo</label>
+					<input class="form-control" id="filtroJogo" placeholder="Ex: Pharaó"
+						   oninput="aplicarFiltrosDebounced()" />
+				</div>
+				
+				<div class="col-md-4">
+					<label class="form-label">Filtrar por Máquina</label>
+					<input class="form-control" id="filtroMaquina" placeholder="Ex: 2001"
+						   oninput="aplicarFiltrosDebounced()" />
+				</div>
+				
+				<div class="col-md-4 d-flex align-items-end gap-2">
+					<button class="btn btn-outline-light w-50 border-secondary" onclick="limparFiltros()">Limpar</button>
+					<button class="btn btn-outline-light w-50 border-secondary" onclick="aplicarFiltros()">Buscar</button>
 				</div>
 			</div>
 		</div>
 		
+		<!-- CARD: TABELA + PAGINAÇÃO -->
 		<div class="card-custom overflow-hidden">
 			<div class="table-responsive">
 				<table class="table table-borderless align-middle mb-0">
@@ -206,6 +370,7 @@
 						<th class="text-end">Ações</th>
 					</tr>
 					</thead>
+					
 					<tbody id="tabelaMaquinas">
 					<tr>
 						<td colspan="6" class="text-center py-5 text-secondary opacity-50">
@@ -216,7 +381,19 @@
 					</tbody>
 				</table>
 			</div>
+			
+			<!-- PAGINAÇÃO (no lugar correto) -->
+			<div class="d-flex justify-content-between align-items-center p-3 border-top"
+				 style="border-color: var(--border-color) !important;">
+				<small class="text-secondary" id="paginacaoInfo">—</small>
+				
+				<div class="d-flex gap-2">
+					<button class="btn btn-outline-light border-secondary" id="btnPrev" onclick="prevPage()">Anterior</button>
+					<button class="btn btn-outline-light border-secondary" id="btnNext" onclick="nextPage()">Próximo</button>
+				</div>
+			</div>
 		</div>
+	
 	</section>
 </div>
 

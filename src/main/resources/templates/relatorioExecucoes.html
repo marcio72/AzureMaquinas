@@ -79,7 +79,7 @@
 			overflow: hidden;
 			text-overflow: ellipsis;
 		  }
-		}
+		  /* Botões Bootstrap padrão menores */
 
 
 		/* Mobile: botão redondo e texto oculto */
@@ -141,6 +141,34 @@
 		  font-size: 0.95rem;
 		  text-shadow: 0 0 5px #39ff14;          /* leve brilho */
 		}
+		
+		@media (max-width: 767px) {
+			  .btn-status{
+				padding: 0.12rem 0.35rem !important;
+				font-size: 0.70rem !important;
+				line-height: 1.05 !important;
+				border-radius: 0.35rem !important;
+				white-space: nowrap;
+			  }
+			}
+		
+		/* ===== Execução estilo TERMINAL (igual ao popover) ===== */
+			.execucao-detalhe {
+			  background-color: #000 !important;
+			  color: #39ff14 !important;
+			  font-family: "Courier New", monospace;
+			  font-size: 0.95rem;
+			  line-height: 1.4;
+			  padding: 12px;
+			  border-radius: 6px;
+			  border: 1px solid #000 !important;
+			  text-shadow: 0 0 4px #39ff14;
+			  box-shadow: inset 0 0 8px rgba(57, 255, 20, 0.15);
+			  white-space: pre-wrap;
+			}
+		
+		
+	
 	</style>
 </head>
 <body class="bg-light">
@@ -150,7 +178,6 @@
 		<div class="card-header-custom">
 			<i class="bi bi-clipboard-data"></i> Relatório de Execuções
 		</div>
-		
 		<div class="card-body">
 			<div class="mb-3 text-end">
 				<a th:if="${usuarioLogado != null and (usuarioLogado.username == 'Admin' or usuarioLogado.username == 'Mirlania')}"
@@ -228,7 +255,7 @@
 						<th>NF</th>
 						<th>Cliente</th>
 						<th>Máquina</th>
-						<th>Problema</th>
+						<th class="d-none d-md-table-cell">Problema</th>
 						<th>Execução</th>
 						<th class="d-none d-md-table-cell">Técnico</th> <th>Data</th>         <th>Relatório</th>    </tr>
 					</thead>
@@ -286,8 +313,8 @@
 												</button>
 											</div>
 											
-											<pre class="execucao-detalhe bg-light p-2 rounded border"
-												 style="font-family: 'Courier New', monospace; font-size: 0.95rem;"
+											<pre class="execucao-detalhe p-2 rounded border"
+												 style="background:#000;color:#39ff14;font-family: 'Courier New', monospace; font-size: 0.95rem;"
 												 th:text="${exec.descricao}">Descrição completa da execução...</pre>
 											<div class="mt-2 small text-muted">
                           <span class="me-3">

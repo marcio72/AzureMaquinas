@@ -26,7 +26,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 
@@ -39,7 +41,11 @@ public class ClienteCrudController {
 
     @Autowired
     private InstalacaoService instalacaoService;
-
+    
+    @Autowired
+    private MaquinaRepository maquinaRepository;
+    
+    
     @GetMapping("/novo")
     public String novoCliente(Model model) {
         model.addAttribute("cliente", new Cliente());
@@ -143,15 +149,12 @@ public class ClienteCrudController {
                                  @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
                                  @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
                                  Model model) {
-
         Pageable pageable = PageRequest.of(page, size);
-
         // --- CORREÇÃO AQUI ---
         // Adicionamos 'null' como o quinto argumento para o parâmetro de região,
         // já que esta tela não possui filtro por região.
         Page<Cliente> clientePage = clienteRepository.findClientesFiltrados(nome, dataInicio, dataFim, null, pageable);
         // --- FIM DA CORREÇÃO ---
-
         model.addAttribute("clientes", clientePage.getContent());
         model.addAttribute("clientePage", clientePage);
         model.addAttribute("currentPage", page);
@@ -159,7 +162,19 @@ public class ClienteCrudController {
         model.addAttribute("nome", nome);
         model.addAttribute("dataInicio", dataInicio);
         model.addAttribute("dataFim", dataFim);
-
+        
+        Map<Long, Long> qtdMaquinasPorCliente = new HashMap<>();
+        
+        for (Object[] row : maquinaRepository.countMaquinasPorCliente()) {
+            Long cod = ((Number) row[0]).longValue();   // <-- Long
+            long total = ((Number) row[1]).longValue();
+            long real = Math.max(total - 1, 0);         // regra do -1
+            qtdMaquinasPorCliente.put(cod, real);
+        }
+        
+        model.addAttribute("qtdMaquinasPorCliente", qtdMaquinasPorCliente);
+        
+        
         return "listar-clientes";
     }
 
@@ -186,9 +201,6 @@ public class ClienteCrudController {
         return "historico-cliente";
     }
     
-    
-    @Autowired
-    private MaquinaRepository maquinaRepository; // Injete o repositório de máquinas
 
    /* @GetMapping("/clientes-e-maquinas")
     public String listarClientesEMaquinas(Model model,

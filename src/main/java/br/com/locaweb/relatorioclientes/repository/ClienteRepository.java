@@ -54,5 +54,20 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
     	                                        @Param("dataFim") LocalDate dataFim,
     	                                        @Param("regiao") Integer regiao, 
     	                                        Pageable pageable);
+    
+    
+    
+    @Query("select m.codCliente, count(m) from Maquina m group by m.codCliente")
+    List<Object[]> countMaquinasPorCliente();
+    
+    
+    @Query("""
+    SELECT COUNT(c)
+    FROM Cliente c
+    WHERE UPPER(c.nomCliente) = 'INSTALAÇÃO'
+""")
+    long countInstalacoesFeitas();
+    
+    
+    
 }
-
