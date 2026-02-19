@@ -15,11 +15,9 @@ public class ResultadoJogadorDTO {
     public String getJogador() {
         return jogador;
     }
-    
     public int getPontos() {
         return pontos;
     }
-    
     public int getPosicao() {
         return posicao;
     }
