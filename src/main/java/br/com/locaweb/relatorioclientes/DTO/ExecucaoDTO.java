@@ -14,6 +14,7 @@ public class ExecucaoDTO {
     private String nomeMaquina; 
     private String descricaoProblema;
     private String descricao;
+    private String observacoes;
     private LocalDateTime DataExecucao;
     private Double valor;
     private String tecnico;
