@@ -4,6 +4,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -27,8 +28,11 @@ public class SignalService {
             "9XzOIoK+RJ1G62DUu/HaErggT14ruUvw3iyyD+oGyAA=";
 
     /**
-     * Envia mensagem para o grupo Signal via microserviço Node na VM
+     * Envia mensagem para o grupo Signal via microserviço Node na VM.
+     * Roda em thread separada (@Async) para não bloquear a resposta
+     * HTTP de quem chamou (ex.: criação de solicitação no app Android).
      */
+    @Async
     public void enviarMensagemGrupo(String mensagem) {
 
         try {

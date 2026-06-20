@@ -2,7 +2,7 @@ package br.com.locaweb.relatorioclientes.jogo.model;
 
 public enum ValorCarta {
     
-    A("A", 1),
+     // A("A", 1),
     DOIS("2", 2),
     TRES("3", 3),
     QUATRO("4", 4),
@@ -14,7 +14,9 @@ public enum ValorCarta {
     DEZ("10", 10),
     J("J", 11),
     Q("Q", 12),
-    K("K", 13);
+    K("K", 13),
+    A("A",  14);
+    
     
     private final String simbolo;
     private final int forca;
@@ -40,4 +42,3 @@ public enum ValorCarta {
 //     public String toString() {
 //         return simbolo;
 //     }
-

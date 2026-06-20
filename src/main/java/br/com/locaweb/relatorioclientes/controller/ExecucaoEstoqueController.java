@@ -119,7 +119,7 @@ public class ExecucaoEstoqueController {
                         pecaRepository.findById(id)
                                 .ifPresent(p -> msg.append(p.getCodigo()).append(" "));
                     }
-                    msg.append("\n");
+                    // msg.append("\n");
                 }
             } else {
                 msg.append("MAQUINA OK\n");
@@ -143,6 +143,3 @@ public class ExecucaoEstoqueController {
             return ResponseEntity.ok("Sucesso");
         }
 }
- 
-
-

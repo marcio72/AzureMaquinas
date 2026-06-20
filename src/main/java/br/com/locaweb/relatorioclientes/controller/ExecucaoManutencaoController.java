@@ -113,7 +113,5 @@ public class ExecucaoManutencaoController {
 
 	        return ResponseEntity.ok().build();
 	    }
-
-	    
 	}
 

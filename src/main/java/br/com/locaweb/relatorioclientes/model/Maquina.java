@@ -32,8 +32,12 @@ private String nom_maq;
 @JsonProperty("nom_jogo")
 private String nom_jogo;
 
+
 @Column(name = "numplaca")
 private String numeroPlaca;
 private String obs;
 private Integer codCliente;
+
+@Column(name = "ativo")
+private Boolean ativo;
 }

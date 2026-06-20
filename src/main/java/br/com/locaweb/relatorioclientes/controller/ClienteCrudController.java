@@ -202,32 +202,7 @@ public class ClienteCrudController {
     }
     
 
-   /* @GetMapping("/clientes-e-maquinas")
-    public String listarClientesEMaquinas(Model model,
-                                        @RequestParam(defaultValue = "0") int page,
-                                        @RequestParam(defaultValue = "5") int size,
-                                        @RequestParam(required = false) String busca,
-                                        @RequestParam(required = false) String regiao) {
-
-        Pageable pageable = PageRequest.of(page, size);
-        
-        // Busca paginada de clientes. (Poderíamos criar um método de busca mais complexo no futuro)
-        Page<Cliente> paginaClientes = clienteRepository.findAll(pageable);
-
-        // Para cada cliente na página, buscamos suas máquinas
-        paginaClientes.getContent().forEach(cliente -> {
-            List<Maquina> maquinas = maquinaRepository.findByCodCliente(cliente.getCodCliente().intValue());
-            cliente.setMaquinas(maquinas); // Precisaremos adicionar um campo "maquinas" na classe Cliente
-        });
-        
-        model.addAttribute("paginaClientes", paginaClientes);
-        model.addAttribute("busca", busca);
-        model.addAttribute("regiao", regiao);
-
-        return "listar-clientes-maquinas";
-    }*/
-    
- // Dentro da classe br.com.locaweb.relatorioclientes.controller.ClienteCrudController
+  
 
     @GetMapping("/clientes-e-maquinas")
     public String listarClientesEMaquinas(Model model,
