@@ -9,10 +9,13 @@ import br.com.locaweb.relatorioclientes.repository.MaquinaRepository;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -36,5 +39,27 @@ public class MaquinaController {
         model.addAttribute("maquina", new Maquina()); //<- ESSENCIAL para th:object
         model.addAttribute("clientes", clienteRepository.findAll()); // ou com filtro se necessário
         return "form_cadmaq";
+    }
+
+    // Endpoint POST: cria uma nova máquina via app Android (JSON)
+    @PostMapping
+    public ResponseEntity<?> criarMaquina(@RequestBody Maquina maquina) {
+        if (maquina.getCodCliente() == null) {
+            return ResponseEntity.badRequest().body("Cliente vinculado é obrigatório.");
+        }
+        if (maquina.getNom_maq() == null || maquina.getNom_maq().isBlank()) {
+            return ResponseEntity.badRequest().body("Número da máquina é obrigatório.");
+        }
+        if (!clienteRepository.existsById(Long.valueOf(maquina.getCodCliente()))) {
+            return ResponseEntity.badRequest().body("Cliente informado não existe.");
+        }
+
+        maquina.setId(null); // garante criação (não edição) mesmo se vier algum id
+        if (maquina.getAtivo() == null) {
+            maquina.setAtivo(true);
+        }
+
+        Maquina salva = maquinaRepository.save(maquina);
+        return ResponseEntity.ok(salva);
     }
 } 
