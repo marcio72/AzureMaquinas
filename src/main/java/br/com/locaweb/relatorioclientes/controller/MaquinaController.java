@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,7 +30,7 @@ public class MaquinaController {
 
     @GetMapping("/por-cliente/{codCliente}")
     public List<Maquina> listarPorCliente(@PathVariable Integer codCliente) {
-        return maquinaRepository.findByCodCliente(codCliente);
+        return maquinaRepository.findByCodClienteAndAtivoTrue(codCliente);
     }
     @Autowired
     private ClienteRepository clienteRepository;
@@ -61,5 +62,18 @@ public class MaquinaController {
 
         Maquina salva = maquinaRepository.save(maquina);
         return ResponseEntity.ok(salva);
+    }
+
+    // Endpoint PATCH: desativa (soft delete) uma máquina via app Android.
+    // Mantém o histórico de solicitações vinculadas, diferente de um delete físico.
+    @PatchMapping("/{id}/desativar")
+    public ResponseEntity<?> desativarMaquina(@PathVariable Integer id) {
+        return maquinaRepository.findById(id)
+                .map(maquina -> {
+                    maquina.setAtivo(false);
+                    maquinaRepository.save(maquina);
+                    return ResponseEntity.noContent().build();
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 } 

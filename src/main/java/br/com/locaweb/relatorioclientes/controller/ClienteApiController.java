@@ -37,4 +37,38 @@ public class ClienteApiController {
         Cliente salvo = clienteRepository.save(cliente);
         return ResponseEntity.ok(salvo);
     }
+
+    // Endpoint PUT: edita um cliente existente via app Android (JSON)
+    @PutMapping("/{id}")
+    public ResponseEntity<?> editarCliente(@PathVariable Long id, @RequestBody Cliente dadosAtualizados) {
+        if (dadosAtualizados.getNomCliente() == null || dadosAtualizados.getNomCliente().isBlank()) {
+            return ResponseEntity.badRequest().body("Nome do cliente é obrigatório.");
+        }
+
+        return clienteRepository.findById(id)
+                .map(clienteExistente -> {
+                    clienteExistente.setNomCliente(dadosAtualizados.getNomCliente().toUpperCase());
+                    clienteExistente.setTelefone(dadosAtualizados.getTelefone());
+                    clienteExistente.setContato(dadosAtualizados.getContato());
+                    clienteExistente.setLogradouro(dadosAtualizados.getLogradouro());
+                    clienteExistente.setBairro(dadosAtualizados.getBairro());
+                    clienteExistente.setRegiao(dadosAtualizados.getRegiao());
+                    Cliente atualizado = clienteRepository.save(clienteExistente);
+                    return ResponseEntity.ok(atualizado);
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    // Endpoint PATCH: desativa (soft delete) um cliente via app Android.
+    // Mantém o histórico de solicitações vinculadas, diferente de um delete físico.
+    @PatchMapping("/{id}/desativar")
+    public ResponseEntity<?> desativarCliente(@PathVariable Long id) {
+        return clienteRepository.findById(id)
+                .map(cliente -> {
+                    cliente.setAtivo(false);
+                    clienteRepository.save(cliente);
+                    return ResponseEntity.noContent().build();
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
 }

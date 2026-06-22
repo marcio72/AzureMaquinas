@@ -16,6 +16,8 @@ public interface MaquinaRepository extends JpaRepository<Maquina, Long> {
 	 
 	List<Maquina> findByCodCliente(Integer codCliente);
 
+	List<Maquina> findByCodClienteAndAtivoTrue(Integer codCliente);
+
 	Optional<Maquina> findById(Integer id);
     
     @Query("""
