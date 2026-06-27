@@ -21,21 +21,15 @@
 
 		* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
 
-		body {
-			background-color: var(--bg-body);
-			color: var(--text-white);
-			padding: 15px;
-		}
+		body { background-color: var(--bg-body); color: var(--text-white); padding: 15px; }
 
 		.container { max-width: 850px; margin: 0 auto; }
 
-		/* NAVEGAÇÃO / BREADCRUMB */
 		header { margin-bottom: 25px; }
 		.breadcrumb { font-size: 12px; color: var(--text-gray); margin-bottom: 10px; list-style: none; display: flex; gap: 5px; }
 		.breadcrumb a { color: var(--primary-green); text-decoration: none; }
 		.page-title { font-size: 22px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
 
-		/* CARD DO FORMULÁRIO */
 		.card-custom {
 			background: var(--bg-card);
 			border-radius: 24px;
@@ -52,15 +46,16 @@
 		.btn-secondary-custom { background: rgba(255,255,255,0.05); color: var(--text-white); }
 		.btn-blue-soft { background: rgba(61, 139, 255, 0.1); color: var(--accent-blue); border: 1px solid rgba(61, 139, 255, 0.2); }
 
-		/* GRID DO FORMULÁRIO */
 		.form-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 20px; }
 		.col-span-12 { grid-column: span 12; }
-		.col-span-6 { grid-column: span 12; }
-		.col-span-4 { grid-column: span 12; }
+		.col-span-6  { grid-column: span 12; }
+		.col-span-4  { grid-column: span 12; }
+		.col-span-3  { grid-column: span 12; }
 
 		@media (min-width: 768px) {
 			.col-span-6 { grid-column: span 6; }
 			.col-span-4 { grid-column: span 4; }
+			.col-span-3 { grid-column: span 3; }
 		}
 
 		.form-group { display: flex; flex-direction: column; gap: 8px; }
@@ -77,10 +72,24 @@
 			transition: 0.3s;
 			width: 100%;
 		}
-
 		input:focus, select:focus { border-color: var(--primary-green); box-shadow: 0 0 10px rgba(30, 228, 172, 0.1); }
 
-		/* AÇÕES FINAIS */
+		/* Preview da numeração gerada */
+		.preview-box {
+			background: rgba(30, 228, 172, 0.05);
+			border: 1px solid rgba(30, 228, 172, 0.2);
+			border-radius: 10px;
+			padding: 12px 15px;
+			font-size: 13px;
+			color: var(--primary-green);
+			min-height: 44px;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			flex-wrap: wrap;
+		}
+		.preview-label { font-size: 11px; font-weight: 600; color: var(--text-gray); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: block; }
+
 		.footer-actions {
 			margin-top: 30px;
 			display: flex;
@@ -105,15 +114,12 @@
 			transition: 0.3s;
 		}
 		.btn-save:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(30, 228, 172, 0.3); }
-
 		.btn-link-cancel { color: var(--text-gray); text-decoration: none; font-size: 14px; font-weight: 500; }
 		.btn-link-cancel:hover { color: var(--text-white); }
-	
 	</style>
 </head>
 
 <body>
-
 <div class="container">
 	<header>
 		<ul class="breadcrumb">
@@ -123,7 +129,7 @@
 		</ul>
 		<h1 class="page-title"><span>📦</span> Cadastrar Novo Lote</h1>
 	</header>
-	
+
 	<div class="card-custom">
 		<div class="top-actions">
 			<a href="/lotes" class="btn-mini btn-secondary-custom">
@@ -133,10 +139,10 @@
 				<i class="bi bi-journal"></i> Categorias
 			</a>
 		</div>
-		
+
 		<form th:action="@{/lotes/salvar}" th:object="${lote}" method="post">
 			<div class="form-grid">
-				
+
 				<div class="form-group col-span-6">
 					<label>Categoria</label>
 					<select th:field="*{categoria}" required>
@@ -146,39 +152,55 @@
 								th:text="${cat.nome}"></option>
 					</select>
 				</div>
-				
+
 				<div class="form-group col-span-6">
 					<label>Fornecedor</label>
 					<input type="text" th:field="*{fornecedor}" required placeholder="Nome do fornecedor">
 				</div>
-				
-				<div class="form-group col-span-4">
+
+				<div class="form-group col-span-3">
 					<label>Alias (Prefixo)</label>
-					<input type="text" th:field="*{alias}" required placeholder="Ex: SBF">
+					<input type="text" id="aliasInput" th:field="*{alias}" required placeholder="Ex: SBF" oninput="atualizarPreview()">
 				</div>
-				
-				<div class="form-group col-span-4">
+
+				<div class="form-group col-span-3">
+					<label>Número Inicial</label>
+					<input type="number" id="numeroInicialInput" name="numeroInicial"
+						   min="1" required placeholder="Ex: 45"
+						   oninput="atualizarPreview()">
+				</div>
+
+				<div class="form-group col-span-3">
+					<label>Qtd Comprada</label>
+					<input type="number" id="qtdInput" th:field="*{quantidadeComprada}"
+						   min="1" required oninput="atualizarPreview()">
+				</div>
+
+				<div class="form-group col-span-3">
 					<label>Código do Lote</label>
 					<input type="text" th:field="*{codigo}" placeholder="Opcional">
 				</div>
-				
-				<div class="form-group col-span-4">
-					<label>Qtd Comprada</label>
-					<input type="number" th:field="*{quantidadeComprada}" min="1" required>
+
+				<!-- Preview da numeração -->
+				<div class="col-span-12">
+					<span class="preview-label">📋 Preview das peças que serão geradas</span>
+					<div class="preview-box" id="previewBox">
+						Preencha Alias, Número Inicial e Quantidade para visualizar...
+					</div>
 				</div>
-				
+
 				<div class="form-group col-span-12">
 					<label>Descrição Detalhada</label>
 					<input type="text" th:field="*{descricao}" required placeholder="Informe os detalhes do lote">
 				</div>
-				
+
 				<div class="form-group col-span-4">
 					<label>Data de Entrada</label>
 					<input type="date" th:field="*{dataEntrada}" required>
 				</div>
-			
+
 			</div>
-			
+
 			<div class="footer-actions">
 				<a href="/lotes" class="btn-link-cancel">Cancelar</a>
 				<button type="submit" class="btn-save">
@@ -188,6 +210,40 @@
 		</form>
 	</div>
 </div>
+
+<script>
+	function atualizarPreview() {
+		const alias     = document.getElementById('aliasInput').value.trim().toUpperCase();
+		const inicio    = parseInt(document.getElementById('numeroInicialInput').value);
+		const qtd       = parseInt(document.getElementById('qtdInput').value);
+		const preview   = document.getElementById('previewBox');
+
+		if (!alias || isNaN(inicio) || isNaN(qtd) || inicio <= 0 || qtd <= 0) {
+			preview.textContent = 'Preencha Alias, Número Inicial e Quantidade para visualizar...';
+			preview.style.color = 'var(--text-gray)';
+			return;
+		}
+
+		const MAX_SHOW = 6;
+		let codigos = [];
+		for (let i = 0; i < qtd; i++) {
+			const num = String(inicio + i).padStart(4, '0');
+			codigos.push(alias + '-' + num);
+		}
+
+		let texto = '';
+		if (codigos.length <= MAX_SHOW) {
+			texto = codigos.join('  •  ');
+		} else {
+			const primeiros = codigos.slice(0, 3).join('  •  ');
+			const ultimo    = codigos[codigos.length - 1];
+			texto = primeiros + '  •  ...  •  ' + ultimo + '  (' + qtd + ' peças)';
+		}
+
+		preview.textContent = texto;
+		preview.style.color = 'var(--primary-green)';
+	}
+</script>
 
 </body>
 </html>
