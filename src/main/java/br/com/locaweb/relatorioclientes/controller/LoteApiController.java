@@ -1,8 +1,8 @@
 package br.com.locaweb.relatorioclientes.controller;
 
+import br.com.locaweb.relatorioclientes.dto.PecaDetalheDTO;
 import br.com.locaweb.relatorioclientes.model.Categoria;
 import br.com.locaweb.relatorioclientes.model.Lote;
-import br.com.locaweb.relatorioclientes.model.Peca;
 import br.com.locaweb.relatorioclientes.repository.CategoriaRepository;
 import br.com.locaweb.relatorioclientes.repository.LoteRepository;
 import br.com.locaweb.relatorioclientes.repository.PecaRepository;
@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/lotes")
@@ -47,19 +48,22 @@ public class LoteApiController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // GET /api/lotes/{id}/pecas
+    // GET /api/lotes/{id}/pecas — retorna PecaDetalheDTO com cliente e máquina
     @GetMapping("/{id}/pecas")
-    public ResponseEntity<List<Peca>> listarPecasDoLote(@PathVariable Long id) {
+    public ResponseEntity<List<PecaDetalheDTO>> listarPecasDoLote(@PathVariable Long id) {
         if (!loteRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(pecaRepository.findAllByLoteIdLote(id));
+        List<PecaDetalheDTO> pecas = pecaRepository.findAllByLoteIdLote(id)
+                .stream()
+                .map(PecaDetalheDTO::from)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(pecas);
     }
 
     // POST /api/lotes
     @PostMapping
     public ResponseEntity<?> criarLote(@RequestBody LoteRequestDTO dto) {
-
         if (dto.getCategoriaId() == null)
             return ResponseEntity.badRequest().body("categoriaId é obrigatório.");
         if (dto.getQuantidadeComprada() == null || dto.getQuantidadeComprada() <= 0)
@@ -82,7 +86,6 @@ public class LoteApiController {
         lote.setQuantidadeComprada(dto.getQuantidadeComprada());
         lote.setDataEntrada(dto.getDataEntrada() != null ? dto.getDataEntrada() : LocalDate.now());
 
-        // Usa o número inicial definido pelo usuário
         Lote salvo = loteService.salvarLoteComPecas(lote, dto.getNumeroInicial());
         return ResponseEntity.ok(salvo);
     }
@@ -95,24 +98,23 @@ public class LoteApiController {
         private String descricao;
         private Integer quantidadeComprada;
         private LocalDate dataEntrada;
-        /** Número inicial da sequência. Ex.: 45 → gera alias-0045, alias-0046... */
         private Integer numeroInicial;
 
-        public Long getCategoriaId() { return categoriaId; }
-        public void setCategoriaId(Long categoriaId) { this.categoriaId = categoriaId; }
-        public String getAlias() { return alias; }
-        public void setAlias(String alias) { this.alias = alias; }
-        public String getFornecedor() { return fornecedor; }
-        public void setFornecedor(String fornecedor) { this.fornecedor = fornecedor; }
-        public String getCodigo() { return codigo; }
-        public void setCodigo(String codigo) { this.codigo = codigo; }
-        public String getDescricao() { return descricao; }
-        public void setDescricao(String descricao) { this.descricao = descricao; }
-        public Integer getQuantidadeComprada() { return quantidadeComprada; }
-        public void setQuantidadeComprada(Integer q) { this.quantidadeComprada = q; }
-        public LocalDate getDataEntrada() { return dataEntrada; }
-        public void setDataEntrada(LocalDate d) { this.dataEntrada = d; }
-        public Integer getNumeroInicial() { return numeroInicial; }
-        public void setNumeroInicial(Integer n) { this.numeroInicial = n; }
+        public Long getCategoriaId()          { return categoriaId; }
+        public void setCategoriaId(Long v)    { this.categoriaId = v; }
+        public String getAlias()              { return alias; }
+        public void setAlias(String v)        { this.alias = v; }
+        public String getFornecedor()         { return fornecedor; }
+        public void setFornecedor(String v)   { this.fornecedor = v; }
+        public String getCodigo()             { return codigo; }
+        public void setCodigo(String v)       { this.codigo = v; }
+        public String getDescricao()          { return descricao; }
+        public void setDescricao(String v)    { this.descricao = v; }
+        public Integer getQuantidadeComprada(){ return quantidadeComprada; }
+        public void setQuantidadeComprada(Integer v){ this.quantidadeComprada = v; }
+        public LocalDate getDataEntrada()     { return dataEntrada; }
+        public void setDataEntrada(LocalDate v){ this.dataEntrada = v; }
+        public Integer getNumeroInicial()     { return numeroInicial; }
+        public void setNumeroInicial(Integer v){ this.numeroInicial = v; }
     }
 }
