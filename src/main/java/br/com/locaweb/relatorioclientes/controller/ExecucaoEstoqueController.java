@@ -20,7 +20,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.text.Normalizer;
 import java.util.List;
 
 @RestController
@@ -47,7 +46,6 @@ public class ExecucaoEstoqueController {
         final String separador = "-----------------------\n";
         String nomeCliente = null;
         String tecnicoFinal = null;
-        boolean teveTrocaOuLeitura = false;
         
         StringBuilder msg = new StringBuilder();
         msg.append("MANUTENCAO EFETUADA\n");
@@ -92,54 +90,37 @@ public class ExecucaoEstoqueController {
                 tecnicoFinal = dto.getTecnico().trim();
             }
             
-            // Lógica de busca de texto (Normalização)
             String maq = (problema.getMaquina() != null) ? problema.getMaquina().getNom_maq() : "N/I";
             msg.append("Máquina: ").append(maq).append("\n");
-
-// Normalização mais forte
-            String descRaw = dto.getDescricao() != null ? dto.getDescricao() : "";
             
-            String busca = Normalizer.normalize(descRaw, Normalizer.Form.NFD)
-                                   .replaceAll("\\p{M}", "")
-                                   .toUpperCase()
-                                   .replaceAll("[^A-Z0-9\\s]", " ")
-                                   .replaceAll("\\s+", " ")
-                                   .trim();
+            // Sempre envia a descrição real informada pelo técnico (sem filtro de palavras-chave)
+            String descRaw = dto.getDescricao() != null ? dto.getDescricao().trim() : "";
+            if (!descRaw.isBlank()) {
+                msg.append(descRaw).append("\n");
+            }
             
-            System.out.println("DESC RAW: [" + descRaw + "]");
-            System.out.println("BUSCA: [" + busca + "]");
-            
-            if (busca.matches(".*\\bTROCA\\b.*") || busca.contains("LEITURA FINAL")) {
-                teveTrocaOuLeitura = true;
-                msg.append("\n").append(descRaw).append("\n");
-                
-                if (dto.getPecasUsadas() != null && !dto.getPecasUsadas().isEmpty()) {
-                    msg.append("Peças: ");
-                    for (Long id : dto.getPecasUsadas()) {
-                        pecaRepository.findById(id)
-                                .ifPresent(p -> msg.append(p.getCodigo()).append(" "));
-                    }
-                    // msg.append("\n");
+            // Sempre lista as peças usadas, se houver
+            if (dto.getPecasUsadas() != null && !dto.getPecasUsadas().isEmpty()) {
+                msg.append("Peças: ");
+                for (Long id : dto.getPecasUsadas()) {
+                    pecaRepository.findById(id)
+                            .ifPresent(p -> msg.append(p.getCodigo()).append(" "));
                 }
-            } else {
-                msg.append("MAQUINA OK\n");
+                msg.append("\n");
             }
             
             msg.append("\n");
         }
-            if (!teveTrocaOuLeitura) {
-                // Se quiser manter o comportamento original de aviso extra
-            }
-            
-            msg.append(separador);
-            msg.append("Técnico: ").append(tecnicoFinal != null ? tecnicoFinal : "N/I");
-            
-            try {
-                signalService.enviarMensagemGrupo(msg.toString().trim());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            
-            return ResponseEntity.ok("Sucesso");
+        
+        msg.append(separador);
+        msg.append("Técnico: ").append(tecnicoFinal != null ? tecnicoFinal : "N/I");
+        
+        try {
+            signalService.enviarMensagemGrupo(msg.toString().trim());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        
+        return ResponseEntity.ok("Sucesso");
+    }
 }

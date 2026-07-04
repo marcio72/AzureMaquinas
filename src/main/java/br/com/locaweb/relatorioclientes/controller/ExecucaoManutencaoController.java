@@ -33,15 +33,15 @@ import org.springframework.ui.Model;
 @Controller
 @RequestMapping("/execucao")
 public class ExecucaoManutencaoController {
-	
-	    @Autowired
-	    private ExecucaoManutencaoRepository execucaoRepo;
-
-	    @Autowired
-	    private SolicitacaoManutencaoRepository solicitacaoRepo;
-	    
-	    @Autowired
-	    private ProblemaRepository problemaRepository;
+    
+    @Autowired
+    private ExecucaoManutencaoRepository execucaoRepo;
+    
+    @Autowired
+    private SolicitacaoManutencaoRepository solicitacaoRepo;
+    
+    @Autowired
+    private ProblemaRepository problemaRepository;
 
 
 	   /* @GetMapping("/nova/{idSolicitacao}")
@@ -52,66 +52,66 @@ public class ExecucaoManutencaoController {
 	        model.addAttribute("execucao", execucao);
 	        return "form_execucao";
 	    }*/
-
-	    @PostMapping("/salvar")
-	    public String salvar(@ModelAttribute ExecucaoManutencao execucao) {
-	        execucao.setDataExecucao(LocalDateTime.now());
-
-	        // Atualiza status da solicitação para 'false' (resolvida)
-	        SolicitacaoManutencao solicitacao = execucao.getSolicitacaoManutencao();
-	        solicitacao.setStatus(false);
-	        solicitacaoRepo.save(solicitacao);
-
-	        execucaoRepo.save(execucao);
-	        return "redirect:/solicitacoes"; // ou outra tela de confirmação
-	    }
-	    
-	    @GetMapping("/nova/{idSolicitacao}")
-	    public String novaExecucao(@PathVariable Long idSolicitacao, Model model) {
-	        SolicitacaoManutencao solicitacao = solicitacaoRepo.findById(idSolicitacao).orElseThrow();
-
-	        // Força o carregamento do cliente
-	        solicitacao.getCliente().getNomCliente();
-
-	        ExecucaoManutencao execucao = new ExecucaoManutencao();
-	        execucao.setSolicitacaoManutencao(solicitacao);
-
-	        model.addAttribute("execucao", execucao);
-	        return "form_execucao";
-	    }
-	    
-	    @PostMapping("/execucao")
-	    @Transactional // 2. ADICIONAR ESTA ANOTAÇÃO
-	    public ResponseEntity<?> registrarExecucao(@RequestBody List<ExecucaoRequestDTO> execucoes) {
-	        if (execucoes == null || execucoes.isEmpty()) {
-	            return ResponseEntity.badRequest().body("A lista de execuções não pode ser vazia.");
-	        }
-
-	        // Pega o ID da solicitação do primeiro item (todos devem pertencer à mesma solicitação)
-	        Long solicitacaoId = execucoes.get(0).getSolicitacaoId();
-	        SolicitacaoManutencao solicitacao = solicitacaoRepo.findById(solicitacaoId)
-	                .orElseThrow(() -> new RuntimeException("Solicitação com ID " + solicitacaoId + " não encontrada."));
-
-	        for (ExecucaoRequestDTO dto : execucoes) {
-	            ProblemaMaquina problema = problemaRepository.findById(dto.getProblemaId())
-	                    .orElseThrow(() -> new RuntimeException("Problema com ID " + dto.getProblemaId() + " não encontrado."));
-
-	            ExecucaoManutencao execucao = new ExecucaoManutencao();
-	            execucao.setProblema(problema);
-	            execucao.setSolicitacaoManutencao(solicitacao); 
-	           
-	            execucao.setDataExecucao(dto.getDataExecucao());
-	            execucao.setTecnico(dto.getTecnico());
-	            execucao.setDescricao(dto.getDescricao());
-
-	            execucaoRepo.save(execucao);
-	        }
-
-	        // Atualiza o status da solicitação para 'false' (resolvida)
-	        solicitacao.setStatus(false);
-	        solicitacaoRepo.save(solicitacao);
-
-	        return ResponseEntity.ok().build();
-	    }
-	}
+    
+    @PostMapping("/salvar")
+    public String salvar(@ModelAttribute ExecucaoManutencao execucao) {
+        execucao.setDataExecucao(LocalDateTime.now());
+        
+        // Atualiza status da solicitação para 'false' (resolvida)
+        SolicitacaoManutencao solicitacao = execucao.getSolicitacaoManutencao();
+        solicitacao.setStatus(false);
+        solicitacaoRepo.save(solicitacao);
+        
+        execucaoRepo.save(execucao);
+        return "redirect:/solicitacoes"; // ou outra tela de confirmação
+    }
+    
+    @GetMapping("/nova/{idSolicitacao}")
+    public String novaExecucao(@PathVariable Long idSolicitacao, Model model) {
+        SolicitacaoManutencao solicitacao = solicitacaoRepo.findById(idSolicitacao).orElseThrow();
+        
+        // Força o carregamento do cliente
+        solicitacao.getCliente().getNomCliente();
+        
+        ExecucaoManutencao execucao = new ExecucaoManutencao();
+        execucao.setSolicitacaoManutencao(solicitacao);
+        
+        model.addAttribute("execucao", execucao);
+        return "form_execucao";
+    }
+    
+    @PostMapping("/execucao")
+    @Transactional // 2. ADICIONAR ESTA ANOTAÇÃO
+    public ResponseEntity<?> registrarExecucao(@RequestBody List<ExecucaoRequestDTO> execucoes) {
+        if (execucoes == null || execucoes.isEmpty()) {
+            return ResponseEntity.badRequest().body("A lista de execuções não pode ser vazia.");
+        }
+        
+        // Pega o ID da solicitação do primeiro item (todos devem pertencer à mesma solicitação)
+        Long solicitacaoId = execucoes.get(0).getSolicitacaoId();
+        SolicitacaoManutencao solicitacao = solicitacaoRepo.findById(solicitacaoId)
+                                                    .orElseThrow(() -> new RuntimeException("Solicitação com ID " + solicitacaoId + " não encontrada."));
+        
+        for (ExecucaoRequestDTO dto : execucoes) {
+            ProblemaMaquina problema = problemaRepository.findById(dto.getProblemaId())
+                                               .orElseThrow(() -> new RuntimeException("Problema com ID " + dto.getProblemaId() + " não encontrado."));
+            
+            ExecucaoManutencao execucao = new ExecucaoManutencao();
+            execucao.setProblema(problema);
+            execucao.setSolicitacaoManutencao(solicitacao);
+            
+            execucao.setDataExecucao(dto.getDataExecucao());
+            execucao.setTecnico(dto.getTecnico());
+            execucao.setDescricao(dto.getDescricao());
+            
+            execucaoRepo.save(execucao);
+        }
+        
+        // Atualiza o status da solicitação para 'false' (resolvida)
+        solicitacao.setStatus(false);
+        solicitacaoRepo.save(solicitacao);
+        
+        return ResponseEntity.ok().build();
+    }
+}
 

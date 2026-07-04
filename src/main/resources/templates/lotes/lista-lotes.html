@@ -102,11 +102,46 @@
 		}
  
 		/* BADGES E ÍCONES */
-		.qty-badge { background: #081418; padding: 4px 10px; border-radius: 8px; font-weight: 700; color: var(--primary-green); border: 1px solid rgba(30, 228, 172, 0.2); }
+		.qty-badge { padding: 4px 10px; border-radius: 8px; font-weight: 700; border: 1px solid; }
+		.qty-badge.qty-zero { background: rgba(255, 77, 77, 0.12); color: #ff4d4d; border-color: rgba(255, 77, 77, 0.3); }
+		.qty-badge.qty-partial { background: rgba(255, 176, 32, 0.12); color: #ffb020; border-color: rgba(255, 176, 32, 0.3); }
+		.qty-badge.qty-full { background: #081418; color: var(--primary-green); border-color: rgba(30, 228, 172, 0.2); }
 		.btn-action { background: var(--accent-blue); color: white; padding: 8px 16px; border-radius: 10px; text-decoration: none; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; width: 100%; justify-content: center; }
 		@media (min-width: 768px) { .btn-action { width: auto; } }
 		.btn-action:hover { filter: brightness(1.1); box-shadow: 0 4px 12px rgba(61, 139, 255, 0.3); }
-	
+
+		/* PAGINAÇÃO */
+		.pagination-bar {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 10px;
+			flex-wrap: wrap;
+			margin-top: 18px;
+			padding-top: 15px;
+			border-top: 1px solid var(--border-color);
+		}
+		.pagination-info { font-size: 12px; color: var(--text-gray); }
+		.pagination-controls { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+		.page-btn {
+			background: #081418;
+			border: 1px solid var(--border-color);
+			color: var(--text-white);
+			min-width: 34px;
+			height: 34px;
+			border-radius: 8px;
+			font-size: 13px;
+			font-weight: 600;
+			cursor: pointer;
+			transition: 0.2s;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			padding: 0 8px;
+		}
+		.page-btn:hover:not(:disabled) { border-color: var(--primary-green); color: var(--primary-green); }
+		.page-btn.active { background: var(--primary-green); color: #081418; border-color: var(--primary-green); }
+		.page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 	</style>
 </head>
 
@@ -132,8 +167,8 @@
 	
 	<div class="controls-panel">
 		<div class="control-group">
-			<label>🔍 Buscar Fornecedor</label>
-			<input type="text" id="vendorSearch" placeholder="Digite o nome do fornecedor..." onkeyup="filterTable()">
+			<label>🔍 Buscar Descrição</label>
+			<input type="text" id="vendorSearch" placeholder="Digite a descrição..." onkeyup="filterTable()">
 		</div>
 		<div class="control-group">
 			<label>📂 Filtrar Categoria</label>
@@ -151,7 +186,7 @@
 				<tr>
 					<th>ID</th>
 					<th>Categoria</th>
-					<th>Fornecedor</th>
+					<th>Descrição</th>
 					<th>Qtd Comprada</th>
 					<th>Qtd Atual</th>
 					<th>Data Entrada</th>
@@ -162,10 +197,12 @@
 				<tr th:each="lote : ${lotes}" th:data-category="${lote.categoria.nome}">
 					<td data-label="ID" th:text="${lote.idLote}" style="font-family: monospace; font-weight: bold;"></td>
 					<td data-label="Categoria"><strong th:text="${lote.categoria.nome}"></strong></td>
-					<td data-label="Fornecedor" class="vendor-cell" th:text="${lote.fornecedor}"></td>
+					<td data-label="Descrição" class="vendor-cell" th:text="${lote.descricao}"></td>
 					<td data-label="Qtd Comprada" th:text="${lote.quantidadeComprada}"></td>
 					<td data-label="Qtd Atual">
-						<span class="qty-badge" th:text="${lote.quantidadeAtual}"></span>
+						<span class="qty-badge"
+							  th:classappend="${lote.quantidadeAtual == 0} ? 'qty-zero' : (${lote.quantidadeAtual < lote.quantidadeComprada} ? 'qty-partial' : 'qty-full')"
+							  th:text="${lote.quantidadeAtual}"></span>
 					</td>
 					<td data-label="Data Entrada" th:text="${#temporals.format(lote.dataEntrada, 'dd/MM/yyyy')}"></td>
 					<td data-label="Ações" class="actions-cell" style="text-align: center;">
@@ -177,10 +214,71 @@
 				</tbody>
 			</table>
 		</div>
+
+		<div class="pagination-bar" id="paginationBar">
+			<span class="pagination-info" id="paginationInfo"></span>
+			<div class="pagination-controls" id="paginationControls"></div>
+		</div>
 	</div>
 </div>
 
 <script>
+	const PAGE_SIZE = 10;
+	let currentPage = 1;
+
+	function renderPagination() {
+		const allRows = Array.from(document.querySelectorAll('#lotesTable tbody tr'));
+		const visibleRows = allRows.filter(row => row.dataset.filteredOut !== 'true');
+
+		// Esconde TODAS as linhas primeiro (inclusive as que não bateram no filtro)
+		allRows.forEach(row => { row.style.display = "none"; });
+
+		const totalItems = visibleRows.length;
+		const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+
+		if (currentPage > totalPages) currentPage = totalPages;
+		if (currentPage < 1) currentPage = 1;
+
+		const start = (currentPage - 1) * PAGE_SIZE;
+		const end = start + PAGE_SIZE;
+		// Mostra apenas a fatia da página atual, dentro do conjunto já filtrado
+		visibleRows.slice(start, end).forEach(row => { row.style.display = ""; });
+
+		const info = document.getElementById('paginationInfo');
+		if (totalItems === 0) {
+			info.textContent = "Nenhum lote encontrado";
+		} else {
+			const start = (currentPage - 1) * PAGE_SIZE + 1;
+			const end = Math.min(currentPage * PAGE_SIZE, totalItems);
+			info.textContent = `Mostrando ${start}–${end} de ${totalItems}`;
+		}
+
+		const controls = document.getElementById('paginationControls');
+		controls.innerHTML = '';
+
+		const prevBtn = document.createElement('button');
+		prevBtn.className = 'page-btn';
+		prevBtn.innerHTML = '<i class="bi bi-chevron-left"></i>';
+		prevBtn.disabled = currentPage === 1;
+		prevBtn.onclick = () => { currentPage--; renderPagination(); };
+		controls.appendChild(prevBtn);
+
+		for (let p = 1; p <= totalPages; p++) {
+			const btn = document.createElement('button');
+			btn.className = 'page-btn' + (p === currentPage ? ' active' : '');
+			btn.textContent = p;
+			btn.onclick = () => { currentPage = p; renderPagination(); };
+			controls.appendChild(btn);
+		}
+
+		const nextBtn = document.createElement('button');
+		nextBtn.className = 'page-btn';
+		nextBtn.innerHTML = '<i class="bi bi-chevron-right"></i>';
+		nextBtn.disabled = currentPage === totalPages;
+		nextBtn.onclick = () => { currentPage++; renderPagination(); };
+		controls.appendChild(nextBtn);
+	}
+
 	function filterTable() {
 		const searchValue = document.getElementById('vendorSearch').value.toLowerCase();
 		const categoryValue = document.getElementById('categoryFilter').value;
@@ -193,13 +291,14 @@
 			const matchesSearch = vendorName.includes(searchValue);
 			const matchesCategory = (categoryValue === 'all' || rowCategory === categoryValue);
 
-			if (matchesSearch && matchesCategory) {
-				row.style.display = "";
-			} else {
-				row.style.display = "none";
-			}
+			row.dataset.filteredOut = (matchesSearch && matchesCategory) ? 'false' : 'true';
 		});
+
+		currentPage = 1;
+		renderPagination();
 	}
+
+	document.addEventListener('DOMContentLoaded', renderPagination);
 </script>
 
 </body>
