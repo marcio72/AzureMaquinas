@@ -21,4 +21,7 @@ public class ExecucaoRequestDTO {
 
     // NOVO → peças retiradas do estoque
     private List<Long> pecasUsadas;
+
+    // Foto do que foi feito, enviada em Base64 pelo app (opcional)
+    private String fotoBase64;
 }

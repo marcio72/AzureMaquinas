@@ -40,4 +40,8 @@ public class ExecucaoManutencao {
     
     @Column(name = "pdf_gerado")
     private boolean pdfGerado;
+
+    @Lob
+    @Column(name = "foto", columnDefinition = "LONGBLOB")
+    private byte[] foto;
 }

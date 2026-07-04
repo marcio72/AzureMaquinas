@@ -10,5 +10,8 @@ public class ProblemaDTO {
 	 	private Long numeroMaquina;
 	 	private String maquina;
 	 	private String descricao;
+
+	 	// Foto do problema, enviada em Base64 pelo app (opcional)
+	 	private String fotoBase64;
 }
 

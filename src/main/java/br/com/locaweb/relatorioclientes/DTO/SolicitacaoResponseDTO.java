@@ -55,6 +55,7 @@ public class SolicitacaoResponseDTO {
     	private Long idProblema; // novo campo!
     	private String maquina;
 		private String descricao;
+		private Boolean temFoto; // indica se há foto salva (a imagem em si vem de /api/fotos/problema/{idProblema})
     	public Long getIdProblema() {
 			return idProblema;
 		}
@@ -72,6 +73,12 @@ public class SolicitacaoResponseDTO {
         }
         public void setIdProblema(Long id) {
             this.idProblema = id;
+        }
+        public Boolean getTemFoto() {
+            return temFoto;
+        }
+        public void setTemFoto(Boolean temFoto) {
+            this.temFoto = temFoto;
         }
     }
 	

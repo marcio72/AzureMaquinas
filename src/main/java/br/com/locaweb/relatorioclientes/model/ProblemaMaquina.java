@@ -41,6 +41,10 @@ public class ProblemaMaquina {
     @Column(name = "descricao", length = 1000)
     private String descricao;
 
+    @Lob
+    @Column(name = "foto", columnDefinition = "LONGBLOB")
+    private byte[] foto;
+
     @ManyToOne
     @JoinColumn(name = "id_maquina")
     private Maquina maquina;

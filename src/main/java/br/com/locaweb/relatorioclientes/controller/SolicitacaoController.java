@@ -19,6 +19,7 @@ import br.com.locaweb.relatorioclientes.model.SolicitacaoManutencao;
 import br.com.locaweb.relatorioclientes.repository.SolicitacaoManutencaoRepository;
 import br.com.locaweb.relatorioclientes.repository.ClienteRepository;
 import br.com.locaweb.relatorioclientes.repository.MaquinaRepository;
+import br.com.locaweb.relatorioclientes.service.FotoStorageService;
 
 @RestController
 @RequestMapping("/api/solicitacao")
@@ -32,6 +33,8 @@ public class SolicitacaoController {
     private MaquinaRepository maquinaRepository;
     @Autowired
     private SolicitacaoManutencaoRepository solicitacaoRepo;
+    @Autowired
+    private FotoStorageService fotoStorageService;
     
     
     
@@ -59,6 +62,7 @@ public class SolicitacaoController {
             problema.setDescricao(p.getDescricao());
             problema.setMaquina(maquinaRepository.findById(p.getNumeroMaquina()).orElseThrow());
             problema.setSolicitacao(solicitacao);
+            problema.setFoto(fotoStorageService.decodificarBase64(p.getFotoBase64()));
             return problema;
         }).collect(Collectors.toList());
         solicitacao.setProblemas(problemas);
@@ -167,6 +171,7 @@ public class SolicitacaoController {
                 problemaDTO.setMaquina(p.getMaquina().getNom_maq() + " - " + p.getMaquina().getNom_jogo());
                 problemaDTO.setDescricao(p.getDescricao());
                 problemaDTO.setIdProblema(p.getId());
+                problemaDTO.setTemFoto(p.getFoto() != null && p.getFoto().length > 0);
                 return problemaDTO;
             }).collect(Collectors.toList());
             dto.setProblemas(problemas);
