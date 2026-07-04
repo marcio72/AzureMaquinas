@@ -63,17 +63,13 @@ public class SolicitacaoController {
         }).collect(Collectors.toList());
         solicitacao.setProblemas(problemas);
         solicitacaoRepo.save(solicitacao);
-        // 🔥 MONTAR MENSAGEM PARA O SIGNAL
+        // 🔥 MONTAR MENSAGEM PARA O SIGNAL (lista todas as máquinas/problemas da solicitação)
         try {
-            ProblemaMaquina p = problemas.get(0);
             String clienteNome = solicitacao.getCliente().getNomCliente();
-            String maquinaNumero = p.getMaquina().getNom_maq();
-            String jogo = p.getMaquina().getNom_jogo();
-            String problemaDesc = p.getDescricao();
             // CAPTURAR O NOME DO TÉCNICO PELA SESSÃO (LOGIN)
             Object usuarioSessao = session.getAttribute("usuarioLogado");
             String tecnico = "Sistema"; // Valor padrão caso não encontre
-            
+
             if (usuarioSessao != null) {
                 // Verifica se o objeto na sessão é realmente um Usuario
                 if (usuarioSessao instanceof Usuario) {
@@ -84,15 +80,25 @@ public class SolicitacaoController {
                     tecnico = usuarioSessao.toString();
                 }
             }
+
+            StringBuilder maquinasBlock = new StringBuilder();
+            for (ProblemaMaquina p : problemas) {
+                String maquinaNumero = p.getMaquina().getNom_maq();
+                String jogo = p.getMaquina().getNom_jogo();
+                String problemaDesc = p.getDescricao();
+                maquinasBlock.append("Maq. ").append(maquinaNumero).append(" - ").append(jogo).append("\n");
+                maquinasBlock.append(problemaDesc).append("\n\n");
+            }
+
             String mensagemSignal =
                     "-------- CHAMADO ---------\n" +
                     clienteNome + "\n" +
-                    "Maq. " + maquinaNumero + " - " + jogo + "\n" +
-                    problemaDesc + "\n" +
+                    "\n" +
+                    maquinasBlock.toString().trim() + "\n" +
                     "---------------------------" + "\n" +
                     "Resp.: " + tecnico + "\n";
-            
-            
+
+
             // 🔥 ENVIAR PARA O GRUPO
             signalService.enviarMensagemGrupo(mensagemSignal);
         } catch (Exception e) {
