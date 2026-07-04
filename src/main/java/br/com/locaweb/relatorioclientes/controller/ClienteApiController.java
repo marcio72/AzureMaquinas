@@ -16,10 +16,25 @@ public class ClienteApiController {
     @Autowired
     private ClienteRepository clienteRepository;
 
-    // Endpoint GET: retorna todos os clientes ativos como JSON
+    // Endpoint GET: retorna os clientes ativos como JSON, filtrados pelo leiturista do usuário logado.
+    // Regras:
+    //  - leiturista nulo, 0 ou 10  -> vê todos os clientes (admin/supervisão)
+    //  - leiturista 1              -> vê clientes com leiturista 1 ou 4
+    //  - qualquer outro valor N    -> vê SOMENTE os próprios clientes (leiturista = N)
     @GetMapping
-    public List<Cliente> listarClientesAtivos() {
-        return clienteRepository.findByAtivoTrueOrderByCodClienteDesc();
+    public List<Cliente> listarClientesAtivos(@RequestParam(required = false) Integer leiturista) {
+        if (leiturista == null || leiturista == 0 || leiturista == 10) {
+            return clienteRepository.findByAtivoTrueOrderByCodClienteDesc();
+        }
+
+        List<Integer> leituristasPermitidos;
+        if (leiturista == 1) {
+            leituristasPermitidos = java.util.List.of(1, 4);
+        } else {
+            leituristasPermitidos = java.util.List.of(leiturista);
+        }
+
+        return clienteRepository.findByLeituristaInAndAtivoTrueOrderByCodClienteDesc(leituristasPermitidos);
     }
 
     // Endpoint POST: cria um novo cliente via app Android (JSON)
