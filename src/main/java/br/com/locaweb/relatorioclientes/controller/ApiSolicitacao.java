@@ -134,6 +134,7 @@ public class ApiSolicitacao {
                                               dto.setDescricao(exec.getDescricao());
                                               dto.setDataExecucao(exec.getDataExecucao());
                                               dto.setPdfGerado(exec.isPdfGerado());
+                                              dto.setTemFoto(exec.getFoto() != null && exec.getFoto().length > 0);
                                               
                                               if (exec.getSolicitacaoManutencao() != null && exec.getSolicitacaoManutencao().getCliente() != null) {
                                                   dto.setNomeCliente(exec.getSolicitacaoManutencao().getCliente().getNomCliente());

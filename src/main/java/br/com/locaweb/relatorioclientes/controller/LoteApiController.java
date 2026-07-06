@@ -1,5 +1,6 @@
 package br.com.locaweb.relatorioclientes.controller;
 
+import br.com.locaweb.relatorioclientes.DTO.PecaResponseDTO;
 import br.com.locaweb.relatorioclientes.model.Categoria;
 import br.com.locaweb.relatorioclientes.model.Lote;
 import br.com.locaweb.relatorioclientes.model.Peca;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/lotes")
@@ -49,11 +51,14 @@ public class LoteApiController {
 
     // GET /api/lotes/{id}/pecas
     @GetMapping("/{id}/pecas")
-    public ResponseEntity<List<Peca>> listarPecasDoLote(@PathVariable Long id) {
+    public ResponseEntity<List<PecaResponseDTO>> listarPecasDoLote(@PathVariable Long id) {
         if (!loteRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(pecaRepository.findAllByLoteIdLote(id));
+        List<PecaResponseDTO> pecas = pecaRepository.findAllByLoteIdLote(id).stream()
+                .map(PecaResponseDTO::fromEntity)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(pecas);
     }
 
     // POST /api/lotes

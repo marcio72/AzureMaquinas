@@ -50,7 +50,11 @@ public class Peca {
     
     
     // Dentro da sua classe Peca
+    // @JsonIgnore evita recursão infinita na serialização JSON (Peca -> movimento -> peca -> ...)
+    // que causava StackOverflowError e erro 500 no endpoint /api/lotes/{id}/pecas usado pelo app Android.
+    // Não afeta o Thymeleaf (web), que acessa os getters diretamente sem passar pelo Jackson.
     @OneToOne(mappedBy = "peca")
+    @JsonIgnore
     private MovimentoEstoque movimento;
 
 

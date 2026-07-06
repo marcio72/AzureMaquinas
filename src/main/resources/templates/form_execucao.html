@@ -151,6 +151,7 @@
       opt.value = p.idProblema;
       opt.text = p.maquina;
       opt.dataset.descricao = p.descricao ?? '';
+      opt.dataset.temFoto = p.temFoto ? '1' : '0';
       maquinas.appendChild(opt);
     });
   }
@@ -165,14 +166,28 @@
 
     const nome = select.selectedOptions[0].text;
     const desc = select.selectedOptions[0].dataset.descricao || '';
+    const temFoto = select.selectedOptions[0].dataset.temFoto === '1';
     const agora = new Date().toISOString().slice(0,16);
 
     const bloco = document.createElement('div');
     bloco.className = "execucao-bloco mb-3 p-3 border rounded bg-light";
     bloco.id = "execucao_" + idProblema;
 
+    const fotoHtml = temFoto ? `
+      <div class="mt-2 mb-2">
+        <label class="form-label small d-block mb-1">
+          <i class="bi bi-camera-fill text-warning"></i> Foto do chamado
+        </label>
+        <a href="/api/fotos/problema/${idProblema}" target="_blank" title="Ver foto em tamanho maior">
+          <img src="/api/fotos/problema/${idProblema}" alt="Foto do chamado"
+               style="max-width: 140px; max-height: 140px; object-fit: cover; border-radius: 8px; border: 1px solid #ccc;">
+        </a>
+      </div>
+    ` : '';
+
     bloco.innerHTML = `
       <label class="fw-bold">${nome}${desc ? ' - <span class="text-danger">' + desc + '</span>' : ''}</label>
+      ${fotoHtml}
 
       <div class="row mt-2">
         <div class="col-md-4">

@@ -99,6 +99,15 @@
     				 <span th:text="${p.descricao}"></span>
   					</span>
 				  </p>
+
+				  <!-- FOTO DO PROBLEMA (se houver) -->
+				  <div th:if="${p.foto != null and p.foto.length > 0}" class="mt-2">
+					  <a th:href="@{'/api/fotos/problema/' + ${p.id}}" target="_blank" title="Ver foto em tamanho maior">
+						  <img th:src="@{'/api/fotos/problema/' + ${p.id}}"
+							   alt="Foto do problema"
+							   style="max-width: 90px; max-height: 90px; object-fit: cover; border-radius: 8px; border: 1px solid #dee2e6;">
+					  </a>
+				  </div>
 			  
 			  </div>
 
