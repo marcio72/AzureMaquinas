@@ -142,6 +142,22 @@
 		.page-btn:hover:not(:disabled) { border-color: var(--primary-green); color: var(--primary-green); }
 		.page-btn.active { background: var(--primary-green); color: #081418; border-color: var(--primary-green); }
 		.page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+		/* SUBFILTRO DE TAMANHO (MONITORES) */
+		.size-chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+		.size-chip {
+			background: #081418;
+			border: 1px solid var(--border-color);
+			color: var(--text-gray);
+			padding: 8px 16px;
+			border-radius: 20px;
+			font-size: 13px;
+			font-weight: 600;
+			cursor: pointer;
+			transition: 0.2s;
+		}
+		.size-chip:hover { border-color: rgba(30, 228, 172, 0.4); }
+		.size-chip.active { background: rgba(30, 228, 172, 0.12); color: var(--primary-green); border-color: var(--primary-green); }
 	</style>
 </head>
 
@@ -172,10 +188,24 @@
 		</div>
 		<div class="control-group">
 			<label>📂 Filtrar Categoria</label>
-			<select id="categoryFilter" onchange="filterTable()">
+			<select id="categoryFilter" onchange="onCategoryChange()">
 				<option value="all">Todas as Categorias</option>
 				<option th:each="cat : ${categorias}" th:value="${cat.nome}" th:text="${cat.nome}"></option>
 			</select>
+		</div>
+	</div>
+
+	<div class="controls-panel" id="monitorSizePanel" style="display:none;">
+		<div class="control-group" style="min-width: unset; flex: 0 0 auto;">
+			<label>📐 Modelo (Tamanho)</label>
+			<div class="size-chip-row" id="monitorSizeChips">
+				<button type="button" class="size-chip active" data-size="all" onclick="selectMonitorSize('all')">Todos</button>
+				<button type="button" class="size-chip" data-size="15" onclick="selectMonitorSize('15')">15 Pol.</button>
+				<button type="button" class="size-chip" data-size="17" onclick="selectMonitorSize('17')">17 Pol.</button>
+				<button type="button" class="size-chip" data-size="18" onclick="selectMonitorSize('18')">18 Pol.</button>
+				<button type="button" class="size-chip" data-size="19" onclick="selectMonitorSize('19')">19 Pol.</button>
+				<button type="button" class="size-chip" data-size="outros" onclick="selectMonitorSize('outros')">Outros</button>
+			</div>
 		</div>
 	</div>
 	
@@ -194,7 +224,7 @@
 				</tr>
 				</thead>
 				<tbody>
-				<tr th:each="lote : ${lotes}" th:data-category="${lote.categoria.nome}">
+				<tr th:each="lote : ${lotes}" th:data-category="${lote.categoria.nome}" th:data-alias="${lote.alias}" th:data-codigo="${lote.codigo}">
 					<td data-label="ID" th:text="${lote.idLote}" style="font-family: monospace; font-weight: bold;"></td>
 					<td data-label="Categoria"><strong th:text="${lote.categoria.nome}"></strong></td>
 					<td data-label="Descrição" class="vendor-cell" th:text="${lote.descricao}"></td>
@@ -279,6 +309,46 @@
 		controls.appendChild(nextBtn);
 	}
 
+	function onCategoryChange() {
+		const categoryValue = document.getElementById('categoryFilter').value;
+		const isMonitor = categoryValue.toLowerCase().includes('monitor');
+		document.getElementById('monitorSizePanel').style.display = isMonitor ? 'flex' : 'none';
+		if (!isMonitor) {
+			selectedMonitorSize = 'all';
+			document.querySelectorAll('#monitorSizeChips .size-chip').forEach(chip => {
+				chip.classList.toggle('active', chip.dataset.size === 'all');
+			});
+		}
+		filterTable();
+	}
+
+	let selectedMonitorSize = 'all';
+
+	function selectMonitorSize(size) {
+		selectedMonitorSize = size;
+		document.querySelectorAll('#monitorSizeChips .size-chip').forEach(chip => {
+			chip.classList.toggle('active', chip.dataset.size === size);
+		});
+		filterTable();
+	}
+
+	// Mesma regra usada no app Android: verifica descrição, alias e código
+	// procurando por "15", "17", "18", "19". "Outros" = nenhum desses.
+	function matchesMonitorSize(row, size) {
+		if (size === 'all') return true;
+
+		const descricao = (row.querySelector('.vendor-cell')?.textContent || '').toLowerCase();
+		const alias = (row.getAttribute('data-alias') || '').toLowerCase();
+		const codigo = (row.getAttribute('data-codigo') || '').toLowerCase();
+
+		const has = (n) => descricao.includes(n) || alias.includes(n) || codigo.includes(n);
+
+		if (size === 'outros') {
+			return !has('15') && !has('17') && !has('18') && !has('19');
+		}
+		return has(size);
+	}
+
 	function filterTable() {
 		const searchValue = document.getElementById('vendorSearch').value.toLowerCase();
 		const categoryValue = document.getElementById('categoryFilter').value;
@@ -290,8 +360,9 @@
 
 			const matchesSearch = vendorName.includes(searchValue);
 			const matchesCategory = (categoryValue === 'all' || rowCategory === categoryValue);
+			const matchesSize = matchesMonitorSize(row, selectedMonitorSize);
 
-			row.dataset.filteredOut = (matchesSearch && matchesCategory) ? 'false' : 'true';
+			row.dataset.filteredOut = (matchesSearch && matchesCategory && matchesSize) ? 'false' : 'true';
 		});
 
 		currentPage = 1;
