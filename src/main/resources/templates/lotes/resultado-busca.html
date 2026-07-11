@@ -29,15 +29,16 @@
 		</div>
 		<div class="info-row">
 			<span class="label">Status Atual</span>
-			<span class="value" th:style="${peca.dataInstalacao != null ? 'color: #ff4d4d' : 'color: #1ee4ac'}"
-				  th:text="${peca.dataInstalacao != null ? 'INSTALADA' : 'DISPONÍVEL'}"></span>
+			<span class="value"
+				  th:style="${peca.status == 'INSTALADA' ? 'color: #ff4d4d' : (peca.status == 'DESCARTADA' ? 'color: #b0b0b0' : 'color: #1ee4ac')}"
+				  th:text="${peca.status == 'INSTALADA' ? 'INSTALADA' : (peca.status == 'DESCARTADA' ? 'P.T. (DESCARTADA)' : 'DISPONÍVEL')}"></span>
 		</div>
 		<div class="info-row">
 			<span class="label">Lote de Origem</span>
 			<span class="value" th:text="${peca.lote.idLote + ' - ' + peca.lote.alias}"></span>
 		</div>
 		
-		<div th:if="${peca.dataInstalacao != null}">
+		<div th:if="${peca.status == 'INSTALADA'}">
 			<div class="info-row">
 				<span class="label">Localização (Ponto)</span>
 				<span class="value" th:text="${peca.cliente?.nomCliente ?: 'N/A'}"></span>

@@ -29,6 +29,7 @@
 		.badge-status { padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; cursor: pointer; }
 		.status-available { background: rgba(30, 228, 172, 0.15); color: var(--primary-green); border: 1px solid rgba(30, 228, 172, 0.3); }
 		.status-installed { background: rgba(255, 77, 77, 0.15); color: var(--accent-red); border: 1px solid rgba(255, 77, 77, 0.3); }
+		.status-discarded { background: rgba(120, 120, 120, 0.2); color: #b0b0b0; border: 1px solid rgba(120, 120, 120, 0.35); }
 		.modal-content { background: var(--bg-card); border: 1px solid var(--border-color); color: white; border-radius: 20px; }
 		.modal-header, .modal-footer { border-color: var(--border-color); }
 		.btn-close { filter: invert(1); }
@@ -119,8 +120,14 @@
 					<td th:text="${peca.idPeca}"></td>
 					<td class="fw-bold text-info" th:text="${peca.codigo}"></td>
 					<td>
-						<span th:if="${peca.dataInstalacao == null}" class="badge-status status-available">Disponível</span>
-						<span th:if="${peca.dataInstalacao != null}"
+						<span th:if="${peca.status != 'INSTALADA' and peca.status != 'DESCARTADA'}" class="badge-status status-available">Disponível</span>
+						<span th:if="${peca.status == 'DESCARTADA'}"
+							  class="badge-status status-discarded"
+							  data-bs-toggle="modal"
+							  th:data-bs-target="'#modalPeca'+${peca.idPeca}">
+                        P.T. <i class="bi bi-info-circle ms-1"></i>
+                   </span>
+						<span th:if="${peca.status == 'INSTALADA'}"
 							  class="badge-status status-installed"
 							  data-bs-toggle="modal"
 							  th:data-bs-target="'#modalPeca'+${peca.idPeca}">
@@ -131,7 +138,7 @@
 							<div class="modal-dialog modal-dialog-centered">
 								<div class="modal-content text-start">
 									<div class="modal-header">
-										<h5 class="modal-title">📍 Local de Instalação</h5>
+										<h5 class="modal-title" th:text="${peca.status == 'DESCARTADA' ? '⚠️ Última Localização (Descartada)' : '📍 Local de Instalação'}"></h5>
 										<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
 									</div>
 									<div class="modal-body">
@@ -142,17 +149,17 @@
 										
 										<div class="modal-info-item">
 											<span class="info-label">Ponto (Cliente)</span>
-											<div class="info-value" th:text="${peca.movimento?.cliente?.nomCliente ?: 'Não informado'}"></div>
+											<div class="info-value" th:text="${peca.cliente?.nomCliente ?: 'Não informado'}"></div>
 										</div>
 										
 										<div class="modal-info-item">
 											<span class="info-label">Máquina</span>
-											<div class="info-value" th:text="${peca.movimento?.maquina?.nom_maq ?: 'Não informado'}"></div>
+											<div class="info-value" th:text="${peca.maquina?.nom_maq ?: 'Não informado'}"></div>
 										</div>
 										
 										<div class="modal-info-item">
 											<span class="info-label">Jogo da Máquina</span>
-											<div class="info-value" th:text="${peca.movimento?.maquina?.nom_jogo ?: 'N/A'}"></div>
+											<div class="info-value" th:text="${peca.maquina?.nom_jogo ?: 'N/A'}"></div>
 										</div>
 										
 										<div class="modal-info-item">
@@ -188,7 +195,19 @@
 											</div>
 										</div>
 									</div>
-									<div class="modal-footer"><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fechar</button></div>
+									<div class="modal-footer">
+										<button type="button" class="btn btn-outline-light btn-sm" data-bs-dismiss="modal">Fechar</button>
+										<th:block th:if="${peca.status == 'INSTALADA'}">
+											<button type="button" class="btn btn-danger btn-sm"
+													th:onclick="'descartarPeca(' + ${peca.idPeca} + ')'">
+												Descartar (P.T.)
+											</button>
+											<button type="button" class="btn btn-success btn-sm"
+													th:onclick="'retirarPeca(' + ${peca.idPeca} + ')'">
+												Devolver ao Estoque
+											</button>
+										</th:block>
+									</div>
 								</div>
 							</div>
 						</div>
@@ -260,6 +279,33 @@
 	}
 
 	document.addEventListener('DOMContentLoaded', renderPagination);
+
+	function retirarPeca(idPeca) {
+		const observacao = prompt("Observação (opcional) — motivo da retirada:");
+		if (observacao === null) return; // usuário cancelou
+		chamarAcaoPeca(idPeca, 'retirar', observacao);
+	}
+
+	function descartarPeca(idPeca) {
+		if (!confirm("Confirma que essa peça foi PERDIDA/QUEIMADA e não volta para o estoque?")) return;
+		const observacao = prompt("Observação (opcional) — motivo do descarte:");
+		if (observacao === null) return; // usuário cancelou
+		chamarAcaoPeca(idPeca, 'descartar', observacao);
+	}
+
+	function chamarAcaoPeca(idPeca, acao, observacao) {
+		fetch(`/api/pecas/${idPeca}/${acao}`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ observacao: observacao || null })
+		})
+		.then(res => {
+			if (!res.ok) throw new Error('Falha na requisição');
+			return res.json();
+		})
+		.then(() => location.reload())
+		.catch(err => alert('Erro ao processar: ' + err.message));
+	}
 </script>
 </body>
 </html>

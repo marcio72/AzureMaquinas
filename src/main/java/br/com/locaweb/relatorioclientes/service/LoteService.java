@@ -1,21 +1,28 @@
 package br.com.locaweb.relatorioclientes.service;
 
+import br.com.locaweb.relatorioclientes.model.HistoricoPeca;
 import br.com.locaweb.relatorioclientes.model.Lote;
 import br.com.locaweb.relatorioclientes.model.Peca;
+import br.com.locaweb.relatorioclientes.repository.HistoricoPecaRepository;
 import br.com.locaweb.relatorioclientes.repository.LoteRepository;
 import br.com.locaweb.relatorioclientes.repository.PecaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 @Service
 public class LoteService {
 
     private final LoteRepository loteRepository;
     private final PecaRepository pecaRepository;
+    private final HistoricoPecaRepository historicoPecaRepository;
 
-    public LoteService(LoteRepository loteRepository, PecaRepository pecaRepository) {
+    public LoteService(LoteRepository loteRepository, PecaRepository pecaRepository,
+                        HistoricoPecaRepository historicoPecaRepository) {
         this.loteRepository = loteRepository;
         this.pecaRepository = pecaRepository;
+        this.historicoPecaRepository = historicoPecaRepository;
     }
 
     /**
@@ -46,6 +53,13 @@ public class LoteService {
             peca.setCategoria(loteSalvo.getCategoria());
             peca.setStatus("ESTOQUE");
             pecaRepository.save(peca);
+
+            HistoricoPeca historico = new HistoricoPeca();
+            historico.setPeca(peca);
+            historico.setTipoEvento("ENTRADA_ESTOQUE");
+            historico.setObservacao("Peça criada a partir do lote " + loteSalvo.getCodigo());
+            historico.setDataEvento(LocalDateTime.now());
+            historicoPecaRepository.save(historico);
 
             numero++;
         }
