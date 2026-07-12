@@ -47,16 +47,6 @@ public class Peca {
     @JoinColumn(name = "maquina_id")
     @JsonIgnore
     private Maquina maquina;
-    
-    
-    // Dentro da sua classe Peca
-    // @JsonIgnore evita recursão infinita na serialização JSON (Peca -> movimento -> peca -> ...)
-    // que causava StackOverflowError e erro 500 no endpoint /api/lotes/{id}/pecas usado pelo app Android.
-    // Não afeta o Thymeleaf (web), que acessa os getters diretamente sem passar pelo Jackson.
-    @OneToOne(mappedBy = "peca")
-    @JsonIgnore
-    private MovimentoEstoque movimento;
-
 
     // ========= GETTERS / SETTERS ============
 
@@ -138,13 +128,5 @@ public class Peca {
 
     public void setMaquina(Maquina maquina) {
         this.maquina = maquina;
-    }
-    
-    public MovimentoEstoque getMovimento() {
-        return movimento;
-    }
-    
-    public void setMovimento(MovimentoEstoque movimento) {
-        this.movimento = movimento;
     }
 }
