@@ -22,6 +22,35 @@ public class EstoqueService {
     private final ExecucaoRepository execucaoRepository;
     private final HistoricoPecaRepository historicoPecaRepository;
 
+    /**
+     * Atualiza o "slot" da máquina correspondente à categoria da peça
+     * (ex: categoria "Monitor" -> maquina.monitor), guardando o id_peca
+     * da peça física instalada, ou limpando (null) quando ela sai.
+     *
+     * Novas categorias entram aqui, uma de cada vez, conforme forem
+     * cadastradas e mapeadas (Coletor, Cadeado, Chave1, Chave2, etc.).
+     */
+    private void atualizarSlotMaquina(Maquina maquina, Peca peca, boolean instalando) {
+        if (maquina == null || peca.getCategoria() == null) return;
+
+        String categoriaNome = peca.getCategoria().getNome();
+        if (categoriaNome == null) return;
+
+        if (categoriaNome.equalsIgnoreCase("Monitor")) {
+            maquina.setMonitor(instalando ? peca.getIdPeca().intValue() : null);
+        }
+        if (categoriaNome.equalsIgnoreCase("Placa Mãe")) {
+            if (instalando) {
+                String apenasNumeros = peca.getCodigo().replaceAll("\\D+", "");
+                maquina.setNumeroPlaca(apenasNumeros);
+            } else {
+                maquina.setNumeroPlaca(null);
+            }
+        }
+        // TODO: próximas categorias (Coletor, Cadeado, Cadeado1, Cadeado2,
+        // Chave1, Chave2, Tip_Gabinete) entram aqui quando forem cadastradas.
+    }
+
     @Transactional
     public void baixarPeca(Long idPeca, Long idExecucao, Long idMaquina, Long idCliente) {
 
@@ -64,13 +93,10 @@ public class EstoqueService {
 
         pecaRepository.save(peca);
 
-        String codigo = peca.getCodigo();
-        String apenasNumeros = codigo.replaceAll("\\D+", ""); // remove tudo que não é número
-
-        maquina.setNumeroPlaca(apenasNumeros);
         // Garante que a máquina fique com o cliente correto (cobre o caso da máquina
         // ter mudado de cliente e o cadastro dela ainda não ter sido atualizado).
         maquina.setCodCliente(cliente.getCodCliente() != null ? cliente.getCodCliente().intValue() : null);
+        atualizarSlotMaquina(maquina, peca, true);
         maquinaRepository.save(maquina);
 
         // ======================================================
@@ -146,6 +172,12 @@ public class EstoqueService {
         if (lote != null) {
             lote.setQuantidadeAtual(lote.getQuantidadeAtual() + 1);
             loteRepository.save(lote);
+        }
+
+        // Limpa o slot correspondente na máquina de onde ela saiu
+        if (maquinaOrigem != null) {
+            atualizarSlotMaquina(maquinaOrigem, peca, false);
+            maquinaRepository.save(maquinaOrigem);
         }
 
         // ======================================================
@@ -224,6 +256,13 @@ public class EstoqueService {
         // 2) NÃO mexe em lote.quantidadeAtual — peça está perdida,
         //    não conta mais como disponível nem volta a contar.
         // ======================================================
+
+        // Limpa o slot da máquina (ela vai receber outra peça no lugar),
+        // mesmo mantendo cliente/máquina na peça em si pra rastreio.
+        if (maquinaOrigem != null) {
+            atualizarSlotMaquina(maquinaOrigem, peca, false);
+            maquinaRepository.save(maquinaOrigem);
+        }
 
         // ======================================================
         // 3) Registra o evento no histórico da peça (DESCARTE)

@@ -38,6 +38,10 @@ private String numeroPlaca;
 private String obs;
 private Integer codCliente;
 
+// Peça física atualmente instalada em cada slot (guarda o id_peca).
+@Column(name = "Monitor")
+private Integer monitor;
+
 @Column(name = "ativo")
 private Boolean ativo;
 }
