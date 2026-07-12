@@ -43,5 +43,9 @@ public interface PecaRepository extends JpaRepository<Peca, Long> {
     
     // Busca exata pelo código da peça
     Optional<Peca> findByCodigo(String codigo);
+
+    // 🔍 Primeira e última peça geradas para um lote (pela ordem de criação)
+    Optional<Peca> findFirstByLoteIdLoteOrderByIdPecaAsc(Long idLote);
+    Optional<Peca> findFirstByLoteIdLoteOrderByIdPecaDesc(Long idLote);
     
 }

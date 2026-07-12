@@ -61,6 +61,35 @@ public class LoteApiController {
         return ResponseEntity.ok(pecas);
     }
 
+    // GET /api/lotes/{id}/faixa-pecas
+    // Endpoint leve: não carrega a lista de peças, só a primeira e a última
+    // (pela ordem de criação), retornando apenas o número (sem o alias).
+    @GetMapping("/{id}/faixa-pecas")
+    public ResponseEntity<java.util.Map<String, String>> faixaPecasDoLote(@PathVariable Long id) {
+        if (!loteRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        String primeiro = pecaRepository.findFirstByLoteIdLoteOrderByIdPecaAsc(id)
+                .map(p -> extrairNumero(p.getCodigo()))
+                .orElse(null);
+        String ultimo = pecaRepository.findFirstByLoteIdLoteOrderByIdPecaDesc(id)
+                .map(p -> extrairNumero(p.getCodigo()))
+                .orElse(null);
+
+        java.util.Map<String, String> resultado = new java.util.HashMap<>();
+        resultado.put("primeiro", primeiro);
+        resultado.put("ultimo", ultimo);
+        return ResponseEntity.ok(resultado);
+    }
+
+    // Extrai só o número do código da peça (ex: "MTGN-1770" -> "1770")
+    private String extrairNumero(String codigo) {
+        if (codigo == null) return null;
+        int idx = codigo.lastIndexOf('-');
+        return idx >= 0 ? codigo.substring(idx + 1) : codigo;
+    }
+
     // POST /api/lotes
     @PostMapping
     public ResponseEntity<?> criarLote(@RequestBody LoteRequestDTO dto) {
