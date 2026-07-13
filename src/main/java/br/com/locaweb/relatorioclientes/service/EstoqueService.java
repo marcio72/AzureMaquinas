@@ -39,6 +39,12 @@ public class EstoqueService {
         if (categoriaNome.equalsIgnoreCase("Monitor")) {
             maquina.setMonitor(instalando ? peca.getIdPeca().intValue() : null);
         }
+        if (categoriaNome.equalsIgnoreCase("Fontes")) {
+            maquina.setFonte(instalando ? peca.getIdPeca().intValue() : null);
+        }
+        if (categoriaNome.equalsIgnoreCase("Jogo")) {
+            maquina.setJogoSegundo(instalando ? peca.getIdPeca().intValue() : null);
+        }
         if (categoriaNome.equalsIgnoreCase("Placa Mãe")) {
             if (instalando) {
                 String apenasNumeros = peca.getCodigo().replaceAll("\\D+", "");
@@ -48,7 +54,7 @@ public class EstoqueService {
             }
         }
         // TODO: próximas categorias (Coletor, Cadeado, Cadeado1, Cadeado2,
-        // Chave1, Chave2, Tip_Gabinete) entram aqui quando forem cadastradas.
+        // Chave1, Chave2, Tip_Gabinete) entram aqui quando forem mapeadas.
     }
 
     @Transactional
