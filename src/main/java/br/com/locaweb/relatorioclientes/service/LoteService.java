@@ -1,9 +1,14 @@
 package br.com.locaweb.relatorioclientes.service;
 
+import br.com.locaweb.relatorioclientes.DTO.LoteManualRequestDTO;
+import br.com.locaweb.relatorioclientes.model.Categoria;
 import br.com.locaweb.relatorioclientes.model.HistoricoPeca;
+import br.com.locaweb.relatorioclientes.model.Jogo;
 import br.com.locaweb.relatorioclientes.model.Lote;
 import br.com.locaweb.relatorioclientes.model.Peca;
+import br.com.locaweb.relatorioclientes.repository.CategoriaRepository;
 import br.com.locaweb.relatorioclientes.repository.HistoricoPecaRepository;
+import br.com.locaweb.relatorioclientes.repository.JogoRepository;
 import br.com.locaweb.relatorioclientes.repository.LoteRepository;
 import br.com.locaweb.relatorioclientes.repository.PecaRepository;
 import org.springframework.stereotype.Service;
@@ -17,12 +22,18 @@ public class LoteService {
     private final LoteRepository loteRepository;
     private final PecaRepository pecaRepository;
     private final HistoricoPecaRepository historicoPecaRepository;
+    private final CategoriaRepository categoriaRepository;
+    private final JogoRepository jogoRepository;
 
     public LoteService(LoteRepository loteRepository, PecaRepository pecaRepository,
-                        HistoricoPecaRepository historicoPecaRepository) {
+                        HistoricoPecaRepository historicoPecaRepository,
+                        CategoriaRepository categoriaRepository,
+                        JogoRepository jogoRepository) {
         this.loteRepository = loteRepository;
         this.pecaRepository = pecaRepository;
         this.historicoPecaRepository = historicoPecaRepository;
+        this.categoriaRepository = categoriaRepository;
+        this.jogoRepository = jogoRepository;
     }
 
     /**
@@ -88,5 +99,65 @@ public class LoteService {
         }
 
         return salvarLoteComPecas(lote, proximoNumero);
+    }
+
+    /**
+     * Cadastro MANUAL de lote — usado quando as peças já vêm com um código
+     * de fábrica (não sequencial), ex: fornecedor AEC, onde cada placa tem
+     * um código gravado na etiqueta e pode representar um jogo diferente
+     * do catálogo (Tbl_Jogos), mesmo dentro do mesmo lote.
+     */
+    @Transactional
+    public Lote salvarLoteManual(LoteManualRequestDTO request) {
+
+        Categoria categoria = categoriaRepository.findById(request.getCategoriaId())
+                .orElseThrow(() -> new RuntimeException("Categoria não encontrada"));
+
+        if (request.getPecas() == null || request.getPecas().isEmpty()) {
+            throw new RuntimeException("Informe ao menos uma peça.");
+        }
+
+        Lote lote = new Lote();
+        lote.setCategoria(categoria);
+        lote.setAlias(categoria.getAlias());
+        lote.setCodigo(request.getFornecedor());
+        lote.setFornecedor(request.getFornecedor());
+        lote.setDescricao(request.getDescricao());
+        lote.setDataEntrada(request.getDataEntrada());
+        lote.setQuantidadeComprada(request.getPecas().size());
+        lote.setQuantidadeAtual(request.getPecas().size());
+
+        Lote loteSalvo = loteRepository.save(lote);
+
+        for (LoteManualRequestDTO.PecaManualDTO pecaRequest : request.getPecas()) {
+
+            if (pecaRequest.getCodigo() == null || pecaRequest.getCodigo().isBlank()) {
+                throw new RuntimeException("Todas as peças precisam de um código.");
+            }
+
+            Peca peca = new Peca();
+            peca.setCodigo(pecaRequest.getCodigo().trim());
+            peca.setLote(loteSalvo);
+            peca.setCategoria(categoria);
+            peca.setStatus("ESTOQUE");
+
+            if (pecaRequest.getJogoId() != null) {
+                Jogo jogo = jogoRepository.findById(pecaRequest.getJogoId())
+                        .orElseThrow(() -> new RuntimeException("Jogo não encontrado: " + pecaRequest.getJogoId()));
+                peca.setJogo(jogo);
+            }
+
+            pecaRepository.save(peca);
+
+            HistoricoPeca historico = new HistoricoPeca();
+            historico.setPeca(peca);
+            historico.setTipoEvento("ENTRADA_ESTOQUE");
+            historico.setObservacao("Peça criada manualmente a partir do lote "
+                    + loteSalvo.getIdLote() + " (fornecedor: " + request.getFornecedor() + ")");
+            historico.setDataEvento(LocalDateTime.now());
+            historicoPecaRepository.save(historico);
+        }
+
+        return loteSalvo;
     }
 }

@@ -48,6 +48,14 @@ public class Peca {
     @JsonIgnore
     private Maquina maquina;
 
+    // Referência ao catálogo de jogos (Tbl_Jogos), só relevante para peças
+    // da categoria "Jogo". Diz qual jogo específico essa placa representa
+    // (ex: peça código "6DE5" -> jogo "Milionários").
+    @ManyToOne
+    @JoinColumn(name = "cod_jogo_catalogo")
+    @JsonIgnore
+    private Jogo jogo;
+
     // ========= GETTERS / SETTERS ============
 
     public Long getIdPeca() {
@@ -128,5 +136,13 @@ public class Peca {
 
     public void setMaquina(Maquina maquina) {
         this.maquina = maquina;
+    }
+
+    public Jogo getJogo() {
+        return jogo;
+    }
+
+    public void setJogo(Jogo jogo) {
+        this.jogo = jogo;
     }
 }

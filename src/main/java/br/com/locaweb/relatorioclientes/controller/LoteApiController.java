@@ -90,6 +90,16 @@ public class LoteApiController {
         return idx >= 0 ? codigo.substring(idx + 1) : codigo;
     }
 
+    // POST /api/lotes/manual
+    // Cadastro manual: peças com código de fábrica (não sequencial),
+    // podendo cada uma ser um jogo diferente do catálogo (ex: fornecedor AEC).
+    @PostMapping("/manual")
+    public ResponseEntity<Lote> salvarLoteManual(
+            @RequestBody br.com.locaweb.relatorioclientes.DTO.LoteManualRequestDTO request) {
+        Lote loteSalvo = loteService.salvarLoteManual(request);
+        return ResponseEntity.ok(loteSalvo);
+    }
+
     // POST /api/lotes
     @PostMapping
     public ResponseEntity<?> criarLote(@RequestBody LoteRequestDTO dto) {

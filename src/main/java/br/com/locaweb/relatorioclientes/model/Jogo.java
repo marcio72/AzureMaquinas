@@ -18,6 +18,9 @@ public class Jogo {
     private Maquina maquina;
     
     
+    public Jogo() {
+    }
+
     public Jogo(final Long id, final String descricaojogo) {
         this.id = id;
         this.descricaojogo = descricaojogo;

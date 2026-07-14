@@ -140,78 +140,247 @@
 			</a>
 		</div>
 
-		<form th:action="@{/lotes/salvar}" th:object="${lote}" method="post">
+		<form id="formAutomatico" th:action="@{/lotes/salvar}" th:object="${lote}" method="post">
 			<div class="form-grid">
 
 				<div class="form-group col-span-6">
 					<label>Categoria</label>
-					<select th:field="*{categoria}" required>
+					<select th:field="*{categoria}" id="categoriaSelect" required onchange="onCategoriaChange()">
 						<option value="">Selecione uma categoria...</option>
 						<option th:each="cat : ${categorias}"
 								th:value="${cat.id}"
-								th:text="${cat.nome}"></option>
+								th:text="${cat.nome}"
+								th:attr="data-nome=${cat.nome}"></option>
 					</select>
 				</div>
 
 				<div class="form-group col-span-6">
 					<label>Fornecedor</label>
-					<input type="text" th:field="*{fornecedor}" required placeholder="Nome do fornecedor">
+					<input type="text" id="fornecedorInput" th:field="*{fornecedor}" required placeholder="Nome do fornecedor" oninput="onFornecedorChange()">
 				</div>
 
-				<div class="form-group col-span-3">
+				<!-- Toggle de modo (só aparece quando dá pra usar cadastro manual, ex: categoria Jogo) -->
+				<div class="form-group col-span-12" id="modoWrapper" style="display:none;">
+					<label>Modo de Cadastro</label>
+					<div style="display:flex; gap:20px; align-items:center; padding: 4px 0;">
+						<label style="display:flex; align-items:center; gap:6px; text-transform:none; font-size:13px; color:var(--text-white);">
+							<input type="radio" name="modoCadastro" value="automatico" checked onchange="onModoChange()" style="width:auto;"> Automático
+						</label>
+						<label style="display:flex; align-items:center; gap:6px; text-transform:none; font-size:13px; color:var(--text-white);">
+							<input type="radio" name="modoCadastro" value="manual" onchange="onModoChange()" style="width:auto;"> Manual
+						</label>
+					</div>
+					<p id="explicacaoModo" style="text-transform:none; font-size:12.5px; color:var(--text-gray); margin-top:2px; line-height:1.5;">
+						No modo <strong style="color:var(--primary-green)">Automático</strong>, você define um Alias (ex: <em>SBF</em>) e um Número Inicial, e o sistema gera os códigos das peças em sequência (ex: SBF-0045, SBF-0046, SBF-0047...).
+					</p>
+				</div>
+
+				<div class="form-group col-span-3 campo-automatico">
 					<label>Alias (Prefixo)</label>
-					<input type="text" id="aliasInput" th:field="*{alias}" required placeholder="Ex: SBF" oninput="atualizarPreview()">
+					<input type="text" id="aliasInput" th:field="*{alias}" placeholder="Ex: SBF" oninput="atualizarPreview()">
 				</div>
 
-				<div class="form-group col-span-3">
+				<div class="form-group col-span-3 campo-automatico">
 					<label>Número Inicial</label>
 					<input type="number" id="numeroInicialInput" name="numeroInicial"
-						   min="1" required placeholder="Ex: 45"
+						   min="1" placeholder="Ex: 45"
 						   oninput="atualizarPreview()">
 				</div>
 
-				<div class="form-group col-span-3">
+				<div class="form-group col-span-3 campo-automatico">
 					<label>Qtd Comprada</label>
 					<input type="number" id="qtdInput" th:field="*{quantidadeComprada}"
-						   min="1" required oninput="atualizarPreview()">
+						   min="1" oninput="atualizarPreview()">
 				</div>
 
-				<div class="form-group col-span-3">
+				<div class="form-group col-span-3 campo-automatico">
 					<label>Código do Lote</label>
 					<input type="text" th:field="*{codigo}" placeholder="Opcional">
 				</div>
 
 				<!-- Preview da numeração -->
-				<div class="col-span-12">
+				<div class="col-span-12 campo-automatico">
 					<span class="preview-label">📋 Preview das peças que serão geradas</span>
 					<div class="preview-box" id="previewBox">
 						Preencha Alias, Número Inicial e Quantidade para visualizar...
 					</div>
 				</div>
 
-				<div class="form-group col-span-12">
+				<div class="form-group col-span-12 campo-automatico">
 					<label>Descrição Detalhada</label>
 					<input type="text" th:field="*{descricao}" required placeholder="Informe os detalhes do lote">
 				</div>
 
-				<div class="form-group col-span-4">
+				<div class="form-group col-span-4 campo-automatico">
 					<label>Data de Entrada</label>
-					<input type="date" th:field="*{dataEntrada}" required>
+					<input type="date" th:field="*{dataEntrada}" id="dataEntradaInput" required>
 				</div>
 
 			</div>
 
-			<div class="footer-actions">
+			<div class="footer-actions campo-automatico">
 				<a href="/lotes" class="btn-link-cancel">Cancelar</a>
-				<button type="submit" class="btn-save">
+				<button type="submit" class="btn-save" id="btnSalvarAutomatico">
 					<i class="bi bi-check-lg"></i> SALVAR LOTE
 				</button>
 			</div>
 		</form>
+
+		<!-- ================= MODO MANUAL ================= -->
+		<div id="blocoManual" style="display:none;">
+			<p style="font-size:12.5px; color:var(--text-gray); margin-bottom:15px; line-height:1.5;">
+				No modo <strong style="color:var(--primary-green)">Manual</strong>, você usa quando as peças já vêm com um código de fábrica (não sequencial) — ex: fornecedor <strong>AEC</strong>, onde cada placa tem um código próprio gravado na etiqueta (tipo <em>6DE5</em>) e pode ser um jogo diferente do catálogo, mesmo dentro do mesmo lote. Informe quantas peças vieram, digite o código de cada uma e escolha o jogo correspondente.
+			</p>
+			<div class="form-grid">
+				<div class="form-group col-span-4">
+					<label>Quantidade de Peças</label>
+					<input type="number" id="qtdManualInput" min="1" placeholder="Ex: 10" oninput="gerarLinhasManuais()">
+				</div>
+
+				<div class="col-span-12" style="margin-top:5px;">
+					<span class="preview-label">📋 Peças (código de fábrica + jogo)</span>
+					<div id="linhasManuais" style="display:flex; flex-direction:column; gap:10px;"></div>
+				</div>
+
+				<div class="form-group col-span-12">
+					<label>Descrição Detalhada (Manual)</label>
+					<input type="text" id="descricaoManualInput" placeholder="Informe os detalhes do lote">
+				</div>
+
+				<div class="form-group col-span-4">
+					<label>Data de Entrada (Manual)</label>
+					<input type="date" id="dataEntradaManualInput">
+				</div>
+			</div>
+
+			<div class="footer-actions">
+				<a href="/lotes" class="btn-link-cancel">Cancelar</a>
+				<button type="button" class="btn-save" id="btnSalvarManual" onclick="salvarLoteManual()">
+					<i class="bi bi-check-lg"></i> SALVAR LOTE MANUAL
+				</button>
+			</div>
+		</div>
 	</div>
 </div>
 
 <script>
+	let jogosCache = null;
+
+	async function carregarJogos() {
+		if (jogosCache) return jogosCache;
+		const res = await fetch('/api/jogos');
+		jogosCache = await res.json();
+		return jogosCache;
+	}
+
+	function onCategoriaChange() {
+		const select = document.getElementById('categoriaSelect');
+		const nomeSelecionada = select.options[select.selectedIndex]?.getAttribute('data-nome') || '';
+		const modoWrapper = document.getElementById('modoWrapper');
+		// O modo manual faz sentido pra qualquer categoria (fica genérico pra
+		// futuros fornecedores), então sempre libera o toggle quando uma
+		// categoria for escolhida.
+		modoWrapper.style.display = nomeSelecionada ? 'flex' : 'none';
+		if (nomeSelecionada.toLowerCase() === 'jogo') {
+			carregarJogos();
+		}
+	}
+
+	function onFornecedorChange() {
+		// Se o usuário digitar um fornecedor conhecido por usar código manual,
+		// não fazemos nada automático aqui — a escolha do modo é sempre manual
+		// (o próprio usuário decide via o toggle).
+	}
+
+	function onModoChange() {
+		const modo = document.querySelector('input[name="modoCadastro"]:checked').value;
+		document.querySelectorAll('.campo-automatico').forEach(el => {
+			el.style.display = (modo === 'automatico') ? '' : 'none';
+		});
+		document.getElementById('blocoManual').style.display = (modo === 'manual') ? 'block' : 'none';
+		if (modo === 'manual') {
+			carregarJogos();
+		}
+	}
+
+	async function gerarLinhasManuais() {
+		const qtd = parseInt(document.getElementById('qtdManualInput').value);
+		const container = document.getElementById('linhasManuais');
+		container.innerHTML = '';
+		if (isNaN(qtd) || qtd <= 0) return;
+
+		const jogos = await carregarJogos();
+
+		for (let i = 0; i < qtd; i++) {
+			const linha = document.createElement('div');
+			linha.style.display = 'flex';
+			linha.style.gap = '10px';
+
+			const codigoInput = document.createElement('input');
+			codigoInput.type = 'text';
+			codigoInput.placeholder = 'Código de fábrica (ex: 6DE5)';
+			codigoInput.className = 'linha-codigo';
+			codigoInput.style.flex = '1';
+
+			const jogoSelect = document.createElement('select');
+			jogoSelect.className = 'linha-jogo';
+			jogoSelect.style.flex = '1';
+			jogoSelect.innerHTML = '<option value="">Selecione o jogo...</option>' +
+				jogos.map(j => `<option value="${j.id}">${j.nome}</option>`).join('');
+
+			linha.appendChild(codigoInput);
+			linha.appendChild(jogoSelect);
+			container.appendChild(linha);
+		}
+	}
+
+	async function salvarLoteManual() {
+		const categoriaId = document.getElementById('categoriaSelect').value;
+		const fornecedor = document.getElementById('fornecedorInput').value;
+		const descricao = document.getElementById('descricaoManualInput').value;
+		const dataEntrada = document.getElementById('dataEntradaManualInput').value;
+
+		if (!categoriaId) { alert('Selecione a categoria.'); return; }
+		if (!fornecedor) { alert('Informe o fornecedor.'); return; }
+
+		const codigos = document.querySelectorAll('.linha-codigo');
+		const jogosSelects = document.querySelectorAll('.linha-jogo');
+
+		if (codigos.length === 0) { alert('Informe a quantidade de peças.'); return; }
+
+		const pecas = [];
+		for (let i = 0; i < codigos.length; i++) {
+			const codigo = codigos[i].value.trim();
+			if (!codigo) { alert('Preencha o código de todas as peças.'); return; }
+			const jogoId = jogosSelects[i].value || null;
+			pecas.push({ codigo: codigo, jogoId: jogoId });
+		}
+
+		const payload = {
+			categoriaId: parseInt(categoriaId),
+			fornecedor: fornecedor,
+			descricao: descricao,
+			dataEntrada: dataEntrada || null,
+			pecas: pecas
+		};
+
+		try {
+			const res = await fetch('/api/lotes/manual', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(payload)
+			});
+			if (!res.ok) {
+				const erro = await res.text();
+				alert('Erro ao salvar: ' + erro);
+				return;
+			}
+			window.location.href = '/lotes';
+		} catch (e) {
+			alert('Erro ao salvar: ' + e.message);
+		}
+	}
+
 	function atualizarPreview() {
 		const alias     = document.getElementById('aliasInput').value.trim().toUpperCase();
 		const inicio    = parseInt(document.getElementById('numeroInicialInput').value);

@@ -44,6 +44,13 @@ public class EstoqueService {
         }
         if (categoriaNome.equalsIgnoreCase("Jogo")) {
             maquina.setJogoSegundo(instalando ? peca.getIdPeca().intValue() : null);
+
+            // Se a peça tem um jogo vinculado do catálogo (Tbl_Jogos), grava o
+            // nome dele no campo "jogo" (texto livre) que já existe — sem
+            // mexer nas telas que já leem esse campo hoje.
+            if (peca.getJogo() != null) {
+                maquina.setNom_jogo(instalando ? peca.getJogo().getDescricaojogo() : null);
+            }
         }
         if (categoriaNome.equalsIgnoreCase("Placa Mãe")) {
             if (instalando) {
