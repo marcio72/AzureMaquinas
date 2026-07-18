@@ -22,6 +22,12 @@ public class Lote {
     private String codigo; // <-- coluna existente no banco
     private String descricao;
 
+    // Opcional: nem toda categoria tem subcategoria cadastrada.
+    // Todo o lote compartilha a mesma subcategoria (ex: lote inteiro de Monitor 15 Pol.).
+    @ManyToOne
+    @JoinColumn(name = "sub_categoria_id", nullable = true)
+    private SubCategoria subCategoria;
+
     @Column(name = "quantidade_comprada")
     private int quantidadeComprada;
 
@@ -55,6 +61,9 @@ public class Lote {
 
     public String getDescricao() { return descricao; }
     public void setDescricao(String descricao) { this.descricao = descricao; }
+
+    public SubCategoria getSubCategoria() { return subCategoria; }
+    public void setSubCategoria(SubCategoria subCategoria) { this.subCategoria = subCategoria; }
 
     public int getQuantidadeComprada() { return quantidadeComprada; }
     public void setQuantidadeComprada(int quantidadeComprada) { this.quantidadeComprada = quantidadeComprada; }

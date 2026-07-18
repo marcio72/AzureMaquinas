@@ -143,7 +143,7 @@
 		.page-btn.active { background: var(--primary-green); color: #081418; border-color: var(--primary-green); }
 		.page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
-		/* SUBFILTRO DE TAMANHO (MONITORES) */
+		/* SUBFILTRO DE SUBCATEGORIA */
 		.size-chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
 		.size-chip {
 			background: #081418;
@@ -175,6 +175,9 @@
 			<a href="/categorias" class="btn-custom btn-blue-soft">
 				<i class="bi bi-journal"></i> Categorias
 			</a>
+			<a href="/subcategorias" class="btn-custom btn-blue-soft">
+				<i class="bi bi-tags"></i> Subcategorias
+			</a>
 			<a href="/lotes/novo" class="btn-custom btn-green">
 				<i class="bi bi-plus-circle"></i> Novo Lote
 			</a>
@@ -190,22 +193,15 @@
 			<label>📂 Filtrar Categoria</label>
 			<select id="categoryFilter" onchange="onCategoryChange()">
 				<option value="all">Todas as Categorias</option>
-				<option th:each="cat : ${categorias}" th:value="${cat.nome}" th:text="${cat.nome}"></option>
+				<option th:each="cat : ${categorias}" th:value="${cat.nome}" th:text="${cat.nome}" th:attr="data-id=${cat.id}"></option>
 			</select>
 		</div>
 	</div>
 
-	<div class="controls-panel" id="monitorSizePanel" style="display:none;">
+	<div class="controls-panel" id="subCategoriaPanel" style="display:none;">
 		<div class="control-group" style="min-width: unset; flex: 0 0 auto;">
-			<label>📐 Modelo (Tamanho)</label>
-			<div class="size-chip-row" id="monitorSizeChips">
-				<button type="button" class="size-chip active" data-size="all" onclick="selectMonitorSize('all')">Todos</button>
-				<button type="button" class="size-chip" data-size="15" onclick="selectMonitorSize('15')">15 Pol.</button>
-				<button type="button" class="size-chip" data-size="17" onclick="selectMonitorSize('17')">17 Pol.</button>
-				<button type="button" class="size-chip" data-size="18" onclick="selectMonitorSize('18')">18 Pol.</button>
-				<button type="button" class="size-chip" data-size="19" onclick="selectMonitorSize('19')">19 Pol.</button>
-				<button type="button" class="size-chip" data-size="outros" onclick="selectMonitorSize('outros')">Outros</button>
-			</div>
+			<label>🏷️ Subcategoria</label>
+			<div class="size-chip-row" id="subCategoriaChips"></div>
 		</div>
 	</div>
 	
@@ -224,7 +220,7 @@
 				</tr>
 				</thead>
 				<tbody>
-				<tr th:each="lote : ${lotes}" th:data-category="${lote.categoria.nome}" th:data-alias="${lote.alias}" th:data-codigo="${lote.codigo}">
+				<tr th:each="lote : ${lotes}" th:data-category="${lote.categoria.nome}" th:data-alias="${lote.alias}" th:data-codigo="${lote.codigo}" th:data-subcategoria="${lote.subCategoria != null ? lote.subCategoria.id : ''}">
 					<td data-label="ID" th:text="${lote.idLote}" style="font-family: monospace; font-weight: bold;"></td>
 					<td data-label="Categoria"><strong th:text="${lote.categoria.nome}"></strong></td>
 					<td data-label="Descrição" class="vendor-cell" th:text="${lote.descricao}"></td>
@@ -309,44 +305,74 @@
 		controls.appendChild(nextBtn);
 	}
 
+	let selectedSubCategoriaId = 'all';
+
 	function onCategoryChange() {
-		const categoryValue = document.getElementById('categoryFilter').value;
-		const isMonitor = categoryValue.toLowerCase().includes('monitor');
-		document.getElementById('monitorSizePanel').style.display = isMonitor ? 'flex' : 'none';
-		if (!isMonitor) {
-			selectedMonitorSize = 'all';
-			document.querySelectorAll('#monitorSizeChips .size-chip').forEach(chip => {
-				chip.classList.toggle('active', chip.dataset.size === 'all');
-			});
-		}
-		filterTable();
+		const select = document.getElementById('categoryFilter');
+		const categoriaId = select.options[select.selectedIndex]?.getAttribute('data-id');
+		carregarSubCategoriaPanel(categoriaId);
 	}
 
-	let selectedMonitorSize = 'all';
+	async function carregarSubCategoriaPanel(categoriaId) {
+		const panel = document.getElementById('subCategoriaPanel');
+		const chipsContainer = document.getElementById('subCategoriaChips');
 
-	function selectMonitorSize(size) {
-		selectedMonitorSize = size;
-		document.querySelectorAll('#monitorSizeChips .size-chip').forEach(chip => {
-			chip.classList.toggle('active', chip.dataset.size === size);
+		selectedSubCategoriaId = 'all';
+		chipsContainer.innerHTML = '';
+
+		if (!categoriaId) {
+			panel.style.display = 'none';
+			filterTable();
+			return;
+		}
+
+		try {
+			// Traz todas (inclusive inativas) pro filtro histórico continuar funcionando
+			// mesmo se alguém desativar uma subcategoria depois.
+			const res = await fetch('/api/subcategorias?categoriaId=' + categoriaId);
+			const subcategorias = await res.json();
+
+			if (!subcategorias || subcategorias.length === 0) {
+				panel.style.display = 'none';
+				filterTable();
+				return;
+			}
+
+			const chipTodos = document.createElement('button');
+			chipTodos.type = 'button';
+			chipTodos.className = 'size-chip active';
+			chipTodos.textContent = 'Todos';
+			chipTodos.onclick = () => selectSubCategoriaFiltro('all', chipTodos);
+			chipsContainer.appendChild(chipTodos);
+
+			subcategorias.forEach(sub => {
+				const chip = document.createElement('button');
+				chip.type = 'button';
+				chip.className = 'size-chip';
+				chip.textContent = sub.nome;
+				chip.onclick = () => selectSubCategoriaFiltro(String(sub.id), chip);
+				chipsContainer.appendChild(chip);
+			});
+
+			panel.style.display = 'flex';
+			filterTable();
+		} catch (e) {
+			panel.style.display = 'none';
+			filterTable();
+		}
+	}
+
+	function selectSubCategoriaFiltro(id, chipEl) {
+		selectedSubCategoriaId = id;
+		document.querySelectorAll('#subCategoriaChips .size-chip').forEach(chip => {
+			chip.classList.toggle('active', chip === chipEl);
 		});
 		filterTable();
 	}
 
-	// Mesma regra usada no app Android: verifica descrição, alias e código
-	// procurando por "15", "17", "18", "19". "Outros" = nenhum desses.
-	function matchesMonitorSize(row, size) {
-		if (size === 'all') return true;
-
-		const descricao = (row.querySelector('.vendor-cell')?.textContent || '').toLowerCase();
-		const alias = (row.getAttribute('data-alias') || '').toLowerCase();
-		const codigo = (row.getAttribute('data-codigo') || '').toLowerCase();
-
-		const has = (n) => descricao.includes(n) || alias.includes(n) || codigo.includes(n);
-
-		if (size === 'outros') {
-			return !has('15') && !has('17') && !has('18') && !has('19');
-		}
-		return has(size);
+	function matchesSubCategoria(row, subCategoriaId) {
+		if (subCategoriaId === 'all') return true;
+		return (row.getAttribute('data-subcategoria') || '') === subCategoriaId;
 	}
 
 	function filterTable() {
@@ -360,9 +386,9 @@
 
 			const matchesSearch = vendorName.includes(searchValue);
 			const matchesCategory = (categoryValue === 'all' || rowCategory === categoryValue);
-			const matchesSize = matchesMonitorSize(row, selectedMonitorSize);
+			const matchesSub = matchesSubCategoria(row, selectedSubCategoriaId);
 
-			row.dataset.filteredOut = (matchesSearch && matchesCategory && matchesSize) ? 'false' : 'true';
+			row.dataset.filteredOut = (matchesSearch && matchesCategory && matchesSub) ? 'false' : 'true';
 		});
 
 		currentPage = 1;

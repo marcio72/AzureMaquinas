@@ -116,6 +116,22 @@
 		.btn-save:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(30, 228, 172, 0.3); }
 		.btn-link-cancel { color: var(--text-gray); text-decoration: none; font-size: 14px; font-weight: 500; }
 		.btn-link-cancel:hover { color: var(--text-white); }
+
+		/* CHIPS DE SUBCATEGORIA */
+		.size-chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+		.size-chip {
+			background: var(--input-bg);
+			border: 1px solid var(--border-color);
+			color: var(--text-gray);
+			padding: 8px 16px;
+			border-radius: 20px;
+			font-size: 13px;
+			font-weight: 600;
+			cursor: pointer;
+			transition: 0.2s;
+		}
+		.size-chip:hover { border-color: rgba(30, 228, 172, 0.4); }
+		.size-chip.active { background: rgba(30, 228, 172, 0.12); color: var(--primary-green); border-color: var(--primary-green); }
 	</style>
 </head>
 
@@ -157,6 +173,13 @@
 				<div class="form-group col-span-6">
 					<label>Fornecedor</label>
 					<input type="text" id="fornecedorInput" th:field="*{fornecedor}" required placeholder="Nome do fornecedor" oninput="onFornecedorChange()">
+				</div>
+
+				<!-- Subcategoria (chips) — só aparece se a categoria escolhida tiver subcategorias cadastradas -->
+				<div class="form-group col-span-12" id="subCategoriaWrapper" style="display:none;">
+					<label>Subcategoria</label>
+					<div class="size-chip-row" id="subCategoriaChips"></div>
+					<input type="hidden" id="subCategoriaInput" name="subCategoria">
 				</div>
 
 				<!-- Toggle de modo (só aparece quando dá pra usar cadastro manual, ex: categoria Jogo) -->
@@ -284,6 +307,55 @@
 		if (nomeSelecionada.toLowerCase() === 'jogo') {
 			carregarJogos();
 		}
+		carregarSubCategorias(select.value);
+	}
+
+	let selectedSubCategoriaId = null;
+
+	async function carregarSubCategorias(categoriaId) {
+		const wrapper = document.getElementById('subCategoriaWrapper');
+		const chipsContainer = document.getElementById('subCategoriaChips');
+		const hiddenInput = document.getElementById('subCategoriaInput');
+
+		selectedSubCategoriaId = null;
+		hiddenInput.value = '';
+		chipsContainer.innerHTML = '';
+
+		if (!categoriaId) {
+			wrapper.style.display = 'none';
+			return;
+		}
+
+		try {
+			const res = await fetch('/api/subcategorias?categoriaId=' + categoriaId);
+			const subcategorias = await res.json();
+
+			if (!subcategorias || subcategorias.length === 0) {
+				wrapper.style.display = 'none';
+				return;
+			}
+
+			subcategorias.forEach(sub => {
+				const chip = document.createElement('button');
+				chip.type = 'button';
+				chip.className = 'size-chip';
+				chip.textContent = sub.nome;
+				chip.onclick = () => selectSubCategoria(sub.id, chip);
+				chipsContainer.appendChild(chip);
+			});
+
+			wrapper.style.display = 'flex';
+		} catch (e) {
+			wrapper.style.display = 'none';
+		}
+	}
+
+	function selectSubCategoria(id, chipEl) {
+		selectedSubCategoriaId = id;
+		document.getElementById('subCategoriaInput').value = id;
+		document.querySelectorAll('#subCategoriaChips .size-chip').forEach(chip => {
+			chip.classList.toggle('active', chip === chipEl);
+		});
 	}
 
 	function onFornecedorChange() {
@@ -358,6 +430,7 @@
 
 		const payload = {
 			categoriaId: parseInt(categoriaId),
+			subCategoriaId: selectedSubCategoriaId ? parseInt(selectedSubCategoriaId) : null,
 			fornecedor: fornecedor,
 			descricao: descricao,
 			dataEntrada: dataEntrada || null,

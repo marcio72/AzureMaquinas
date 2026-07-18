@@ -6,11 +6,13 @@ import br.com.locaweb.relatorioclientes.model.HistoricoPeca;
 import br.com.locaweb.relatorioclientes.model.Jogo;
 import br.com.locaweb.relatorioclientes.model.Lote;
 import br.com.locaweb.relatorioclientes.model.Peca;
+import br.com.locaweb.relatorioclientes.model.SubCategoria;
 import br.com.locaweb.relatorioclientes.repository.CategoriaRepository;
 import br.com.locaweb.relatorioclientes.repository.HistoricoPecaRepository;
 import br.com.locaweb.relatorioclientes.repository.JogoRepository;
 import br.com.locaweb.relatorioclientes.repository.LoteRepository;
 import br.com.locaweb.relatorioclientes.repository.PecaRepository;
+import br.com.locaweb.relatorioclientes.repository.SubCategoriaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,16 +26,19 @@ public class LoteService {
     private final HistoricoPecaRepository historicoPecaRepository;
     private final CategoriaRepository categoriaRepository;
     private final JogoRepository jogoRepository;
+    private final SubCategoriaRepository subCategoriaRepository;
 
     public LoteService(LoteRepository loteRepository, PecaRepository pecaRepository,
                         HistoricoPecaRepository historicoPecaRepository,
                         CategoriaRepository categoriaRepository,
-                        JogoRepository jogoRepository) {
+                        JogoRepository jogoRepository,
+                        SubCategoriaRepository subCategoriaRepository) {
         this.loteRepository = loteRepository;
         this.pecaRepository = pecaRepository;
         this.historicoPecaRepository = historicoPecaRepository;
         this.categoriaRepository = categoriaRepository;
         this.jogoRepository = jogoRepository;
+        this.subCategoriaRepository = subCategoriaRepository;
     }
 
     /**
@@ -126,6 +131,12 @@ public class LoteService {
         lote.setDataEntrada(request.getDataEntrada());
         lote.setQuantidadeComprada(request.getPecas().size());
         lote.setQuantidadeAtual(request.getPecas().size());
+
+        if (request.getSubCategoriaId() != null) {
+            SubCategoria subCategoria = subCategoriaRepository.findById(request.getSubCategoriaId())
+                    .orElseThrow(() -> new RuntimeException("Subcategoria não encontrada"));
+            lote.setSubCategoria(subCategoria);
+        }
 
         Lote loteSalvo = loteRepository.save(lote);
 

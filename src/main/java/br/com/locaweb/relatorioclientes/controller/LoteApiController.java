@@ -4,9 +4,11 @@ import br.com.locaweb.relatorioclientes.DTO.PecaResponseDTO;
 import br.com.locaweb.relatorioclientes.model.Categoria;
 import br.com.locaweb.relatorioclientes.model.Lote;
 import br.com.locaweb.relatorioclientes.model.Peca;
+import br.com.locaweb.relatorioclientes.model.SubCategoria;
 import br.com.locaweb.relatorioclientes.repository.CategoriaRepository;
 import br.com.locaweb.relatorioclientes.repository.LoteRepository;
 import br.com.locaweb.relatorioclientes.repository.PecaRepository;
+import br.com.locaweb.relatorioclientes.repository.SubCategoriaRepository;
 import br.com.locaweb.relatorioclientes.service.LoteService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,15 +25,18 @@ public class LoteApiController {
     private final LoteRepository loteRepository;
     private final PecaRepository pecaRepository;
     private final CategoriaRepository categoriaRepository;
+    private final SubCategoriaRepository subCategoriaRepository;
     private final LoteService loteService;
 
     public LoteApiController(LoteRepository loteRepository,
                              PecaRepository pecaRepository,
                              CategoriaRepository categoriaRepository,
+                             SubCategoriaRepository subCategoriaRepository,
                              LoteService loteService) {
         this.loteRepository = loteRepository;
         this.pecaRepository = pecaRepository;
         this.categoriaRepository = categoriaRepository;
+        this.subCategoriaRepository = subCategoriaRepository;
         this.loteService = loteService;
     }
 
@@ -117,8 +122,16 @@ public class LoteApiController {
         if (categoria == null)
             return ResponseEntity.badRequest().body("Categoria não encontrada.");
 
+        SubCategoria subCategoria = null;
+        if (dto.getSubCategoriaId() != null) {
+            subCategoria = subCategoriaRepository.findById(dto.getSubCategoriaId()).orElse(null);
+            if (subCategoria == null)
+                return ResponseEntity.badRequest().body("Subcategoria não encontrada.");
+        }
+
         Lote lote = new Lote();
         lote.setCategoria(categoria);
+        lote.setSubCategoria(subCategoria);
         lote.setAlias(dto.getAlias().toUpperCase());
         lote.setFornecedor(dto.getFornecedor());
         lote.setCodigo(dto.getCodigo());
@@ -133,6 +146,7 @@ public class LoteApiController {
 
     public static class LoteRequestDTO {
         private Long categoriaId;
+        private Long subCategoriaId; // opcional
         private String alias;
         private String fornecedor;
         private String codigo;
@@ -146,6 +160,8 @@ public class LoteApiController {
         
         public Long getCategoriaId() { return categoriaId; }
         public void setCategoriaId(Long categoriaId) { this.categoriaId = categoriaId; }
+        public Long getSubCategoriaId() { return subCategoriaId; }
+        public void setSubCategoriaId(Long subCategoriaId) { this.subCategoriaId = subCategoriaId; }
         public String getAlias() { return alias; }
         public void setAlias(String alias) { this.alias = alias; }
         public String getFornecedor() { return fornecedor; }

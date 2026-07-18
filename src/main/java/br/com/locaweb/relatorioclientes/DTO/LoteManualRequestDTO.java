@@ -11,6 +11,7 @@ import java.util.List;
 public class LoteManualRequestDTO {
 
     private Long categoriaId;
+    private Long subCategoriaId; // opcional
     private String fornecedor;
     private String descricao;
     private LocalDate dataEntrada;
@@ -29,6 +30,9 @@ public class LoteManualRequestDTO {
 
     public Long getCategoriaId() { return categoriaId; }
     public void setCategoriaId(Long categoriaId) { this.categoriaId = categoriaId; }
+
+    public Long getSubCategoriaId() { return subCategoriaId; }
+    public void setSubCategoriaId(Long subCategoriaId) { this.subCategoriaId = subCategoriaId; }
 
     public String getFornecedor() { return fornecedor; }
     public void setFornecedor(String fornecedor) { this.fornecedor = fornecedor; }
