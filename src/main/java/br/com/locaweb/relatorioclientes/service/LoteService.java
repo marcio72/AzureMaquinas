@@ -2,12 +2,14 @@ package br.com.locaweb.relatorioclientes.service;
 
 import br.com.locaweb.relatorioclientes.DTO.LoteManualRequestDTO;
 import br.com.locaweb.relatorioclientes.model.Categoria;
+import br.com.locaweb.relatorioclientes.model.Coletor;
 import br.com.locaweb.relatorioclientes.model.HistoricoPeca;
 import br.com.locaweb.relatorioclientes.model.Jogo;
 import br.com.locaweb.relatorioclientes.model.Lote;
 import br.com.locaweb.relatorioclientes.model.Peca;
 import br.com.locaweb.relatorioclientes.model.SubCategoria;
 import br.com.locaweb.relatorioclientes.repository.CategoriaRepository;
+import br.com.locaweb.relatorioclientes.repository.ColetorRepository;
 import br.com.locaweb.relatorioclientes.repository.HistoricoPecaRepository;
 import br.com.locaweb.relatorioclientes.repository.JogoRepository;
 import br.com.locaweb.relatorioclientes.repository.LoteRepository;
@@ -27,18 +29,21 @@ public class LoteService {
     private final CategoriaRepository categoriaRepository;
     private final JogoRepository jogoRepository;
     private final SubCategoriaRepository subCategoriaRepository;
+    private final ColetorRepository coletorRepository;
 
     public LoteService(LoteRepository loteRepository, PecaRepository pecaRepository,
                         HistoricoPecaRepository historicoPecaRepository,
                         CategoriaRepository categoriaRepository,
                         JogoRepository jogoRepository,
-                        SubCategoriaRepository subCategoriaRepository) {
+                        SubCategoriaRepository subCategoriaRepository,
+                        ColetorRepository coletorRepository) {
         this.loteRepository = loteRepository;
         this.pecaRepository = pecaRepository;
         this.historicoPecaRepository = historicoPecaRepository;
         this.categoriaRepository = categoriaRepository;
         this.jogoRepository = jogoRepository;
         this.subCategoriaRepository = subCategoriaRepository;
+        this.coletorRepository = coletorRepository;
     }
 
     /**
@@ -156,6 +161,12 @@ public class LoteService {
                 Jogo jogo = jogoRepository.findById(pecaRequest.getJogoId())
                         .orElseThrow(() -> new RuntimeException("Jogo não encontrado: " + pecaRequest.getJogoId()));
                 peca.setJogo(jogo);
+            }
+
+            if (pecaRequest.getColetorId() != null) {
+                Coletor coletor = coletorRepository.findById(pecaRequest.getColetorId())
+                        .orElseThrow(() -> new RuntimeException("Coletor não encontrado: " + pecaRequest.getColetorId()));
+                peca.setColetor(coletor);
             }
 
             pecaRepository.save(peca);

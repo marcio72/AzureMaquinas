@@ -60,7 +60,10 @@ public class EstoqueService {
                 maquina.setNumeroPlaca(null);
             }
         }
-        // TODO: próximas categorias (Coletor, Cadeado, Cadeado1, Cadeado2,
+        if (categoriaNome.equalsIgnoreCase("Coletor")) {
+            maquina.setColetor(instalando ? peca.getIdPeca().intValue() : null);
+        }
+        // TODO: próximas categorias (Cadeado, Cadeado1, Cadeado2,
         // Chave1, Chave2, Tip_Gabinete) entram aqui quando forem mapeadas.
     }
 

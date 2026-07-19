@@ -252,7 +252,7 @@
 		<!-- ================= MODO MANUAL ================= -->
 		<div id="blocoManual" style="display:none;">
 			<p style="font-size:12.5px; color:var(--text-gray); margin-bottom:15px; line-height:1.5;">
-				No modo <strong style="color:var(--primary-green)">Manual</strong>, você usa quando as peças já vêm com um código de fábrica (não sequencial) — ex: fornecedor <strong>AEC</strong>, onde cada placa tem um código próprio gravado na etiqueta (tipo <em>6DE5</em>) e pode ser um jogo diferente do catálogo, mesmo dentro do mesmo lote. Informe quantas peças vieram, digite o código de cada uma e escolha o jogo correspondente.
+				No modo <strong style="color:var(--primary-green)">Manual</strong>, você usa quando as peças já vêm com um código de fábrica (não sequencial) — ex: fornecedor <strong>AEC</strong>, onde cada placa tem um código próprio gravado na etiqueta (tipo <em>6DE5</em>) e pode representar um modelo diferente do catálogo (jogo ou coletor, dependendo da categoria), mesmo dentro do mesmo lote. Informe quantas peças vieram, digite o código de cada uma e escolha o modelo correspondente quando aplicável.
 			</p>
 			<div class="form-grid">
 				<div class="form-group col-span-4">
@@ -261,7 +261,7 @@
 				</div>
 
 				<div class="col-span-12" style="margin-top:5px;">
-					<span class="preview-label">📋 Peças (código de fábrica + jogo)</span>
+					<span class="preview-label">📋 Peças (código de fábrica + modelo, se aplicável)</span>
 					<div id="linhasManuais" style="display:flex; flex-direction:column; gap:10px;"></div>
 				</div>
 
@@ -288,12 +288,20 @@
 
 <script>
 	let jogosCache = null;
+	let coletoresCache = null;
 
 	async function carregarJogos() {
 		if (jogosCache) return jogosCache;
 		const res = await fetch('/api/jogos');
 		jogosCache = await res.json();
 		return jogosCache;
+	}
+
+	async function carregarColetores() {
+		if (coletoresCache) return coletoresCache;
+		const res = await fetch('/api/coletores');
+		coletoresCache = await res.json();
+		return coletoresCache;
 	}
 
 	function onCategoriaChange() {
@@ -306,6 +314,9 @@
 		modoWrapper.style.display = nomeSelecionada ? 'flex' : 'none';
 		if (nomeSelecionada.toLowerCase() === 'jogo') {
 			carregarJogos();
+		}
+		if (nomeSelecionada.toLowerCase() === 'coletor') {
+			carregarColetores();
 		}
 		carregarSubCategorias(select.value);
 	}
@@ -372,6 +383,7 @@
 		document.getElementById('blocoManual').style.display = (modo === 'manual') ? 'block' : 'none';
 		if (modo === 'manual') {
 			carregarJogos();
+			carregarColetores();
 		}
 	}
 
@@ -381,7 +393,16 @@
 		container.innerHTML = '';
 		if (isNaN(qtd) || qtd <= 0) return;
 
-		const jogos = await carregarJogos();
+		const categoriaSelect = document.getElementById('categoriaSelect');
+		const nomeSelecionada = (categoriaSelect.options[categoriaSelect.selectedIndex]?.getAttribute('data-nome') || '').toLowerCase();
+
+		let jogos = [];
+		let coletores = [];
+		if (nomeSelecionada === 'jogo') {
+			jogos = await carregarJogos();
+		} else if (nomeSelecionada === 'coletor') {
+			coletores = await carregarColetores();
+		}
 
 		for (let i = 0; i < qtd; i++) {
 			const linha = document.createElement('div');
@@ -393,15 +414,24 @@
 			codigoInput.placeholder = 'Código de fábrica (ex: 6DE5)';
 			codigoInput.className = 'linha-codigo';
 			codigoInput.style.flex = '1';
-
-			const jogoSelect = document.createElement('select');
-			jogoSelect.className = 'linha-jogo';
-			jogoSelect.style.flex = '1';
-			jogoSelect.innerHTML = '<option value="">Selecione o jogo...</option>' +
-				jogos.map(j => `<option value="${j.id}">${j.nome}</option>`).join('');
-
 			linha.appendChild(codigoInput);
-			linha.appendChild(jogoSelect);
+
+			if (nomeSelecionada === 'jogo') {
+				const jogoSelect = document.createElement('select');
+				jogoSelect.className = 'linha-jogo';
+				jogoSelect.style.flex = '1';
+				jogoSelect.innerHTML = '<option value="">Selecione o jogo...</option>' +
+					jogos.map(j => `<option value="${j.id}">${j.nome}</option>`).join('');
+				linha.appendChild(jogoSelect);
+			} else if (nomeSelecionada === 'coletor') {
+				const coletorSelect = document.createElement('select');
+				coletorSelect.className = 'linha-coletor';
+				coletorSelect.style.flex = '1';
+				coletorSelect.innerHTML = '<option value="">Selecione o coletor...</option>' +
+					coletores.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
+				linha.appendChild(coletorSelect);
+			}
+
 			container.appendChild(linha);
 		}
 	}
@@ -417,6 +447,7 @@
 
 		const codigos = document.querySelectorAll('.linha-codigo');
 		const jogosSelects = document.querySelectorAll('.linha-jogo');
+		const coletoresSelects = document.querySelectorAll('.linha-coletor');
 
 		if (codigos.length === 0) { alert('Informe a quantidade de peças.'); return; }
 
@@ -424,8 +455,9 @@
 		for (let i = 0; i < codigos.length; i++) {
 			const codigo = codigos[i].value.trim();
 			if (!codigo) { alert('Preencha o código de todas as peças.'); return; }
-			const jogoId = jogosSelects[i].value || null;
-			pecas.push({ codigo: codigo, jogoId: jogoId });
+			const jogoId = jogosSelects[i] ? (jogosSelects[i].value || null) : null;
+			const coletorId = coletoresSelects[i] ? (coletoresSelects[i].value || null) : null;
+			pecas.push({ codigo: codigo, jogoId: jogoId, coletorId: coletorId });
 		}
 
 		const payload = {

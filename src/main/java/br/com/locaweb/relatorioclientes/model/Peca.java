@@ -56,6 +56,14 @@ public class Peca {
     @JsonIgnore
     private Jogo jogo;
 
+    // Referência ao catálogo de coletores (Tbl_coletor), só relevante para
+    // peças da categoria "Coletor". Diz qual modelo/tipo de coletor essa
+    // peça física representa.
+    @ManyToOne
+    @JoinColumn(name = "cod_coletor_catalogo")
+    @JsonIgnore
+    private Coletor coletor;
+
     // ========= GETTERS / SETTERS ============
 
     public Long getIdPeca() {
@@ -144,5 +152,13 @@ public class Peca {
 
     public void setJogo(Jogo jogo) {
         this.jogo = jogo;
+    }
+
+    public Coletor getColetor() {
+        return coletor;
+    }
+
+    public void setColetor(Coletor coletor) {
+        this.coletor = coletor;
     }
 }
