@@ -64,6 +64,14 @@ public class Peca {
     @JsonIgnore
     private Coletor coletor;
 
+    // Referência ao catálogo de placas mãe (Tbl_Placa), só relevante para
+    // peças da categoria "Placa Mãe". Diz qual modelo de placa essa peça
+    // física representa (o código de fábrica em si continua em "codigo").
+    @ManyToOne
+    @JoinColumn(name = "cod_placa_catalogo")
+    @JsonIgnore
+    private Placa placa;
+
     // ========= GETTERS / SETTERS ============
 
     public Long getIdPeca() {
@@ -160,5 +168,13 @@ public class Peca {
 
     public void setColetor(Coletor coletor) {
         this.coletor = coletor;
+    }
+
+    public Placa getPlaca() {
+        return placa;
+    }
+
+    public void setPlaca(Placa placa) {
+        this.placa = placa;
     }
 }

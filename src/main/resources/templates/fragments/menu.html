@@ -134,9 +134,14 @@
 	<nav id="sidebar">
 		<div class="sidebar-header">
 			<span class="logo-text">SISTEMA PRO</span>
-			<button class="toggle-btn" id="sidebarCollapse">
-				<i class="bi bi-list"></i>
-			</button>
+			<div style="display:flex; align-items:center; gap:10px;">
+				<a href="/menu" class="toggle-btn" title="Menu de campo" style="font-size:1.1rem; text-decoration:none;">
+					<i class="bi bi-arrow-left-circle"></i>
+				</a>
+				<button class="toggle-btn" id="sidebarCollapse">
+					<i class="bi bi-list"></i>
+				</button>
+			</div>
 		</div>
 		
 		<ul class="nav flex-column mt-3">
@@ -185,6 +190,9 @@
 					<ul class="collapse-menu">
 						<li><a class="nav-link" th:href="@{/lotes}">Gerenciar Lotes</a></li>
 						<li><a class="nav-link" th:href="@{/categorias}">Categorias</a></li>
+						<li><a class="nav-link" th:href="@{/subcategorias}">Subcategorias</a></li>
+						<li><a class="nav-link" th:href="@{/coletores}">Coletores</a></li>
+						<li><a class="nav-link" th:href="@{/placas}">Placas</a></li>
 					</ul>
 				</div>
 			</li>

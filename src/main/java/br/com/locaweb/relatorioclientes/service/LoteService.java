@@ -7,6 +7,7 @@ import br.com.locaweb.relatorioclientes.model.HistoricoPeca;
 import br.com.locaweb.relatorioclientes.model.Jogo;
 import br.com.locaweb.relatorioclientes.model.Lote;
 import br.com.locaweb.relatorioclientes.model.Peca;
+import br.com.locaweb.relatorioclientes.model.Placa;
 import br.com.locaweb.relatorioclientes.model.SubCategoria;
 import br.com.locaweb.relatorioclientes.repository.CategoriaRepository;
 import br.com.locaweb.relatorioclientes.repository.ColetorRepository;
@@ -14,6 +15,7 @@ import br.com.locaweb.relatorioclientes.repository.HistoricoPecaRepository;
 import br.com.locaweb.relatorioclientes.repository.JogoRepository;
 import br.com.locaweb.relatorioclientes.repository.LoteRepository;
 import br.com.locaweb.relatorioclientes.repository.PecaRepository;
+import br.com.locaweb.relatorioclientes.repository.PlacaRepository;
 import br.com.locaweb.relatorioclientes.repository.SubCategoriaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,13 +32,15 @@ public class LoteService {
     private final JogoRepository jogoRepository;
     private final SubCategoriaRepository subCategoriaRepository;
     private final ColetorRepository coletorRepository;
+    private final PlacaRepository placaRepository;
 
     public LoteService(LoteRepository loteRepository, PecaRepository pecaRepository,
                         HistoricoPecaRepository historicoPecaRepository,
                         CategoriaRepository categoriaRepository,
                         JogoRepository jogoRepository,
                         SubCategoriaRepository subCategoriaRepository,
-                        ColetorRepository coletorRepository) {
+                        ColetorRepository coletorRepository,
+                        PlacaRepository placaRepository) {
         this.loteRepository = loteRepository;
         this.pecaRepository = pecaRepository;
         this.historicoPecaRepository = historicoPecaRepository;
@@ -44,6 +48,7 @@ public class LoteService {
         this.jogoRepository = jogoRepository;
         this.subCategoriaRepository = subCategoriaRepository;
         this.coletorRepository = coletorRepository;
+        this.placaRepository = placaRepository;
     }
 
     /**
@@ -167,6 +172,12 @@ public class LoteService {
                 Coletor coletor = coletorRepository.findById(pecaRequest.getColetorId())
                         .orElseThrow(() -> new RuntimeException("Coletor não encontrado: " + pecaRequest.getColetorId()));
                 peca.setColetor(coletor);
+            }
+
+            if (pecaRequest.getPlacaId() != null) {
+                Placa placa = placaRepository.findById(pecaRequest.getPlacaId())
+                        .orElseThrow(() -> new RuntimeException("Placa não encontrada: " + pecaRequest.getPlacaId()));
+                peca.setPlaca(placa);
             }
 
             pecaRepository.save(peca);

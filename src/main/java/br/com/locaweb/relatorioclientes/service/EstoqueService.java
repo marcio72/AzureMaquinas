@@ -59,6 +59,9 @@ public class EstoqueService {
             } else {
                 maquina.setNumeroPlaca(null);
             }
+            if (peca.getPlaca() != null) {
+                maquina.setModPlaca(instalando ? peca.getPlaca().getId().intValue() : null);
+            }
         }
         if (categoriaNome.equalsIgnoreCase("Coletor")) {
             maquina.setColetor(instalando ? peca.getIdPeca().intValue() : null);

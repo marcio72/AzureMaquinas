@@ -21,6 +21,7 @@ public class LoteManualRequestDTO {
         private String codigo;
         private Long jogoId; // opcional - só faz sentido pra categoria "Jogo"
         private Long coletorId; // opcional - só faz sentido pra categoria "Coletor"
+        private Long placaId; // opcional - só faz sentido pra categoria "Placa Mãe"
 
         public String getCodigo() { return codigo; }
         public void setCodigo(String codigo) { this.codigo = codigo; }
@@ -30,6 +31,9 @@ public class LoteManualRequestDTO {
 
         public Long getColetorId() { return coletorId; }
         public void setColetorId(Long coletorId) { this.coletorId = coletorId; }
+
+        public Long getPlacaId() { return placaId; }
+        public void setPlacaId(Long placaId) { this.placaId = placaId; }
     }
 
     public Long getCategoriaId() { return categoriaId; }

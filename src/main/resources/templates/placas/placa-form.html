@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<title>Cadastro de Placa - Sistema Pro</title>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+	<style>
+		:root {
+			--bg-body: #081418;
+			--bg-card: #10242a;
+			--primary-green: #1ee4ac;
+			--accent-blue: #3d8bff;
+			--text-white: #ffffff;
+			--text-gray: #8ea1a7;
+			--border-color: rgba(255, 255, 255, 0.05);
+			--input-bg: #081418;
+		}
+
+		* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+		body {
+			background-color: var(--bg-body);
+			color: var(--text-white);
+			padding: 15px;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		}
+
+		.container { width: 100%; max-width: 650px; margin: 0 auto; }
+
+		/* HEADER */
+		header { margin-bottom: 25px; width: 100%; }
+		.breadcrumb { font-size: 12px; color: var(--text-gray); margin-bottom: 10px; list-style: none; display: flex; gap: 5px; }
+		.breadcrumb a { color: var(--primary-green); text-decoration: none; }
+		.page-title { font-size: 22px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+
+		/* CARD */
+		.card-custom {
+			background: var(--bg-card);
+			border-radius: 24px;
+			padding: 30px;
+			border: 1px solid var(--border-color);
+			box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+		}
+
+		.top-actions { display: flex; gap: 10px; margin-bottom: 25px; }
+		.btn-mini {
+			padding: 8px 15px; border-radius: 8px; font-size: 12px; font-weight: 600;
+			text-decoration: none; display: flex; align-items: center; gap: 5px; transition: 0.2s;
+		}
+		.btn-secondary { background: rgba(255,255,255,0.05); color: var(--text-white); }
+
+		/* FORM */
+		.form-row { display: flex; gap: 15px; flex-wrap: wrap; }
+		.form-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; flex: 1; min-width: 220px; }
+		label { font-size: 12px; font-weight: 600; color: var(--text-gray); text-transform: uppercase; letter-spacing: 0.5px; }
+
+		input[type="text"], textarea {
+			background: var(--input-bg);
+			border: 1px solid var(--border-color);
+			color: white;
+			padding: 14px 18px;
+			border-radius: 12px;
+			font-size: 15px;
+			outline: none;
+			transition: 0.3s;
+			width: 100%;
+			font-family: 'Inter', sans-serif;
+			resize: vertical;
+		}
+
+		input[type="text"]:focus, textarea:focus { border-color: var(--primary-green); box-shadow: 0 0 12px rgba(30, 228, 172, 0.15); }
+
+		.checkbox-row {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+			background: var(--input-bg);
+			border: 1px solid var(--border-color);
+			padding: 14px 18px;
+			border-radius: 12px;
+		}
+		.checkbox-row input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--primary-green); }
+		.checkbox-row label { margin: 0; }
+
+		/* FOOTER ACTIONS */
+		.footer-actions {
+			margin-top: 10px;
+			display: flex;
+			gap: 15px;
+			border-top: 1px solid var(--border-color);
+			padding-top: 25px;
+		}
+
+		.btn-save {
+			background: var(--primary-green);
+			color: #081418;
+			padding: 14px;
+			border-radius: 12px;
+			border: none;
+			font-weight: 700;
+			font-size: 14px;
+			cursor: pointer;
+			flex: 2;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 10px;
+			transition: 0.3s;
+		}
+
+		.btn-cancel {
+			background: rgba(255,255,255,0.05);
+			color: var(--text-white);
+			padding: 14px;
+			border-radius: 12px;
+			text-decoration: none;
+			font-weight: 600;
+			font-size: 14px;
+			flex: 1;
+			text-align: center;
+			transition: 0.2s;
+		}
+
+		.btn-save:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(30, 228, 172, 0.3); }
+		.btn-cancel:hover { background: rgba(255,255,255,0.1); }
+
+	</style>
+</head>
+
+<body>
+
+<div class="container">
+	<header>
+		<ul class="breadcrumb">
+			<li><a href="/">Home</a> /</li>
+			<li><a href="/placas">Placas</a> /</li>
+			<li style="color: var(--text-gray)">Cadastro</li>
+		</ul>
+		<h1 class="page-title"><span>🔧</span> Cadastro de Placa</h1>
+	</header>
+
+	<div class="card card-custom">
+		<div class="top-actions">
+			<a href="/placas" class="btn-mini btn-secondary">
+				<i class="bi bi-arrow-left"></i> Voltar
+			</a>
+		</div>
+
+		<form th:action="@{/placas/salvar}" th:object="${placa}" method="post">
+
+			<input type="hidden" th:field="*{id}">
+
+			<div class="form-row">
+				<div class="form-group">
+					<label for="modelo">Modelo</label>
+					<input type="text" th:field="*{modelo}" id="modelo"
+						   placeholder="Ex: GA-VM800" required autofocus>
+				</div>
+				<div class="form-group">
+					<label for="fabricante">Fabricante</label>
+					<input type="text" th:field="*{fabricante}" id="fabricante"
+						   placeholder="Ex: Gigabyte">
+				</div>
+			</div>
+
+			<div class="form-group">
+				<label for="descricao">Descrição</label>
+				<textarea th:field="*{descricao}" id="descricao" rows="3"
+						  placeholder="Ex: Funciona com família Nine, ShowBall..."></textarea>
+			</div>
+
+			<div class="form-row">
+				<div class="form-group">
+					<label for="processador">Processador</label>
+					<input type="text" th:field="*{processador}" id="processador"
+						   placeholder="Ex: Pentium-4" required>
+				</div>
+				<div class="form-group">
+					<label for="chip">Chip</label>
+					<input type="text" th:field="*{chip}" id="chip"
+						   placeholder="Ex: VIA-VT8237R-Plus" required>
+				</div>
+			</div>
+
+			<div class="form-group">
+				<div class="checkbox-row">
+					<input type="checkbox" th:field="*{ativo}" id="ativo">
+					<label for="ativo" style="text-transform: none; font-size: 14px;">Placa ativa</label>
+				</div>
+			</div>
+
+			<div class="footer-actions">
+				<a href="/placas" class="btn-cancel">VOLTAR</a>
+				<button type="submit" class="btn-save">
+					<i class="bi bi-check-lg"></i> SALVAR PLACA
+				</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+</body>
+</html>

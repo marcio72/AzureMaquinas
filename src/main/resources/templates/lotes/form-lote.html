@@ -289,6 +289,7 @@
 <script>
 	let jogosCache = null;
 	let coletoresCache = null;
+	let placasCache = null;
 
 	async function carregarJogos() {
 		if (jogosCache) return jogosCache;
@@ -304,6 +305,13 @@
 		return coletoresCache;
 	}
 
+	async function carregarPlacas() {
+		if (placasCache) return placasCache;
+		const res = await fetch('/api/placas');
+		placasCache = await res.json();
+		return placasCache;
+	}
+
 	function onCategoriaChange() {
 		const select = document.getElementById('categoriaSelect');
 		const nomeSelecionada = select.options[select.selectedIndex]?.getAttribute('data-nome') || '';
@@ -317,6 +325,9 @@
 		}
 		if (nomeSelecionada.toLowerCase() === 'coletor') {
 			carregarColetores();
+		}
+		if (nomeSelecionada.toLowerCase() === 'placa mãe') {
+			carregarPlacas();
 		}
 		carregarSubCategorias(select.value);
 	}
@@ -384,6 +395,7 @@
 		if (modo === 'manual') {
 			carregarJogos();
 			carregarColetores();
+			carregarPlacas();
 		}
 	}
 
@@ -398,10 +410,13 @@
 
 		let jogos = [];
 		let coletores = [];
+		let placas = [];
 		if (nomeSelecionada === 'jogo') {
 			jogos = await carregarJogos();
 		} else if (nomeSelecionada === 'coletor') {
 			coletores = await carregarColetores();
+		} else if (nomeSelecionada === 'placa mãe') {
+			placas = await carregarPlacas();
 		}
 
 		for (let i = 0; i < qtd; i++) {
@@ -430,6 +445,13 @@
 				coletorSelect.innerHTML = '<option value="">Selecione o coletor...</option>' +
 					coletores.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
 				linha.appendChild(coletorSelect);
+			} else if (nomeSelecionada === 'placa mãe') {
+				const placaSelect = document.createElement('select');
+				placaSelect.className = 'linha-placa';
+				placaSelect.style.flex = '1';
+				placaSelect.innerHTML = '<option value="">Selecione a placa...</option>' +
+					placas.map(p => `<option value="${p.id}">${p.modelo}${p.fabricante ? ' (' + p.fabricante + ')' : ''}</option>`).join('');
+				linha.appendChild(placaSelect);
 			}
 
 			container.appendChild(linha);
@@ -448,6 +470,7 @@
 		const codigos = document.querySelectorAll('.linha-codigo');
 		const jogosSelects = document.querySelectorAll('.linha-jogo');
 		const coletoresSelects = document.querySelectorAll('.linha-coletor');
+		const placasSelects = document.querySelectorAll('.linha-placa');
 
 		if (codigos.length === 0) { alert('Informe a quantidade de peças.'); return; }
 
@@ -457,7 +480,8 @@
 			if (!codigo) { alert('Preencha o código de todas as peças.'); return; }
 			const jogoId = jogosSelects[i] ? (jogosSelects[i].value || null) : null;
 			const coletorId = coletoresSelects[i] ? (coletoresSelects[i].value || null) : null;
-			pecas.push({ codigo: codigo, jogoId: jogoId, coletorId: coletorId });
+			const placaId = placasSelects[i] ? (placasSelects[i].value || null) : null;
+			pecas.push({ codigo: codigo, jogoId: jogoId, coletorId: coletorId, placaId: placaId });
 		}
 
 		const payload = {

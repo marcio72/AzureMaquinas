@@ -29,4 +29,7 @@ public class Placa {
     
     @Column(name = "Chip")
     private String chip;
+    
+    @Column(name = "ativo")
+    private Boolean ativo;
 }

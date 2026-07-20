@@ -74,6 +74,7 @@ public class ClienteController {
                 .collect(Collectors.toList());
 
         List<Cliente> ultimosClientes = clientes.stream()
+                .filter(c -> c.getDtCadastro() != null)
                 .sorted(Comparator.comparing(Cliente::getDtCadastro).reversed())
                 .limit(5)
                 .collect(Collectors.toList());

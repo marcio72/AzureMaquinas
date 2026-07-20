@@ -48,6 +48,9 @@ private Integer fonte;
 @Column(name = "Coletor")
 private Integer coletor;
 
+@Column(name = "Mod_Placa")
+private Integer modPlaca;
+
 // Peça física (categoria "Jogo") instalada — não confundir com o
 // campo "jogo" (nom_jogo), que é o nome do jogo em texto livre e
 // não tem relação com o rastreio de peça física.
