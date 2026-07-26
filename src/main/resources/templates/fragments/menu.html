@@ -153,6 +153,13 @@
 			</li>
 			
 			<li class="nav-item">
+				<a class="nav-link" th:href="@{/explorer}">
+					<i class="bi bi-diagram-3"></i>
+					<span>Explorer</span>
+				</a>
+			</li>
+			
+			<li class="nav-item">
 				<a class="nav-link" data-bs-toggle="collapse" href="#menuClientes">
 					<i class="bi bi-people"></i>
 					<span>Clientes</span>
@@ -160,6 +167,7 @@
 				</a>
 				<div class="collapse" id="menuClientes">
 					<ul class="collapse-menu">
+						<li><a class="nav-link" th:href="@{/clientes/clientes-e-maquinas}">Lista c/ Máquina</a></li>
 						<li><a class="nav-link" th:href="@{/clientes/listar}">Lista Geral</a></li>
 						<li><a class="nav-link" th:href="@{/clientes/novo}">Novo Cadastro</a></li>
 					</ul>

@@ -21,6 +21,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
 
 @Service
 public class LoteService {
@@ -192,5 +194,33 @@ public class LoteService {
         }
 
         return loteSalvo;
+    }
+
+    /**
+     * Lista todos os lotes ordenados por "situação de uso":
+     *   1º) lotes intactos (quantidadeAtual == quantidadeComprada) — nada saiu ainda
+     *   2º) lotes parcialmente usados (0 < quantidadeAtual < quantidadeComprada)
+     *   3º) lotes esgotados (quantidadeAtual == 0) — tudo já saiu
+     * Dentro de cada um desses grupos, ordena por data de entrada (mais recente primeiro).
+     */
+    public List<Lote> listarLotesOrdenados() {
+        List<Lote> lotes = loteRepository.findAll();
+        Comparator<Lote> porSituacao = Comparator.comparingInt(this::grupoSituacaoLote);
+        Comparator<Lote> porData = Comparator.comparing(
+                Lote::getDataEntrada, Comparator.nullsLast(Comparator.reverseOrder()));
+        lotes.sort(porSituacao.thenComparing(porData));
+        return lotes;
+    }
+
+    private int grupoSituacaoLote(Lote lote) {
+        int comprada = lote.getQuantidadeComprada();
+        int atual = lote.getQuantidadeAtual();
+        if (atual <= 0) {
+            return 2; // esgotado: já saiu tudo
+        }
+        if (atual >= comprada) {
+            return 0; // intacto: ainda não foi usado
+        }
+        return 1; // parcialmente usado
     }
 }

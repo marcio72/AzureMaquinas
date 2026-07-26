@@ -18,6 +18,10 @@ public interface MaquinaRepository extends JpaRepository<Maquina, Long> {
 
 	List<Maquina> findByCodClienteAndAtivoTrue(Integer codCliente);
 
+	// 🔍 Tela Explorer: busca as máquinas de vários clientes de uma vez (evita
+	// uma consulta por cliente ao montar a árvore inteira).
+	List<Maquina> findByCodClienteInAndAtivoTrue(List<Integer> codClientes);
+
 	Optional<Maquina> findById(Integer id);
     
     @Query("""

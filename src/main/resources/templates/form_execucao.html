@@ -97,19 +97,30 @@
 <!-- ================================================================== -->
 <script>
   let solicitacoes = {};
+  let tecnicoLogado = '';
+
+  /* =======================================================
+     HORÁRIO LOCAL (evita o adiantamento de toISOString, que é UTC)
+  ========================================================= */
+  function agoraNoHorarioLocal() {
+    const d = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
 
   /* =======================================================
      ONLOAD
   ========================================================= */
   window.onload = () => {
-    carregarSolicitacoes();
+    tecnicoLogado = new URLSearchParams(window.location.search).get('tecnico') || '';
+    carregarSolicitacoes().then(() => restaurarRetornoInstalacao());
   };
 
   /* =======================================================
      CARREGAR SOLICITAÇÕES
   ========================================================= */
   function carregarSolicitacoes() {
-    fetch('/api/solicitacao')
+    return fetch('/api/solicitacao')
       .then(r => r.json())
       .then(data => {
         const select = document.getElementById('solicitacao_cliente');
@@ -167,11 +178,17 @@
     const nome = select.selectedOptions[0].text;
     const desc = select.selectedOptions[0].dataset.descricao || '';
     const temFoto = select.selectedOptions[0].dataset.temFoto === '1';
-    const agora = new Date().toISOString().slice(0,16);
+    const agora = agoraNoHorarioLocal();
+
+    // Cliente genérico "INSTALAÇÃO" (Tbl_Cliente, cod_cliente = 1) — mesmo
+    // critério usado no resto do sistema (dashboard, /instalacoes, Explorer)
+    const solicitacaoAtualId = document.getElementById('solicitacao_cliente').value;
+    const ehInstalacao = solicitacoes[solicitacaoAtualId] && solicitacoes[solicitacaoAtualId].clienteId === 1;
 
     const bloco = document.createElement('div');
     bloco.className = "execucao-bloco mb-3 p-3 border rounded bg-light";
     bloco.id = "execucao_" + idProblema;
+    bloco.dataset.descricaoProblema = desc;
 
     const fotoHtml = temFoto ? `
       <div class="mt-2 mb-2">
@@ -185,9 +202,18 @@
       </div>
     ` : '';
 
+    const instalacaoHtml = ehInstalacao ? `
+      <div class="mt-2 mb-2">
+        <button type="button" class="btn btn-sm btn-outline-success" onclick="abrirFormInstalacao('${idProblema}')">
+          <i class="bi bi-building-add"></i> Instalação (Novo Cliente)
+        </button>
+      </div>
+    ` : '';
+
     bloco.innerHTML = `
       <label class="fw-bold">${nome}${desc ? ' - <span class="text-danger">' + desc + '</span>' : ''}</label>
       ${fotoHtml}
+      ${instalacaoHtml}
 
       <div class="row mt-2">
         <div class="col-md-4">
@@ -197,7 +223,7 @@
         </div>
         <div class="col-md-4">
           <label class="form-label small">Técnico</label>
-          <input type="text" class="form-control" name="tecnico_${idProblema}">
+          <input type="text" class="form-control" name="tecnico_${idProblema}" value="${tecnicoLogado}" readonly>
         </div>
       </div>
 
@@ -219,6 +245,61 @@
 
     document.getElementById('execucoes_container').appendChild(bloco);
     carregarCategoriasNoSelect(bloco.querySelector('.categoria_estoque'));
+  }
+
+  /* =======================================================
+     ABRIR CADASTRO DE CLIENTE+MÁQUINAS (SÓ PRA INSTALAÇÃO)
+  ========================================================= */
+  function abrirFormInstalacao(idProblema) {
+    const solicitacaoId = document.getElementById('solicitacao_cliente').value;
+    const bloco = document.getElementById('execucao_' + idProblema);
+    const campoTecnico = bloco ? bloco.querySelector(`[name='tecnico_${idProblema}']`) : null;
+    const tecnico = campoTecnico ? campoTecnico.value : '';
+    const pedidoTexto = bloco ? (bloco.dataset.descricaoProblema || '') : '';
+
+    const qs = new URLSearchParams({
+      solicitacaoId: solicitacaoId,
+      idProblema: idProblema,
+      tecnico: tecnico,
+      pedidoTexto: pedidoTexto
+    }).toString();
+
+    window.location.href = '/clientes/novo-com-maquinas?' + qs;
+  }
+
+  /* =======================================================
+     RESTAURAR RETORNO DO CADASTRO DE INSTALAÇÃO
+     (a tela de cadastro volta pra cá com o resumo na própria URL,
+     em vez de localStorage, pra não misturar dados entre execuções)
+  ========================================================= */
+  function restaurarRetornoInstalacao() {
+    const params = new URLSearchParams(window.location.search);
+    const resumo = params.get('resumoInstalacao');
+    const solicitacaoId = params.get('solicitacaoId');
+    const idProblema = params.get('idProblema');
+    const tecnico = params.get('tecnico') || '';
+
+    if (!resumo || !solicitacaoId || !idProblema) return;
+
+    const select = document.getElementById('solicitacao_cliente');
+    select.value = solicitacaoId;
+    atualizarFormulario();
+
+    const maquinaSelect = document.getElementById('maquina_execucao_select');
+    maquinaSelect.value = idProblema;
+    adicionarMaquinaExecucao();
+
+    const bloco = document.getElementById('execucao_' + idProblema);
+    if (bloco) {
+      const textarea = bloco.querySelector(`[name='descricao_execucao_${idProblema}']`);
+      if (textarea) textarea.value = resumo;
+
+      const campoTecnico = bloco.querySelector(`[name='tecnico_${idProblema}']`);
+      if (campoTecnico && tecnico) campoTecnico.value = tecnico;
+    }
+
+    // Limpa a URL pra não reprocessar isso de novo se a página for recarregada
+    window.history.replaceState({}, document.title, '/form_execucao');
   }
 
   /* =======================================================

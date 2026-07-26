@@ -34,7 +34,7 @@ public class SubCategoriaController {
     @GetMapping("/novo")
     public String novaSubCategoria(Model model) {
         model.addAttribute("subcategoria", new SubCategoria());
-        model.addAttribute("categorias", categoriaRepository.findAll());
+        model.addAttribute("categorias", categoriaRepository.findAllByOrderByNomeAsc());
         return "subcategorias/subcategoria-form";
     }
 
@@ -50,7 +50,7 @@ public class SubCategoriaController {
     public String editarSubCategoria(@PathVariable Long id, Model model) {
         SubCategoria subcategoria = subCategoriaRepository.findById(id).orElseThrow();
         model.addAttribute("subcategoria", subcategoria);
-        model.addAttribute("categorias", categoriaRepository.findAll());
+        model.addAttribute("categorias", categoriaRepository.findAllByOrderByNomeAsc());
         return "subcategorias/subcategoria-form";
     }
 

@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Explorer - Clientes e Máquinas</title>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+	<style>
+		:root {
+		   --bg-body: #081418;
+		   --bg-card: #10242a;
+		   --bg-sidebar: #0a1a20;
+		   --primary-green: #1ee4ac;
+		   --accent-blue: #3d8bff;
+		   --accent-amber: #ffb020;
+		   --text-white: #ffffff;
+		   --text-gray: #8ea1a7;
+		   --border-color: rgba(255, 255, 255, 0.06);
+		}
+
+		* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+		body { background: var(--bg-body); color: var(--text-white); overflow: hidden; font-size: 13px; }
+
+		.topbar {
+		   height: 56px; background: var(--bg-sidebar); border-bottom: 1px solid var(--border-color);
+		   display: flex; align-items: center; justify-content: space-between; padding: 0 20px;
+		}
+		.topbar-actions { display: flex; align-items: center; gap: 10px; }
+		.topbar-actions a {
+		   color: var(--text-white); text-decoration: none; font-size: 12px; font-weight: 600;
+		   background: rgba(255,255,255,0.05); border: 1px solid var(--border-color);
+		   padding: 8px 14px; border-radius: 10px; display: flex; align-items: center; gap: 6px;
+		}
+		.topbar-actions a.btn-installs:hover { border-color: var(--primary-green); color: var(--primary-green); }
+		.topbar-actions a.btn-back:hover { border-color: var(--accent-blue); color: var(--accent-blue); }
+
+		.layout { display: flex; height: calc(100vh - 56px); }
+
+		.sidebar {
+		   width: 280px; min-width: 280px; background: var(--bg-sidebar);
+		   border-right: 1px solid var(--border-color); overflow-y: auto; padding: 0;
+		}
+
+		.sidebar-header {
+		   display: flex; align-items: center; gap: 10px; padding: 16px 14px;
+		   border-bottom: 1px solid var(--border-color); margin-bottom: 10px;
+		}
+		.sidebar-logo {
+		   width: 32px; height: 32px; border-radius: 8px; background: var(--primary-green);
+		   color: #081418; display: flex; align-items: center; justify-content: center;
+		   font-weight: 700; font-size: 15px; flex-shrink: 0;
+		}
+		.sidebar-title { font-size: 13px; font-weight: 700; color: var(--primary-green); line-height: 1.3; }
+		.sidebar-subtitle { font-size: 10.5px; color: var(--text-gray); letter-spacing: 0.3px; }
+
+		.sidebar-section-label {
+		   font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-gray);
+		   padding: 4px 14px 8px;
+		}
+
+		.tree-body { padding: 0 10px 14px; }
+
+		.node-row { display: flex; align-items: center; gap: 5px; padding: 1px 0; }
+		.toggle-arrow {
+		   cursor: pointer; width: 16px; text-align: center; color: var(--text-gray);
+		   font-size: 15px; transition: transform 0.2s; flex-shrink: 0;
+		}
+		.toggle-arrow.rotated { transform: rotate(90deg); }
+
+		.node-link {
+		   flex: 1; display: flex; align-items: center; justify-content: space-between;
+		   text-decoration: none; color: var(--text-white); padding: 7px 9px; border-radius: 8px;
+		   font-size: 12.5px; transition: 0.15s;
+		}
+		.node-link:hover { background: rgba(255,255,255,0.04); color: var(--text-white); }
+
+		/* Cliente ativo: destaque sólido, bem diferente dos que não estão em foco */
+		.node-link.node-active-cliente {
+		   background: rgba(30, 228, 172, 0.22);
+		   color: var(--primary-green);
+		   font-weight: 700;
+		   box-shadow: inset 3px 0 0 var(--primary-green);
+		}
+		/* Máquina ativa: destaque mais discreto */
+		.node-link.node-active-maquina {
+		   background: rgba(61, 139, 255, 0.16);
+		   color: var(--accent-blue);
+		   font-weight: 600;
+		}
+
+		.badge-count {
+		   background: rgba(255,255,255,0.06); color: var(--text-gray); font-size: 10.5px;
+		   padding: 2px 7px; border-radius: 20px; font-weight: 600;
+		}
+		.node-active-cliente .badge-count { background: rgba(30,228,172,0.22); color: var(--primary-green); }
+
+		.children { margin-left: 18px; display: none; border-left: 1px solid var(--border-color); padding-left: 5px; }
+		.children.active { display: block; }
+
+		.breadcrumb { color: var(--text-gray); font-size: 12px; margin-bottom: 16px; }
+		.breadcrumb a { color: var(--accent-blue); text-decoration: none; }
+
+		.content { flex: 1; overflow-y: auto; padding: 24px; }
+
+		.card-custom {
+		   background: var(--bg-card); border-radius: 16px; padding: 20px;
+		   border: 1px solid var(--border-color); margin-bottom: 18px;
+		}
+
+		.stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 20px; }
+		.stat-mini {
+		   background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px;
+		   padding: 16px; transition: 0.15s;
+		}
+		.stat-mini.troca-card { cursor: pointer; }
+		.stat-mini.troca-card:hover { border-color: var(--accent-blue); }
+		.stat-mini.troca-card-ativo { border-color: var(--primary-green); background: rgba(30,228,172,0.08); }
+		.stat-mini .num { font-size: 24px; font-weight: 700; margin-top: 5px; }
+		.stat-mini .lbl { color: var(--text-gray); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.4px; }
+
+		.filtro-indicador {
+		   display: none; align-items: center; gap: 10px; background: rgba(30,228,172,0.1);
+		   border: 1px solid rgba(30,228,172,0.3); color: var(--primary-green); font-size: 12.5px;
+		   font-weight: 600; padding: 10px 14px; border-radius: 10px; margin-bottom: 16px;
+		}
+		.filtro-indicador button {
+		   background: none; border: none; color: var(--primary-green); font-weight: 700;
+		   cursor: pointer; text-decoration: underline; font-size: 12.5px;
+		}
+
+		.empty-state { text-align: center; padding: 50px 20px; color: var(--text-gray); font-size: 13px; }
+		.empty-state i { font-size: 36px; opacity: 0.4; display: block; margin-bottom: 10px; }
+
+		table { width: 100%; border-collapse: collapse; }
+		th { text-align: left; padding: 10px 12px; font-size: 10.5px; text-transform: uppercase; color: var(--text-gray); border-bottom: 1px solid var(--border-color); }
+		td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); font-size: 12.5px; }
+
+		.badge-status { padding: 3px 10px; border-radius: 8px; font-weight: 700; font-size: 11px; border: 1px solid; white-space: nowrap; }
+		.badge-pendente { background: rgba(255, 176, 32, 0.12); color: var(--accent-amber); border-color: rgba(255,176,32,0.3); }
+		.badge-concluida { background: rgba(30, 228, 172, 0.12); color: var(--primary-green); border-color: rgba(30,228,172,0.3); }
+
+		.mini-badge {
+		   display: inline-block; background: rgba(61,139,255,0.12); color: var(--accent-blue);
+		   font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: 6px; margin: 1px 3px 1px 0;
+		}
+
+		.machine-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+		.machine-icon {
+		   width: 44px; height: 44px; border-radius: 12px; background: rgba(255,176,32,0.12);
+		   color: var(--accent-amber); display: flex; align-items: center; justify-content: center; font-size: 20px;
+		}
+	</style>
+</head>
+<body>
+
+<div class="topbar">
+	<h5 style="font-size: 13.5px; font-weight: 700;">🛠️ Explorer — Clientes e Máquinas</h5>
+	<div class="topbar-actions">
+		<a class="btn-back" href="/menu"><i class="bi bi-arrow-left"></i> Menu</a>
+		<a class="btn-installs" href="/instalacoes"><i class="bi bi-hammer"></i> Instalações</a>
+		<a class="btn-back" href="/"><i class="bi bi-arrow-left"></i> Dashboard</a>
+	</div>
+</div>
+
+<div class="layout">
+
+	<div class="sidebar" id="sidebar">
+
+		<div class="sidebar-header">
+			<div class="sidebar-logo">S</div>
+			<div>
+				<div class="sidebar-title">SISTEMA PRO</div>
+				<div class="sidebar-subtitle">gestão · manutenção</div>
+			</div>
+		</div>
+
+		<div class="sidebar-section-label">Clientes</div>
+
+		<div class="tree-body">
+			<div th:each="cliente : ${clientes}" class="node-cliente">
+
+				<div class="node-row">
+					<span class="toggle-arrow" th:id="'arrow-cli-' + ${cliente.codCliente}"
+						  th:classappend="${clienteIdAtivo != null and clienteIdAtivo.equals(cliente.codCliente)} ? ' rotated' : ''"
+						  th:attr="onclick='toggle(\'cli-' + ${cliente.codCliente} + '\', this)'">▸</span>
+					<a class="node-link"
+					   th:href="@{/explorer(clienteId=${cliente.codCliente})}"
+					   th:classappend="${clienteIdAtivo != null and clienteIdAtivo.equals(cliente.codCliente)} ? ' node-active-cliente' : ''">
+						<span>📁 <span th:text="${cliente.nomCliente}"></span></span>
+						<span class="badge-count" th:text="${cliente.maquinas.size()} + ' máq.'"></span>
+					</a>
+				</div>
+
+				<div th:id="'cli-' + ${cliente.codCliente}" class="children"
+					 th:classappend="${clienteIdAtivo != null and clienteIdAtivo.equals(cliente.codCliente)} ? ' active' : ''">
+
+					<div th:each="maquina : ${cliente.maquinas}">
+						<div class="node-row">
+							<span class="toggle-arrow" th:id="'arrow-maq-' + ${maquina.id}"
+								  th:classappend="${maquinaIdAtiva != null and maquinaIdAtiva.equals(maquina.id)} ? ' rotated' : ''"
+								  th:attr="onclick='toggle(\'maq-' + ${maquina.id} + '\', this, true)'">▸</span>
+							<a class="node-link node-maquina"
+							   th:href="@{/explorer(maquinaId=${maquina.id})}"
+							   th:classappend="${maquinaIdAtiva != null and maquinaIdAtiva.equals(maquina.id)} ? ' node-active-maquina' : ''">
+								<span>🎰 <span th:text="${maquina.nom_maq}"></span></span>
+								<span class="badge-count" th:text="${execucoesPorMaquina.get(maquina.id) ?: 0}"></span>
+							</a>
+						</div>
+						<div th:id="'maq-' + ${maquina.id}" class="children" data-loaded="false"
+							 th:attr="data-maquina-id=${maquina.id}"
+							 th:classappend="${maquinaIdAtiva != null and maquinaIdAtiva.equals(maquina.id)} ? ' active' : ''">
+							<div style="font-size: 11px; color: var(--text-gray); padding: 4px 9px;" class="loading-placeholder">
+								Carregando...
+							</div>
+						</div>
+					</div>
+
+					<div th:if="${cliente.maquinas.isEmpty()}" style="font-size:11px; padding:5px 9px; color: var(--text-gray);">
+						Nenhuma máquina ativa.
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="content">
+
+		<!-- Nada selecionado -->
+		<div th:if="${clienteSelecionado == null and maquinaSelecionada == null}" class="empty-state">
+			<i class="bi bi-diagram-3"></i>
+			Selecione um cliente ou uma máquina na árvore ao lado.
+		</div>
+
+		<!-- Cliente selecionado -->
+		<div th:if="${clienteSelecionado != null and maquinaSelecionada == null}">
+			<div class="breadcrumb">
+				<a href="/explorer">Clientes</a> / <span th:text="${clienteSelecionado.nomCliente}"></span>
+			</div>
+
+			<h5 class="fw-bold mb-4" th:text="${clienteSelecionado.nomCliente}"></h5>
+
+			<div class="stats-row">
+				<div class="stat-mini">
+					<div class="lbl">Quantidade de Chamados</div>
+					<div class="num" th:text="${totalChamados}"></div>
+				</div>
+				<div class="stat-mini">
+					<div class="lbl">Máquinas Ativas</div>
+					<div class="num" th:text="${clienteSelecionado.maquinas.size()}"></div>
+				</div>
+			</div>
+
+			<div class="card-custom">
+				<h6 class="fw-bold mb-3" style="color: var(--text-gray); font-size: 12px;">Máquinas deste cliente</h6>
+				<div th:each="maquina : ${clienteSelecionado.maquinas}" style="margin-bottom: 6px;">
+					<a th:href="@{/explorer(maquinaId=${maquina.id})}" style="color: var(--text-white); text-decoration: none; font-size: 12.5px;">
+						🎰 <span th:text="${maquina.nom_maq}"></span>
+						<span style="color: var(--text-gray); font-size: 11.5px;" th:text="${maquina.nom_jogo}"></span>
+					</a>
+				</div>
+				<div th:if="${clienteSelecionado.maquinas.isEmpty()}" style="color: var(--text-gray); font-size: 12px;">
+					Nenhuma máquina ativa pra esse cliente.
+				</div>
+			</div>
+		</div>
+
+		<!-- Máquina selecionada -->
+		<div th:if="${maquinaSelecionada != null}">
+			<div class="breadcrumb">
+				<a href="/explorer">Clientes</a> /
+				<a th:if="${clienteDaMaquina != null}" th:href="@{/explorer(clienteId=${clienteDaMaquina.codCliente})}" th:text="${clienteDaMaquina.nomCliente}"></a> /
+				<span th:text="${maquinaSelecionada.nom_maq}"></span>
+			</div>
+
+			<div class="machine-header">
+				<div class="machine-icon">🎰</div>
+				<div>
+					<h5 class="fw-bold mb-0" th:text="${maquinaSelecionada.nom_maq}"></h5>
+					<div style="color: var(--text-gray); font-size: 12px;">
+						Jogo: <span th:text="${maquinaSelecionada.nom_jogo}"></span> |
+						Placa: <span th:text="${maquinaSelecionada.numeroPlaca}"></span> |
+						Status:
+						<span th:if="${maquinaSelecionada.ativo}" style="color: var(--primary-green);">Ativa</span>
+						<span th:unless="${maquinaSelecionada.ativo}" style="color: var(--accent-amber);">Inativa</span>
+					</div>
+				</div>
+			</div>
+
+			<div class="stats-row">
+				<div class="stat-mini troca-card" th:each="t : ${trocasPorCategoria}"
+					 th:attr="data-categoria=${t.categoria}"
+					 onclick="filtrarPorCategoria(this.getAttribute('data-categoria'), this)">
+					<div class="lbl" th:text="'Trocas de ' + ${t.categoria}"></div>
+					<div class="num" th:text="${t.quantidade}"></div>
+				</div>
+				<div class="stat-mini" th:if="${trocasPorCategoria.isEmpty()}">
+					<div class="lbl">Trocas de Peça</div>
+					<div class="num">0</div>
+				</div>
+			</div>
+
+			<div class="filtro-indicador" id="filtro-indicador">
+				<span id="filtro-texto"></span>
+				<button onclick="limparFiltro()">Limpar filtro</button>
+			</div>
+
+			<div class="card-custom">
+				<h6 class="fw-bold mb-3" style="color: var(--text-gray); font-size: 12px;">Manutenções desta Máquina</h6>
+				<div class="table-responsive">
+					<table id="tabela-manutencoes">
+						<thead>
+							<tr>
+								<th>Data</th>
+								<th>Descrição</th>
+								<th>Técnico</th>
+								<th>Peças Trocadas</th>
+								<th>Status</th>
+							</tr>
+						</thead>
+						<tbody>
+							<th:block th:each="m, iter : ${manutencoes}">
+							<tr th:attr="data-categorias=${m.categoriasTrocadas}">
+								<td th:text="${m.data != null ? #temporals.format(m.data, 'dd/MM/yyyy') : '-'}"></td>
+								<td>
+									<div th:text="${m.descricao}"></div>
+									<div style="font-size: 10.5px; margin-top: 3px; color: var(--text-gray);">
+										<a th:if="${m.nf != null}" href="javascript:void(0)"
+										   th:attr="onclick='toggleExecucao(' + ${iter.index} + ', this)', data-nf=${m.nf}"
+										   style="color: var(--accent-blue); text-decoration: none; font-weight: 600;">
+											<i class="bi bi-eye"></i> Ver NF <span th:text="${m.nf}"></span>
+										</a>
+										<span th:unless="${m.nf != null}">Sem execução</span>
+										<span th:if="${m.solicitacaoId != null}"> · Solicitação <span th:text="${m.solicitacaoId}"></span></span>
+									</div>
+								</td>
+								<td th:text="${m.tecnico != null ? m.tecnico : '-'}"></td>
+								<td>
+									<span th:if="${#strings.isEmpty(m.categoriasTrocadas)}">-</span>
+									<span th:unless="${#strings.isEmpty(m.categoriasTrocadas)}"
+										  th:each="cat : ${#strings.arraySplit(m.categoriasTrocadas, ',')}"
+										  class="mini-badge" th:text="${cat}"></span>
+								</td>
+								<td>
+									<span class="badge-status badge-pendente" th:if="${m.pendente}">Pendente</span>
+									<span class="badge-status badge-concluida" th:unless="${m.pendente}">Concluída</span>
+								</td>
+							</tr>
+							<tr th:if="${m.nf != null}" th:id="'execucao-row-' + ${iter.index}" style="display: none;">
+								<td colspan="5" style="background: rgba(0,0,0,0.15);">
+									<div style="font-size: 11px; color: var(--text-gray); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.4px;">
+										<i class="bi bi-wrench-adjustable"></i> Execução — NF <span th:text="${m.nf}"></span>
+									</div>
+									<pre style="background: #000; color: #4ade80; font-family: 'Courier New', monospace; font-size: 12.5px; padding: 12px 14px; border-radius: 10px; white-space: pre-wrap; margin: 0;" th:text="${m.execucaoDescricao != null ? m.execucaoDescricao : '(sem observações registradas)'}"></pre>
+								</td>
+							</tr>
+							</th:block>
+						</tbody>
+					</table>
+					<p th:if="${manutencoes.isEmpty()}" style="color: var(--text-gray); text-align:center; padding: 18px 0; font-size: 12.5px;">
+						Nenhuma manutenção registrada pra essa máquina.
+					</p>
+				</div>
+			</div>
+		</div>
+
+	</div>
+</div>
+
+<script>
+	function toggle(id, arrowEl, isMaquina) {
+		const el = document.getElementById(id);
+		el.classList.toggle("active");
+		if (arrowEl) arrowEl.classList.toggle("rotated");
+
+		let expandidos = [];
+		try { expandidos = JSON.parse(localStorage.getItem('explorerExpandidos') || '[]'); } catch (e) {}
+		const isOpen = el.classList.contains("active");
+		if (isOpen && expandidos.indexOf(id) === -1) expandidos.push(id);
+		if (!isOpen) expandidos = expandidos.filter(function (x) { return x !== id; });
+		localStorage.setItem('explorerExpandidos', JSON.stringify(expandidos));
+
+		if (isMaquina && isOpen) carregarExecucoes(el);
+	}
+
+	// Busca os NFs de uma máquina só na primeira vez que ela é expandida
+	// (evita carregar o histórico inteiro de todas as máquinas de uma vez).
+	function carregarExecucoes(containerEl) {
+		if (containerEl.getAttribute('data-loaded') === 'true') return;
+		const maquinaId = containerEl.getAttribute('data-maquina-id');
+
+		fetch('/explorer/api/maquinas/' + maquinaId + '/execucoes')
+			.then(function (r) { return r.json(); })
+			.then(function (nfs) {
+				containerEl.setAttribute('data-loaded', 'true');
+				if (!nfs.length) {
+					containerEl.innerHTML = '<div style="font-size:11px; color: var(--text-gray); padding:4px 9px;">Nenhuma execução registrada.</div>';
+					return;
+				}
+				containerEl.innerHTML = nfs.map(function (nf) {
+					return '<div style="font-size:11px; color: var(--text-gray); padding:4px 9px;"><i class="bi bi-receipt"></i> NF ' + nf + '</div>';
+				}).join('');
+			})
+			.catch(function () {
+				containerEl.innerHTML = '<div style="font-size:11px; color: var(--accent-amber); padding:4px 9px;">Erro ao carregar.</div>';
+			});
+	}
+
+	function toggleExecucao(index, linkEl) {
+		const row = document.getElementById('execucao-row-' + index);
+		if (!row) return;
+		const aberto = row.style.display !== 'none';
+		row.style.display = aberto ? 'none' : 'table-row';
+		linkEl.innerHTML = aberto
+			? '<i class="bi bi-eye"></i> Ver NF ' + linkEl.getAttribute('data-nf')
+			: '<i class="bi bi-eye-slash"></i> Esconder NF ' + linkEl.getAttribute('data-nf');
+	}
+
+	let filtroAtivo = null;
+
+	function filtrarPorCategoria(categoria, cardEl) {
+		const rows = document.querySelectorAll('#tabela-manutencoes tbody tr[data-categorias]');
+		const cards = document.querySelectorAll('.troca-card');
+		const indicador = document.getElementById('filtro-indicador');
+
+		if (filtroAtivo === categoria) {
+			limparFiltro();
+			return;
+		}
+
+		filtroAtivo = categoria;
+		cards.forEach(function (c) { c.classList.remove('troca-card-ativo'); });
+		cardEl.classList.add('troca-card-ativo');
+
+		rows.forEach(function (r) {
+			const cats = (r.getAttribute('data-categorias') || '').split(',');
+			r.style.display = cats.indexOf(categoria) !== -1 ? '' : 'none';
+		});
+
+		document.getElementById('filtro-texto').textContent = 'Mostrando trocas de ' + categoria;
+		indicador.style.display = 'flex';
+	}
+
+	function limparFiltro() {
+		filtroAtivo = null;
+		document.querySelectorAll('#tabela-manutencoes tbody tr[data-categorias]').forEach(function (r) { r.style.display = ''; });
+		document.querySelectorAll('.troca-card').forEach(function (c) { c.classList.remove('troca-card-ativo'); });
+		document.getElementById('filtro-indicador').style.display = 'none';
+	}
+
+	document.addEventListener('DOMContentLoaded', function () {
+		const sidebar = document.getElementById('sidebar');
+
+		// Preserva a posição de rolagem da árvore entre navegações
+		const savedScroll = sessionStorage.getItem('explorerSidebarScroll');
+		if (savedScroll !== null) sidebar.scrollTop = parseInt(savedScroll, 10);
+		sidebar.addEventListener('scroll', function () {
+			sessionStorage.setItem('explorerSidebarScroll', sidebar.scrollTop);
+		});
+
+		// Restaura quais clientes/máquinas o usuário tinha deixado expandidos
+		let expandidos = [];
+		try { expandidos = JSON.parse(localStorage.getItem('explorerExpandidos') || '[]'); } catch (e) {}
+		expandidos.forEach(function (id) {
+			const el = document.getElementById(id);
+			if (el) el.classList.add('active');
+			const arrow = document.getElementById('arrow-' + id);
+			if (arrow) arrow.classList.add('rotated');
+		});
+
+		// Qualquer nível de máquina já ativo (seja pela seleção atual, seja
+		// restaurado acima) precisa carregar seus NFs também
+		document.querySelectorAll('.children.active[data-maquina-id]').forEach(function (el) {
+			carregarExecucoes(el);
+		});
+	});
+</script>
+
+</body>
+</html>

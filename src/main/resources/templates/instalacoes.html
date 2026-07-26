@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<title>Instalações - Sistema Pro</title>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+	<style>
+		:root {
+		   --bg-body: #081418;
+		   --bg-card: #10242a;
+		   --primary-green: #1ee4ac;
+		   --accent-blue: #3d8bff;
+		   --text-white: #ffffff;
+		   --text-gray: #8ea1a7;
+		   --border-color: rgba(255, 255, 255, 0.05);
+		}
+
+		* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+
+		body {
+		   background-color: var(--bg-body);
+		   color: var(--text-white);
+		   padding: 15px;
+		}
+
+		.container { max-width: 1100px; margin: 0 auto; }
+
+		header { margin-bottom: 25px; }
+		.breadcrumb { font-size: 12px; color: var(--text-gray); margin-bottom: 10px; list-style: none; display: flex; gap: 5px; }
+		.breadcrumb a { color: var(--primary-green); text-decoration: none; }
+		.page-title { font-size: 22px; font-weight: 700; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+
+		.action-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+		.btn-custom {
+		   padding: 10px 18px; border-radius: 12px; font-size: 13px; font-weight: 600;
+		   text-decoration: none; display: flex; align-items: center; gap: 8px; transition: 0.2s; border: none; cursor: pointer;
+		}
+		.btn-blue-soft { background: rgba(61, 139, 255, 0.1); color: var(--accent-blue); border: 1px solid rgba(61, 139, 255, 0.2); }
+		.btn-green { background: var(--primary-green); color: #081418; }
+		.btn-custom:hover { transform: translateY(-2px); opacity: 0.9; }
+
+		.controls-panel {
+		   background: var(--bg-card);
+		   border-radius: 20px;
+		   padding: 20px;
+		   border: 1px solid var(--border-color);
+		   margin-bottom: 20px;
+		   display: flex;
+		   flex-wrap: wrap;
+		   gap: 15px;
+		   align-items: flex-end;
+		}
+
+		.control-group { display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 180px; }
+		.control-group label { font-size: 11px; font-weight: 600; color: var(--text-gray); text-transform: uppercase; letter-spacing: 0.5px; }
+
+		input {
+		   background: #081418;
+		   border: 1px solid var(--border-color);
+		   color: white;
+		   padding: 12px 15px;
+		   border-radius: 12px;
+		   outline: none;
+		   font-size: 14px;
+		   width: 100%;
+		   transition: 0.3s;
+		}
+		input:focus { border-color: var(--primary-green); }
+
+		.card-custom {
+		   background: var(--bg-card);
+		   border-radius: 24px;
+		   padding: 20px;
+		   border: 1px solid var(--border-color);
+		   box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+		}
+
+		.table-responsive { width: 100%; overflow-x: auto; border-radius: 15px; }
+		table { width: 100%; border-collapse: collapse; text-align: left; }
+
+		@media (min-width: 768px) {
+		   th { background: rgba(255,255,255,0.02); padding: 15px 20px; font-size: 11px; text-transform: uppercase; color: var(--text-gray); border-bottom: 1px solid var(--border-color); }
+		   td { padding: 15px 20px; border-bottom: 1px solid var(--border-color); font-size: 14px; vertical-align: top; }
+		   tr:hover td { background: rgba(255,255,255,0.01); }
+		}
+
+		@media (max-width: 767px) {
+		   table, thead, tbody, th, td, tr { display: block; }
+		   thead { display: none; }
+		   tr { background: rgba(255,255,255,0.02); margin-bottom: 15px; border-radius: 15px; padding: 15px; border: 1px solid var(--border-color); }
+		   td { display: flex; flex-direction: column; gap: 4px; padding: 8px 0; border: none; font-size: 14px; }
+		   td::before { content: attr(data-label); font-weight: 600; color: var(--text-gray); font-size: 11px; text-transform: uppercase; }
+		}
+
+		.badge-status { padding: 4px 12px; border-radius: 8px; font-weight: 700; font-size: 12px; border: 1px solid; white-space: nowrap; }
+		.badge-pendente { background: rgba(255, 176, 32, 0.12); color: #ffb020; border-color: rgba(255, 176, 32, 0.3); }
+		.badge-concluida { background: rgba(30, 228, 172, 0.12); color: var(--primary-green); border-color: rgba(30, 228, 172, 0.3); }
+
+		.desc-cell { white-space: pre-wrap; color: var(--text-gray); font-size: 13px; max-width: 420px; }
+		.empty-state { text-align: center; padding: 40px 20px; color: var(--text-gray); }
+	</style>
+</head>
+<body>
+
+<div class="container">
+	<header>
+		<ul class="breadcrumb">
+			<li><a href="/">Home</a> /</li>
+			<li style="color: var(--text-gray)">Instalações</li>
+		</ul>
+		<h1 class="page-title"><span>🛠️</span> Instalações</h1>
+
+		<div class="action-bar">
+			<a href="/" class="btn-custom btn-blue-soft">
+				<i class="bi bi-arrow-left"></i> Voltar ao Dashboard
+			</a>
+		</div>
+	</header>
+
+	<form class="controls-panel" method="get" action="/instalacoes">
+		<div class="control-group">
+			<label>Data Início</label>
+			<input type="date" name="inicio" th:value="${inicio}">
+		</div>
+		<div class="control-group">
+			<label>Data Fim</label>
+			<input type="date" name="fim" th:value="${fim}">
+		</div>
+		<div class="control-group" style="flex: 0 0 auto; min-width: unset;">
+			<button type="submit" class="btn-custom btn-green"><i class="bi bi-funnel"></i> Filtrar</button>
+		</div>
+		<div class="control-group" style="flex: 0 0 auto; min-width: unset;">
+			<a href="/instalacoes" class="btn-custom btn-blue-soft"><i class="bi bi-x-circle"></i> Limpar</a>
+		</div>
+	</form>
+
+	<div class="card-custom">
+		<div class="table-responsive">
+			<table>
+				<thead>
+				<tr>
+					<th>Data da Solicitação</th>
+					<th>Status</th>
+					<th>Descrição</th>
+				</tr>
+				</thead>
+				<tbody>
+				<tr th:each="s : ${instalacoes}">
+					<td data-label="Data" th:text="${#temporals.format(s.dataSolicitacao, 'dd/MM/yyyy HH:mm')}"></td>
+					<td data-label="Status">
+						<span class="badge-status badge-pendente" th:if="${s.status}">Pendente</span>
+						<span class="badge-status badge-concluida" th:unless="${s.status}">Concluída</span>
+					</td>
+					<td data-label="Descrição" class="desc-cell"
+						th:text="${s.problemas != null and !s.problemas.isEmpty() ? s.problemas[0].descricao : '-'}"></td>
+				</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<p class="empty-state" th:if="${instalacoes.isEmpty()}">Nenhuma instalação encontrada para esse período.</p>
+	</div>
+</div>
+
+</body>
+</html>

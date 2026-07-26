@@ -33,15 +33,15 @@ public class LoteController {
 
     @GetMapping
     public String listarLotes(Model model) {
-        model.addAttribute("lotes", loteRepository.findAllByOrderByDataEntradaDesc());
-        model.addAttribute("categorias", categoriaRepository.findAll());
+        model.addAttribute("lotes", loteService.listarLotesOrdenados());
+        model.addAttribute("categorias", categoriaRepository.findAllByOrderByNomeAsc());
         return "lotes/lista-lotes";
     }
 
     @GetMapping("/novo")
     public String novoLote(Model model) {
         model.addAttribute("lote", new Lote());
-        model.addAttribute("categorias", categoriaRepository.findAll());
+        model.addAttribute("categorias", categoriaRepository.findAllByOrderByNomeAsc());
         return "lotes/form-lote";
     }
 

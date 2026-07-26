@@ -44,6 +44,10 @@ public interface PecaRepository extends JpaRepository<Peca, Long> {
     // Busca exata pelo código da peça
     Optional<Peca> findByCodigo(String codigo);
 
+    // 🔍 Contagem de peças por status (ESTOQUE, INSTALADA, DESCARTADA),
+    // sem precisar carregar tudo em memória.
+    long countByStatus(String status);
+
     // 🔍 Primeira e última peça geradas para um lote (pela ordem de criação)
     Optional<Peca> findFirstByLoteIdLoteOrderByIdPecaAsc(Long idLote);
     Optional<Peca> findFirstByLoteIdLoteOrderByIdPecaDesc(Long idLote);

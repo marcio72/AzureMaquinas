@@ -130,12 +130,19 @@ function preencherDataAtual() {
       return exibirMensagem("Essa máquina já foi adicionada.", "warning");
     }
 
+    // Cliente genérico "INSTALAÇÃO" (Tbl_Cliente, cod_cliente = 1) — mesmo
+    // critério usado no resto do sistema. Nesse caso, já entra com o modelo
+    // de 3 linhas que o cadastro de cliente+máquinas espera reconhecer depois.
+    const ehInstalacao = parseInt(document.getElementById('cliente').value) === 1;
+    const modeloInstalacao = 'Nome do Cliente(Nome do Ponto)\nEndereço - Bairro\n11 9999 9999 - Nome Contato';
+    const conteudoInicial = ehInstalacao ? modeloInstalacao : '';
+
     const div = document.createElement('div');
     div.className = 'mb-3 p-3 border rounded bg-light';
     div.id = 'problema_para_maquina_' + id;
     div.innerHTML = `
       <label class="form-label fw-bold">${nome}</label>
-      <textarea class="form-control" rows="5" placeholder="Descreva o problema..."></textarea>
+      <textarea class="form-control" rows="5" placeholder="Descreva o problema...">${conteudoInicial}</textarea>
      <button type="button" class="btn btn-sm btn-danger mt-2" onclick="removerProblema('${id}')">
         <i class="bi bi-x-circle"></i> Remover
       </button>

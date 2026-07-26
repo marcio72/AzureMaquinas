@@ -47,6 +47,7 @@
 		   background: var(--bg-card); border: 1px solid var(--border-color);
 		   color: white; padding: 20px; border-radius: 20px; text-decoration: none;
 		   display: flex; align-items: center; gap: 15px; transition: all 0.3s;
+		   height: 100%;
 		}
 		.btn-action:hover { background: var(--primary-green); color: #050c0e; border-color: var(--primary-green); }
 		.btn-action i { font-size: 24px; }
@@ -55,14 +56,17 @@
 <body>
 
 <div class="container">
+	<a href="/menu" class="text-secondary small text-decoration-none d-inline-flex align-items-center gap-1 mb-2">
+		<i class="bi bi-arrow-left"></i> Voltar ao Menu
+	</a>
 	<div class="d-flex justify-content-between align-items-center mb-4">
 		<div>
 			<h2 class="fw-bold m-0">Olá, Administrador </h2>
 			<p class="text-secondary small">Bem-vindo ao sistema de controle de estoque.</p>
 		</div>
-		<div class="stat-icon bg-dark border border-secondary">
+		<a href="/menu" class="stat-icon bg-dark border border-secondary" style="text-decoration: none;">
 			<i class="bi bi-person text-white"></i>
-		</div>
+		</a>
 	</div>
 	
 	<section class="search-hero">
@@ -96,27 +100,29 @@
 		<div class="col-md-3">
 			<div class="stat-card">
 				<div class="stat-icon" style="background: rgba(142, 68, 173, 0.1); color: var(--accent-purple);">
-					<i class="bi bi-check2-circle"></i>
+					<i class="bi bi-archive"></i>
 				</div>
-				<div class="stat-value" th:text="${instalacoesFeitas}">0</div>
+				<div class="stat-value" th:text="${pecasDisponiveis}">0</div>
 				
-				<div class="stat-label">Em Stock</div>
+				<div class="stat-label">Disponíveis</div>
 			</div>
 		</div>
 		<div class="col-md-3">
-			<div class="stat-card">
-				<div class="stat-icon" style="background: rgba(255, 77, 77, 0.1); color: #ff4d4d;">
-					<i class="bi bi-tools"></i>
+			<a href="/instalacoes" class="text-decoration-none">
+				<div class="stat-card">
+					<div class="stat-icon" style="background: rgba(255, 77, 77, 0.1); color: #ff4d4d;">
+						<i class="bi bi-hammer"></i>
+					</div>
+					<div class="stat-value text-white" th:text="${pecasInstaladas}">0</div>
+					<div class="stat-label">Instaladas</div>
 				</div>
-				<div class="stat-value" th:text="${instalacoesFeitas}">0</div>
-				<div class="stat-label">Instaladas</div>
-			</div>
+			</a>
 		</div>
 	</div>
 	
 	<h5 class="mb-3 fw-bold">Ações Rápidas</h5>
-	<div class="row g-3">
-		<div class="col-md-4">
+	<div class="row g-3 row-cols-1 row-cols-md-4">
+		<div class="col">
 			<a href="/lotes" class="btn-action">
 				<i class="bi bi-list-ul"></i>
 				<div>
@@ -125,8 +131,17 @@
 				</div>
 			</a>
 		</div>
-		<div class="col-md-4">
-			<a href="/clientes/listar" class="btn-action">
+		<div class="col">
+			<a href="/explorer" class="btn-action">
+				<i class="bi bi-diagram-3"></i>
+				<div>
+					<div class="fw-bold">Explorer</div>
+					<div class="small text-secondary">Árvore de clientes, máquinas e manutenções</div>
+				</div>
+			</a>
+		</div>
+		<div class="col">
+			<a href="/clientes/clientes-e-maquinas" class="btn-action">
 				<i class="bi bi-people"></i>
 				<div>
 					<div class="fw-bold">Clientes</div>
@@ -134,7 +149,7 @@
 				</div>
 			</a>
 		</div>
-		<div class="col-md-4">
+		<div class="col">
 			<a href="/form-maquinas" class="btn-action">
 				<i class="bi bi-slot-machine"></i>
 				<div>

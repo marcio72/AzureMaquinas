@@ -10,7 +10,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class HomeController {
-    
+
+    // Cliente genérico "INSTALAÇÃO" (Tbl_Cliente, cod_cliente = 1).
+    // Usado para marcar solicitações que são pedido de instalação em ponto
+    // novo, em vez de manutenção em cliente já existente.
+    private static final Long CLIENTE_ID_INSTALACAO = 1L;
+
     private final LoteRepository loteRepository;
     private final PecaRepository pecaRepository;
     private final ClienteRepository clienteRepository;
@@ -28,22 +33,20 @@ public class HomeController {
     
     @GetMapping("/")
     public String home(Model model) {
-        
-        model.addAttribute("totalLotes", loteRepository.count());
+
+        // Lotes Ativos = lotes que ainda têm peça disponível (não esgotados)
+        model.addAttribute("totalLotes", loteRepository.countByQuantidadeAtualGreaterThan(0));
+
         model.addAttribute("totalPecas", pecaRepository.count());
-        
-        long disponiveis = pecaRepository.findAll().stream()
-                                   .filter(p -> p.getDataInstalacao() == null)
-                                   .count();
-        model.addAttribute("pecasDisponiveis", disponiveis);
-        
-        // ✅ INSTALAÇÕES FEITAS
-        // Cliente 1 = "INSTALAÇÃO"
-        // status 0 = instalação registrada
-        long instalacoesFeitas = solicitacaoRepo.countByCliente_CodClienteAndStatusFalse(1L);
-       // model.addAttribute("pecasInstaladas", instalacoesFeitas);
-        
-        
+
+        // Disponíveis = peças com status ESTOQUE
+        model.addAttribute("pecasDisponiveis", pecaRepository.countByStatus("ESTOQUE"));
+
+        // Instaladas = pedidos de instalação já registrados
+        // (status false = instalação registrada, ver comentário na constante acima)
+        long instalacoesFeitas = solicitacaoRepo.countByCliente_CodClienteAndStatusFalse(CLIENTE_ID_INSTALACAO);
+        model.addAttribute("pecasInstaladas", instalacoesFeitas);
+
         return "home";
     }
     

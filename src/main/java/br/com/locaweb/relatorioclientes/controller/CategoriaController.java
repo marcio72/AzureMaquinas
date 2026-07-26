@@ -21,7 +21,7 @@ public class CategoriaController {
     // LISTAR CATEGORIAS
     @GetMapping
     public String listarCategorias(Model model) {
-        model.addAttribute("categorias", categoriaRepository.findAll());
+        model.addAttribute("categorias", categoriaRepository.findAllByOrderByNomeAsc());
         return "categorias/lista-categorias";
     }
 
@@ -67,7 +67,7 @@ public class CategoriaController {
 
         @GetMapping
         public List<Categoria> listarCategorias() {
-            return categoriaRepository.findAll();
+            return categoriaRepository.findAllByOrderByNomeAsc();
         }
     }
 
