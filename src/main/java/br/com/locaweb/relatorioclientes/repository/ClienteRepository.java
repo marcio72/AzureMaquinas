@@ -67,7 +67,14 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
     WHERE UPPER(c.nomCliente) = 'INSTALAÇÃO'
 """)
     long countInstalacoesFeitas();
-    
-    
-    
+
+    // 🔍 Tela Explorer: só as praças que realmente têm cliente ativo,
+    // pra não listar V1..V10 fixo no filtro se só algumas forem usadas.
+    @Query("""
+    SELECT DISTINCT c.praca
+    FROM Cliente c
+    WHERE c.ativo = true AND c.praca IS NOT NULL AND c.praca <> ''
+""")
+    List<String> findPracasDistintasAtivas();
+
 }

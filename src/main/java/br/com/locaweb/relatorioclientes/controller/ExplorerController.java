@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,13 +72,23 @@ public class ExplorerController {
     @GetMapping("/explorer")
     public String explorer(@RequestParam(required = false) Long clienteId,
                             @RequestParam(required = false) Long maquinaId,
+                            @RequestParam(required = false) String praca,
                             Model model) {
 
         // Monta a árvore: cada cliente real (exceto "INSTALAÇÃO") com suas máquinas ativas,
         // do cadastro mais recente pro mais antigo (cod_cliente decrescente).
         List<Cliente> clientes = clienteRepository.findByAtivoTrueOrderByCodClienteDesc().stream()
                 .filter(c -> !CLIENTE_ID_INSTALACAO.equals(c.getCodCliente()))
+                .filter(c -> praca == null || praca.isBlank() || praca.equalsIgnoreCase(c.getPraca()))
                 .toList();
+
+        model.addAttribute("pracaSelecionada", praca);
+
+        // Só as praças que algum cliente ativo realmente usa, ordenadas por número (V1, V4, V6...)
+        List<String> pracasDisponiveis = clienteRepository.findPracasDistintasAtivas().stream()
+                .sorted(Comparator.comparingInt(ExplorerController::extrairNumeroPraca))
+                .toList();
+        model.addAttribute("pracasDisponiveis", pracasDisponiveis);
 
         // Busca as máquinas de TODOS os clientes numa única consulta (evita N+1)
         List<Integer> codClientes = clientes.stream()
@@ -183,5 +194,15 @@ public class ExplorerController {
         return execucaoManutencaoRepository.findByProblema_Maquina_IdOrderByIdDesc(maquinaId).stream()
                 .map(ExecucaoManutencao::getId)
                 .toList();
+    }
+
+    // Extrai o número de "V6" -> 6, pra ordenar certo (V1, V4, V6, V10...)
+    // e não alfabeticamente, que colocaria V10 antes de V2.
+    private static int extrairNumeroPraca(String praca) {
+        try {
+            return Integer.parseInt(praca.replaceAll("[^0-9]", ""));
+        } catch (NumberFormatException e) {
+            return Integer.MAX_VALUE;
+        }
     }
 }
