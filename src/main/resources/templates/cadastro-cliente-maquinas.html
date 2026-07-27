@@ -6,23 +6,87 @@
     <title>Cadastro de Cliente e Máquinas</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-body: #081418;
+            --bg-card: #10242a;
+            --bg-card-header: #0a1a20;
+            --primary-green: #1ee4ac;
+            --accent-blue: #3d8bff;
+            --text-white: #ffffff;
+            --text-gray: #8ea1a7;
+            --border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        body {
+            background: var(--bg-body) !important;
+            color: var(--text-white);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-white);
+        }
+
+        .card-header {
+            background: var(--bg-card-header) !important;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-white) !important;
+        }
+        .card-header i { color: var(--primary-green); }
+
+        .form-label { color: var(--text-gray); font-size: 13px; font-weight: 600; }
+
+        .form-control, .form-select {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-white);
+        }
+        .form-control:focus, .form-select:focus {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 0.2rem rgba(30, 228, 172, 0.15);
+            color: var(--text-white);
+        }
+        .form-control::placeholder { color: var(--text-gray); }
+        .form-select option { background: var(--bg-card); color: var(--text-white); }
+
+        .bg-light { background: rgba(255, 255, 255, 0.03) !important; }
+        fieldset.border { border-color: var(--border-color) !important; }
+        .text-muted { color: var(--text-gray) !important; }
+        legend.scheduler-border { color: var(--text-gray) !important; }
+        hr { border-color: var(--border-color); opacity: 1; }
+
+        .btn-outline-secondary { color: var(--text-gray); border-color: var(--border-color); }
+        .btn-outline-secondary:hover { background: rgba(255,255,255,0.08); color: var(--text-white); border-color: var(--border-color); }
+        .btn-secondary { background: rgba(255,255,255,0.08); border-color: var(--border-color); color: var(--text-white); }
+        .btn-secondary:hover { background: rgba(255,255,255,0.15); border-color: var(--border-color); color: var(--text-white); }
+        .btn-success { background: var(--primary-green); border-color: var(--primary-green); color: #081418 !important; font-weight: 700; }
+        .btn-success:hover { background: #17c99a; border-color: #17c99a; }
+        .btn-outline-danger { color: #ff6b6b; border-color: rgba(255,107,107,0.4); }
+        .btn-outline-danger:hover { background: rgba(255,107,107,0.15); color: #ff6b6b; border-color: rgba(255,107,107,0.4); }
+
         .machine-card {
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: .25rem;
+            background-color: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-color);
+            border-radius: .5rem;
             padding: 1rem;
             margin-bottom: 1rem;
+            color: var(--text-white);
         }
+        .machine-card small { color: var(--text-gray); }
+
         .summary-link {
             cursor: pointer;
-            color: var(--bs-primary);
+            color: var(--accent-blue) !important;
             text-decoration: none;
             font-weight: 500;
         }
-        .summary-link:hover {
-            text-decoration: underline;
-        }
+        .summary-link:hover { text-decoration: underline; }
+
         /* Estilo para a legenda do fieldset */
         legend.scheduler-border {
             font-size: 1rem !important;
@@ -31,14 +95,15 @@
             width: auto;
             padding: 0 10px;
             border-bottom: none;
+            color: var(--text-gray) !important;
         }
     </style>
 </head>
-<body class="bg-light">
+<body>
 
 <div class="container py-5">
     <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white">
+        <div class="card-header">
             <h4 class="mb-0"><i class="bi bi-person-plus-fill"></i> Novo Cliente e Máquinas</h4>
         </div>
         <div class="card-body">
@@ -67,10 +132,13 @@
                     <input type="text" id="contato" class="form-control">
                 </div>
 
-                <!-- NOVO CAMPO: LEITURISTA -->
+                <!-- CAMPO PRAÇA: vai pra coluna `praca` de Tbl_Cliente -->
                 <div class="col-md-4">
-                    <label class="form-label">Leiturista</label>
-                    <input type="text" id="leiturista" class="form-control" required>
+                    <label class="form-label">Praça</label>
+                    <select id="praca" class="form-select" required>
+                        <option value="">Selecione...</option>
+                        <option th:each="i : ${#numbers.sequence(1, 10)}" th:value="'V' + ${i}" th:text="'V' + ${i}"></option>
+                    </select>
                 </div>
 
                 <div class="col-md-4">
@@ -157,6 +225,59 @@
 
     /* ========= ESTADO ========= */
     let maquinasAdicionadas = [];
+
+    /* =======================================================
+       PRÉ-PREENCHER COM OS DADOS DO PEDIDO (vindo do form_execucao)
+       Formato esperado (3 linhas):
+         Nome do Ponto
+         Logradouro - Bairro
+         Telefone / Contato
+    ========================================================= */
+    function parseTextoPedido(texto) {
+        const linhas = texto.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        const dados = { nomeCliente: '', logradouro: '', bairro: '', telefone: '', contato: '' };
+
+        if (linhas[0]) dados.nomeCliente = linhas[0];
+
+        if (linhas[1]) {
+            const partes = linhas[1].split(' - ');
+            dados.logradouro = (partes[0] || '').trim();
+            dados.bairro = partes.length > 1 ? partes.slice(1).join(' - ').trim() : '';
+        }
+
+        if (linhas[2]) {
+            const partes = linhas[2].split(' - ');
+            dados.telefone = (partes[0] || '').trim();
+            dados.contato = partes.length > 1 ? partes.slice(1).join(' - ').trim() : '';
+        }
+
+        return dados;
+    }
+
+    function preencherComDadosDoPedido() {
+        const params = new URLSearchParams(window.location.search);
+        const pedidoTexto = params.get('pedidoTexto');
+        if (!pedidoTexto) return;
+
+        const dados = parseTextoPedido(pedidoTexto);
+
+        const campoNome = document.getElementById('nomCliente');
+        if (campoNome && !campoNome.value) campoNome.value = dados.nomeCliente;
+
+        const campoLog = document.getElementById('logradouro');
+        if (campoLog && !campoLog.value) campoLog.value = dados.logradouro;
+
+        const campoBairro = document.getElementById('bairro');
+        if (campoBairro && !campoBairro.value) campoBairro.value = dados.bairro;
+
+        const campoTelefone = document.getElementById('telefone');
+        if (campoTelefone && !campoTelefone.value) campoTelefone.value = dados.telefone;
+
+        const campoContato = document.getElementById('contato');
+        if (campoContato && !campoContato.value) campoContato.value = dados.contato;
+    }
+
+    document.addEventListener('DOMContentLoaded', preencherComDadosDoPedido);
 
     /* ========= UI ========= */
     function toggleListaMaquinas() {
@@ -260,12 +381,15 @@
     }
 
     function salvarTudo() {
+        const pracaSelecionada = document.getElementById('praca').value;
         const cliente = {
             nomCliente: (document.getElementById('nomCliente').value || '').toUpperCase(),
             logradouro: document.getElementById('logradouro').value,
             bairro: document.getElementById('bairro').value,
             telefone: document.getElementById('telefone').value,
             contato: document.getElementById('contato').value,
+            praca: pracaSelecionada,
+            leiturista: parseInt((pracaSelecionada || '').replace('V', '')) || null,
             regiao: parseInt(document.getElementById('regiao').value),
             ativo: true,
             dtCadastro: new Date().toISOString()
@@ -294,23 +418,27 @@
         })
         .then(response => {
             if (response.ok) {
-                // 1) Gera um identificador único deste envio
-                const BRIDGE_KEY = 'form_execucao_o_que_foi_feito';
-                const BRIDGE_NONCE_KEY = 'form_execucao_bridge_nonce';
-                const nonce = String(Date.now());
+                // Volta pra tela de execução, levando o resumo direto na URL
+                // (em vez de localStorage, que ficava "vazando" entre abas/execuções diferentes)
+                const params = new URLSearchParams(window.location.search);
+                const solicitacaoId = params.get('solicitacaoId');
+                const idProblema = params.get('idProblema');
+                const tecnico = params.get('tecnico') || '';
+                const texto = montarResumoInstalacao();
 
-                // 2) Salva texto + nonce
-                try {
-                    const texto = montarResumoInstalacao();
-                    localStorage.setItem(BRIDGE_KEY, texto);
-                    localStorage.setItem(BRIDGE_NONCE_KEY, nonce);
-                } catch (_) {}
-
-                // 3) Mensagem para o form_execucao (opcional)
-                localStorage.setItem('form_execucao_msg', 'INSTALAÇÃO cadastrada e dados enviados para "O que foi feito".');
-
-                // 4) Volta para a MESMA aba do form_execucao, se foi de lá que veio
-                window.history.back();
+                if (solicitacaoId && idProblema) {
+                    const qs = new URLSearchParams({
+                        solicitacaoId: solicitacaoId,
+                        idProblema: idProblema,
+                        tecnico: tecnico,
+                        resumoInstalacao: texto
+                    }).toString();
+                    window.location.href = '/form_execucao?' + qs;
+                } else {
+                    // Não veio de uma execução (acesso direto pelo menu/dashboard) — volta pro menu
+                    alert('Cliente e máquinas cadastrados com sucesso!');
+                    window.location.href = '/menu';
+                }
             } else {
                 return response.text().then(text => {
                     throw new Error(text || ('Status ' + response.status));
@@ -334,7 +462,7 @@
         const bairro = (document.getElementById('bairro').value || '').trim();
         const telefone = (document.getElementById('telefone').value || '').trim();
         const contato = (document.getElementById('contato').value || '').trim();
-        const leiturista = (document.getElementById('leiturista').value || '').trim();
+        const praca = (document.getElementById('praca').value || '').trim();
 
         // Cabeçalho no formato do exemplo
         let resumo = `NOVO PONTO \n`;
@@ -342,7 +470,7 @@
         resumo += `${logradouro || '-'} - ${bairro || '-'}\n`;
         resumo += `Contato: ${contato || '-'}\n`;
         resumo += `Tel.: ${telefone || '-'}\n`;
-        resumo += `Leiturista: ${leiturista || '-'}\n\n`;
+        resumo += `Praça: ${praca || '-'}\n\n`;
 
         // Máquinas (LEITURA INICIAL)
         if (Array.isArray(maquinasAdicionadas) && maquinasAdicionadas.length > 0) {

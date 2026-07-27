@@ -1,52 +1,169 @@
-
 <!DOCTYPE html>
 <html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Cadastro de Máquinas</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<title>Cadastro de Máquina - Sistema Pro</title>
+	
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+	
+	<style>
+		:root {
+		   --bg-body: #081418; --bg-card: #10242a; --primary-green: #1ee4ac;
+		   --text-white: #ffffff; --text-gray: #8ea1a7; --border-color: rgba(255, 255, 255, 0.1);
+		}
+ 
+		body {
+		   background-color: var(--bg-body) !important;
+		   color: var(--text-white);
+		   font-family: 'Inter', sans-serif;
+		}
+ 
+		.card-custom {
+		   background: var(--bg-card);
+		   border-radius: 24px;
+		   border: 1px solid var(--border-color);
+		   box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+		}
+ 
+		.form-label {
+		   color: var(--text-gray);
+		   font-size: 11px;
+		   font-weight: 700;
+		   text-transform: uppercase;
+		   margin-bottom: 8px;
+		}
+ 
+		/* Ícones brancos e campos dark */
+		.input-group-text {
+		   background: rgba(255, 255, 255, 0.05) !important;
+		   border: 1px solid var(--border-color) !important;
+		   color: white !important;
+		   border-radius: 12px 0 0 12px;
+		}
+ 
+		.form-control, .form-select {
+		   background-color: rgba(255, 255, 255, 0.05) !important;
+		   border: 1px solid var(--border-color) !important;
+		   color: white !important;
+		   padding: 12px;
+		   border-radius: 0 12px 12px 0;
+		}
+ 
+		.form-select {
+		   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%238ea1a7' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+		}
+ 
+		.form-select option { background-color: var(--bg-card); color: white; }
+ 
+		/* Ajuste para textarea */
+		textarea.form-control { border-radius: 12px !important; }
+ 
+		/* Botões com contraste corrigido */
+		.btn-save {
+		   background: var(--primary-green) !important;
+		   color: #081418 !important;
+		   font-weight: 700;
+		   border-radius: 12px;
+		   padding: 12px 30px;
+		   border: none;
+		}
+ 
+		.btn-cancel {
+		   background: #334155 !important;
+		   color: white !important;
+		   border-radius: 12px;
+		   padding: 12px 25px;
+		   text-decoration: none;
+		}
+ 
+		/* Responsividade Mobile */
+		@media (max-width: 576px) {
+		   .btn-group-mobile { flex-direction: column-reverse; gap: 10px; }
+		   .btn-group-mobile a, .btn-group-mobile button { width: 100%; text-align: center; }
+		}
+	</style>
 </head>
-<body class="bg-light">
+<body>
+
 <div th:replace="~{fragments/menu :: layout(~{::section})}">
-    <section>
-<div class="container mt-5">
-    <h2 class="mb-4">Cadastro de Máquinas</h2>
-    <form th:action="@{/maquinas/salvar}" th:object="${maquina}" method="post">
-        <div class="row g-3">
-            <div class="col-md-12">
-                <label class="form-label">Equipamento do Cliente</label>
-                <select class="form-select" th:field="*{codCliente}">
-                    <option value="" disabled selected>Selecione o Cliente</option>
-                    <option th:each="cliente : ${clientes}" 
-                    		th:value="${cliente.codCliente}" 
-                    		th:text="${cliente.nomCliente}">
-                    </option>
-                </select>
-            </div>
-            <div class="col-md-6">
-                <label class="form-label">Nome da Máquina</label>
-                <input type="text" class="form-control" th:field="*{nom_maq}" />
-            </div>
-            <div class="col-md-6">
-                <label class="form-label">Nome do Jogo</label>
-                <input type="text" class="form-control" th:field="*{nom_jogo}" />
-            </div>
-            <div class="col-md-6">
-                <label class="form-label">Número da Placa</label>
-                <input type="text" class="form-control" th:field="*{numeroPlaca}" />
-            </div>
-            <div class="col-md-12">
-                <label class="form-label">Observações</label>
-                <textarea class="form-control" th:field="*{obs}"></textarea>
-            </div>
-            <div class="col-12">
-                <button type="submit" class="btn btn-success mt-3">Salvar</button>
-            </div>
-        </div>
-    </form>
-    </section>
+	<section class="container py-4">
+		<div class="row justify-content-center">
+			<div class="col-lg-10">
+				
+				<div class="mb-4">
+					<h2 class="fw-bold m-0"><i class="bi bi-plus-circle text-success me-2"></i> Cadastro de Máquina</h2>
+					<p class="text-secondary small">Vincule equipamentos aos pontos de atendimento.</p>
+				</div>
+				
+				<div class="card-custom">
+					<div class="card-body p-4 p-md-5">
+						<form th:action="@{/maquinas/salvar}" th:object="${maquina}" method="post">
+							<input type="hidden" th:field="*{id}" />
+							
+							<div class="row g-4">
+								<div class="col-md-12">
+									<label class="form-label">Ponto / Cliente Responsável</label>
+									<div class="input-group">
+										<span class="input-group-text"><i class="bi bi-person-check"></i></span>
+										<select class="form-select" th:field="*{codCliente}" required>
+											<option value="" disabled selected>Selecione o Cliente</option>
+											<option th:each="cliente : ${clientes}"
+													th:value="${cliente.codCliente}"
+													th:text="${cliente.nomCliente}">
+											</option>
+										</select>
+									</div>
+								</div>
+								
+								<div class="col-md-6">
+									<label class="form-label">Identificação / Nome da Máquina</label>
+									<div class="input-group">
+										<span class="input-group-text"><i class="bi bi-cpu"></i></span>
+										<input type="text" class="form-control" th:field="*{nom_maq}" placeholder="Ex: Máquina 01" required autocomplete="off">
+									</div>
+								</div>
+								
+								<div class="col-md-6">
+									<label class="form-label">Software / Jogo Instalado</label>
+									<div class="input-group">
+										<span class="input-group-text"><i class="bi bi-controller"></i></span>
+										<input type="text" class="form-control" th:field="*{nom_jogo}" placeholder="Ex: Halloween 20" required autocomplete="off">
+									</div>
+								</div>
+								
+								<div class="col-md-12">
+									<label class="form-label">Número de Série / Placa</label>
+									<div class="input-group">
+										<span class="input-group-text"><i class="bi bi-hash"></i></span>
+										<input type="text" class="form-control" th:field="*{numeroPlaca}" placeholder="Ex: SN-998877" autocomplete="off">
+									</div>
+								</div>
+								
+								<div class="col-md-12">
+									<label class="form-label">Informações Adicionais</label>
+									<textarea class="form-control" th:field="*{obs}" rows="3" placeholder="Detalhes técnicos ou observações..."></textarea>
+								</div>
+							</div>
+							
+							<div class="mt-5 d-flex justify-content-end gap-3 btn-group-mobile">
+								<a href="/form-maquinas" class="btn btn-cancel">
+									<i class="bi bi-arrow-left"></i> Voltar
+								</a>
+								<button type="submit" class="btn btn-save">
+									<i class="bi bi-cloud-arrow-up me-2"></i> Salvar Equipamento
+								</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

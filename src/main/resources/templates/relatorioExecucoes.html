@@ -1,338 +1,545 @@
 <!DOCTYPE html>
 <html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Relatório de Execuções</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta charset="UTF-8">
+	<title>Relatório de Execuções</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+	
+	<style>
+		.card-header-custom {
+		  background-color: #0d6efd;
+		  color: white;
+		  font-weight: bold;
+		  display: flex;
+		  align-items: center;
+		  gap: 0.5rem;
+		  border-top-left-radius: 0.5rem;
+		  border-top-right-radius: 0.5rem;
+		  padding: 0.75rem 1rem;
+		}
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+		.card {
+		  border-radius: 0.5rem;
+		  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+		}
+		
+		.table td, .table th {
+		  padding: 0.4rem 0.5rem;
+		  vertical-align: middle;
+		}
+		
+		/* Popover - fundo e contorno */
+		.popover {
+		  background-color: #000;      /* fundo preto */
+		  color: #39ff14;              /* texto verde (terminal) */
+		  border: 1px solid #000;      /* CONTORNO PRETO */
+		  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+		}
+		/* Corpo do texto */
+		.popover-body {
+		  color: #39ff14;
+		  font-family: "Courier New", monospace;
+		  font-size: 0.9rem;
+		  line-height: 1.4;
+		  text-shadow: 0 0 4px #39ff14;
+		}
+		/* SETA PRETA - todos os lados (seguro) */
+		.popover .popover-arrow::before,
+		.popover .popover-arrow::after {
+		  border-color: #000 !important;
+		}
+		/* Garantia extra para posição à direita */
+		.bs-popover-end .popover-arrow::before,
+		.bs-popover-end .popover-arrow::after {
+		  border-right-color: #000 !important;
+		}
 
-    <style>
-        .card-header-custom {
-          background-color: #0d6efd;
-          color: white;
-          font-weight: bold;
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          border-top-left-radius: 0.5rem;
-          border-top-right-radius: 0.5rem;
-          padding: 0.75rem 1rem;
-        }
+		/* Hover no desktop */
+		.toggle-btn:hover .text-primary { color: #004085 !important; }
+		.toggle-btn:hover .text-danger  { color: #8b0000 !important; }
+		
+		@media (max-width: 767px) {
+		  .cliente-mobile {
+			max-width: 140px;
+			font-size: 0.85rem;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		  }
+		}
+		
+		@media (max-width: 767px) {
+		  .problema-mobile {
+			max-width: 160px;
+			font-size: 0.8rem;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		  }
+		  /* Botões Bootstrap padrão menores */
 
-        .card {
-          border-radius: 0.5rem;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        }
 
-        /* Hover no desktop */
-        .toggle-btn:hover .text-primary { color: #004085 !important; }
-        .toggle-btn:hover .text-danger  { color: #8b0000 !important; }
+		/* Mobile: botão redondo e texto oculto */
+		@media (max-width: 767px) {
+		  .toggle-btn {
+			padding: 0.4rem;
+			border-radius: 50%;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+		  }
+		  .toggle-btn span { display: none; }
+		}
 
-        /* Mobile: botão redondo e texto oculto */
-        @media (max-width: 767px) {
-          .toggle-btn {
-            padding: 0.4rem;
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-          }
-          .toggle-btn span { display: none; }
-        }
+		@media (max-width: 767px) {
+		  .table td, .table th { font-size: 0.85rem; }
+		}
 
-        @media (max-width: 767px) {
-          .table td, .table th { font-size: 0.85rem; }
-        }
+		/* ===== Transição suave do conteúdo da linha expandida ===== */
+		.collapse-row-content {
+		  opacity: 0;
+		  transform: translateY(-6px);
+		  transition: opacity .22s ease, transform .22s ease;
+		}
+		.collapsing .collapse-row-content {
+		  opacity: 0;
+		  transform: translateY(-6px);
+		}
+		.collapse.show .collapse-row-content {
+		  opacity: 1;
+		  transform: translateY(0);
+		}
 
-        /* ===== Transição suave do conteúdo da linha expandida ===== */
-        .collapse-row-content {
-          opacity: 0;
-          transform: translateY(-6px);
-          transition: opacity .22s ease, transform .22s ease;
-        }
-        .collapsing .collapse-row-content {
-          opacity: 0;
-          transform: translateY(-6px);
-        }
-        .collapse.show .collapse-row-content {
-          opacity: 1;
-          transform: translateY(0);
-        }
+		@media (prefers-reduced-motion: reduce) {
+		  .collapse-row-content { transition: none; }
+		}
 
-        @media (prefers-reduced-motion: reduce) {
-          .collapse-row-content { transition: none; }
-        }
+		/* ===== Cabeçalho fixo (sticky) no scroll ===== */
+		.table-responsive thead th {
+		  position: sticky;
+		  top: 0; /* ajuste se tiver navbar fixa: ex. 56px */
+		  z-index: 2;
+		  background-color: #f8f9fa;           /* mesma base do .table-light */
+		  box-shadow: 0 1px 0 rgba(0,0,0,0.06); /* sombra bem suave */
+		}
+		.text-limit {
+		  max-width: 420px;
+		  white-space: nowrap;
+		  overflow: hidden;
+		  text-overflow: ellipsis;
+		}
 
-        /* ===== Cabeçalho fixo (sticky) no scroll ===== */
-        .table-responsive thead th {
-          position: sticky;
-          top: 0; /* ajuste se tiver navbar fixa: ex. 56px */
-          z-index: 2;
-          background-color: #f8f9fa;           /* mesma base do .table-light */
-          box-shadow: 0 1px 0 rgba(0,0,0,0.06); /* sombra bem suave */
-        }
 
-        /* ===== Estilo retrô para execução (apenas no <pre>.execucao-detalhe) ===== */
-        .execucao-detalhe {
-          background-color: #000 !important;     /* fundo preto */
-          color: #39ff14 !important;             /* verde fluorescente */
-          font-family: "Courier New", monospace; /* estilo terminal antigo */
-          font-size: 0.95rem;
-          text-shadow: 0 0 5px #39ff14;          /* leve brilho */
-        }
-    </style>
+		/* ===== Estilo retrô para execução (apenas no <pre>.execucao-detalhe) ===== */
+		.execucao-detalhe {
+		  background-color: #000 !important;     /* fundo preto */
+		  color: #39ff14 !important;             /* verde fluorescente */
+		  font-family: "Courier New", monospace; /* estilo terminal antigo */
+		  font-size: 0.95rem;
+		  text-shadow: 0 0 5px #39ff14;          /* leve brilho */
+		}
+		
+		@media (max-width: 767px) {
+			  .btn-status{
+				padding: 0.12rem 0.35rem !important;
+				font-size: 0.70rem !important;
+				line-height: 1.05 !important;
+				border-radius: 0.35rem !important;
+				white-space: nowrap;
+			  }
+			}
+		
+		/* ===== Execução estilo TERMINAL (igual ao popover) ===== */
+			.execucao-detalhe {
+			  background-color: #000 !important;
+			  color: #39ff14 !important;
+			  font-family: "Courier New", monospace;
+			  font-size: 0.95rem;
+			  line-height: 1.4;
+			  padding: 12px;
+			  border-radius: 6px;
+			  border: 1px solid #000 !important;
+			  text-shadow: 0 0 4px #39ff14;
+			  box-shadow: inset 0 0 8px rgba(57, 255, 20, 0.15);
+			  white-space: pre-wrap;
+			}
+		
+		
+	
+	</style>
 </head>
 <body class="bg-light">
 
 <div class="container py-4">
-    <div class="card">
-        <div class="card-header-custom">
-            <i class="bi bi-clipboard-data"></i> Relatório de Execuções
-        </div>
-
-        <div class="card-body">
-            <div class="mb-3 text-end">
-                <a th:if="${usuarioLogado != null and usuarioLogado.username == 'Admin' or usuarioLogado.username == 'Mirlania'}"
-                   href="/relatorioExecucoesAvancado"
-                   class="btn btn-outline-dark">
-                    <i class="bi bi-shield-lock"></i> Modo Avançado
-                </a>
-            </div>
-
-            <!-- Filtros (lado servidor) -->
-            <form method="get" action="/relatorioExecucoes">
-                <div class="row row-cols-1 row-cols-md-4 g-3 mb-3">
-                    <div class="col">
-                        <input type="text" class="form-control" name="busca"
-                               placeholder="Cliente ou técnico" th:value="${busca}">
-                    </div>
-
-                    <div class="col">
-                        <input type="text" class="form-control" name="problema"
-                               placeholder="Filtrar por problema" th:value="${problema}">
-                    </div>
-
-                    <div class="col">
-                        <input type="text" class="form-control" name="execucao"
-                               placeholder="Filtrar por execução" th:value="${execucao}">
-                    </div>
-
-                    <div class="col">
-                        <select class="form-select" name="pdf">
-                            <option th:selected="${pdf == null}" value="">PDF Gerado: Todos</option>
-                            <option th:selected="${pdf == 'true'}" value="true">Sim</option>
-                            <option th:selected="${pdf == 'false'}" value="false">Não</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="d-flex flex-wrap gap-2 mb-3">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-funnel"></i> Filtrar
-                    </button>
-                    <a href="/relatorioExecucoes" class="btn btn-outline-secondary">
-                        <i class="bi bi-x-circle"></i> Limpar
-                    </a>
-
-                    <!-- Fechar todos
-                    <button id="fecharTodosBtn" type="button" class="btn btn-outline-secondary ms-auto">
-                      <i class="bi bi-arrows-collapse"></i> Fechar todos
-                    </button>-->
-
-                </div>
-            </form>
-
-            <a href="/menu" class="btn btn-secondary mb-3">Voltar ao Menu</a>
-
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover align-middle">
-                    <thead class="table-light">
-                    <tr>
-                        <th>NF</th>
-                        <th>Cliente</th>
-                        <th>Máquina</th>
-                        <th>Problema</th>
-                        <th>Execução</th>
-                        <th class="d-none d-md-table-cell">Técnico</th> <!-- oculto no mobile -->
-                        <th>Data</th>         <!-- visível no mobile -->
-                        <th>Relatório</th>    <!-- visível no mobile -->
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <th:block th:each="exec : ${execucoes}">
-                        <!-- Linha principal -->
-                        <tr class="row-principal" th:classappend="${exec.pdfGerado} ? ' table-primary'">
-                            <!-- Execução para cópia (oculto) -->
-                            <span class="d-none execucao-text" th:text="${exec.descricao}"></span>
-
-                            <td th:text="${exec.id}">ID</td>
-                            <td th:text="${exec.nomeCliente}">Cliente</td>
-                            <td th:text="${exec.nomeMaquina}">Máquina</td>
-                            <td th:text="${exec.descricaoProblema}">Problema</td>
-
-                            <!-- Botão Execução -->
-                            <td class="text-center">
-                                <button
-                                        class="btn btn-link p-0 toggle-btn bg-primary-subtle"
-                                        type="button"
-                                        data-bs-toggle="collapse"
-                                        th:attr="data-bs-target='#execDesc__' + ${exec.id}"
-                                        aria-expanded="false"
-                                        th:attrappend="aria-controls='execDesc__' + ${exec.id}">
-                                    <i class="bi bi-eye text-primary fs-5"></i> <span class="fw-bold">Ver</span>
-                                </button>
-                            </td>
-
-                            <td class="d-none d-md-table-cell" th:text="${exec.tecnico}">Técnico</td>
-                            <td th:text="${#temporals.format(exec.dataExecucao, 'dd/MM/yyyy HH:mm:ss')}">Data</td>
-                            <td>
-                                <a th:if="${!exec.pdfGerado}"
-                                   th:href="@{'/execucao/' + ${exec.id} + '/pdf'}"
-                                   class="btn btn-outline-primary btn-sm" title="Gerar PDF">
-                                    <i class="bi bi-file-earmark-check"></i>
-                                </a>
-                                <span th:if="${exec.pdfGerado}" class="text-primary fs-5" title="PDF já gerado">
-                    <i class="bi bi-check-circle-fill"></i>
-                  </span>
-                            </td>
-                        </tr>
-
-                        <!-- Linha de detalhe (com conteúdo animado) -->
-                        <tr th:id="'execDesc__' + ${exec.id}" class="collapse bg-body-tertiary">
-                            <td colspan="8" class="p-3">
-                                <div class="collapse-row-content">
-                                    <div class="d-flex gap-2 align-items-start">
-                                        <i class="bi bi-wrench-adjustable"></i>
-                                        <div>
-                                            <div class="fw-semibold d-flex align-items-center gap-2">
-                                                Execução
-                                                <!-- Copiar execução -->
-                                                <button type="button" class="btn btn-sm btn-outline-secondary copiar-execucao" title="Copiar execução">
-                                                    <i class="bi bi-clipboard"></i> Copiar
-                                                </button>
-                                            </div>
-
-                                            <pre class="execucao-detalhe bg-light p-2 rounded border"
-                                                 style="font-family: 'Courier New', monospace; font-size: 0.95rem;"
-                                                 th:text="${exec.descricao}">Descrição completa da execução...</pre>
-                                            <div class="mt-2 small text-muted">
+	<div class="card">
+		<div class="card-header-custom">
+			<i class="bi bi-clipboard-data"></i> Relatório de Execuções
+		</div>
+		<div class="card-body">
+			<div class="mb-3 text-end">
+				<a th:if="${usuarioLogado != null and (usuarioLogado.username == 'Admin' or usuarioLogado.username == 'Mirlania')}"
+				   href="/relatorioExecucoesAvancado"
+				   class="btn btn-outline-dark">
+					<i class="bi bi-shield-lock"></i> Modo Avançado
+				</a>
+			</div>
+			<div class="d-flex justify-content-between align-items-center mb-3">
+				<button class="btn btn-outline-dark"
+						type="button"
+						data-bs-toggle="collapse"
+						data-bs-target="#filtrosCollapse"
+						aria-expanded="false"
+						aria-controls="filtrosCollapse"
+						id="btnFiltros">
+					<i class="bi bi-funnel"></i> Filtros
+				</button>
+			</div>
+			<div class="collapse" id="filtrosCollapse">
+			
+			<form method="get" action="/relatorioExecucoes">
+				<div class="row row-cols-1 row-cols-md-5 g-2 mb-3 align-items-end">
+					
+					<div class="col">
+						<label class="form-label small fw-bold text-secondary mb-1">Numero da Ficha (NF)</label>
+						<input type="number" class="form-control" name="nf"
+							   placeholder="Nº" th:value="${nf}">
+					</div>
+					
+					<div class="col">
+						<label class="form-label small fw-bold text-secondary mb-1">Busca Geral</label>
+						<input type="text" class="form-control" name="busca"
+							   placeholder="Cliente ou técnico" th:value="${busca}">
+					</div>
+					
+					<div class="col">
+						<label class="form-label small fw-bold text-secondary mb-1">Problema</label>
+						<input type="text" class="form-control" name="problema"
+							   placeholder="Desc. Problema" th:value="${problema}">
+					</div>
+					
+					<div class="col">
+						<label class="form-label small fw-bold text-secondary mb-1">Execução</label>
+						<input type="text" class="form-control" name="execucao"
+							   placeholder="Desc. Execução" th:value="${execucao}">
+					</div>
+					
+					<div class="col">
+						<label class="form-label small fw-bold text-secondary mb-1">PDF</label>
+						<select class="form-select" name="pdf">
+							<option th:selected="${pdf == null}" value="">Todos</option>
+							<option th:selected="${pdf == 'true'}" value="true">Sim</option>
+							<option th:selected="${pdf == 'false'}" value="false">Não</option>
+						</select>
+					</div>
+				</div>
+				
+				<div class="d-flex flex-wrap gap-2 mb-3">
+					<button type="submit" class="btn btn-primary">
+						<i class="bi bi-funnel"></i> Filtrar
+					</button>
+					<a href="/relatorioExecucoes" class="btn btn-outline-secondary">
+						<i class="bi bi-x-circle"></i> Limpar
+					</a>
+				</div>
+			</form>
+			</div>
+			<a href="/menu" class="btn btn-secondary mb-3">Voltar ao Menu</a>
+			
+			<div class="table-responsive">
+				<table class="table table-sm table-bordered table-hover align-middle">
+					<thead class="table-light">
+					<tr>
+						<th>NF</th>
+						<th>Cliente</th>
+						<th>Máquina</th>
+						<th class="d-none d-md-table-cell">Problema</th>
+						<th>Execução</th>
+						<th class="d-none d-md-table-cell">Técnico</th> <th>Data</th>         <th>Relatório</th>    </tr>
+					</thead>
+					<tbody>
+					<th:block th:each="exec : ${execucoes}">
+						<tr class="row-principal" th:classappend="${exec.pdfGerado} ? ' table-primary'">
+							<span class="d-none execucao-text" th:text="${exec.descricao}"></span>
+							
+							<td th:text="${exec.id}">ID</td>
+							<td class="text-limit cliente-mobile" th:text="${exec.nomeCliente}" th:title="${exec.nomeCliente}"></td>
+							<td class="text-limit maquina-mobile" th:text="${exec.nomeMaquina}" th:title="${exec.nomeMaquina}"></td>
+							<td class="text-limit d-none d-md-table-cell" th:text="${exec.descricaoProblema}" th:title="${exec.descricaoProblema}"></td>
+							<td class="text-center"
+								data-bs-toggle="popover"
+								data-bs-placement="right"
+								data-bs-trigger="hover focus"
+								th:attr="data-bs-content=${#strings.abbreviate(exec.descricao, 300)}"
+								th:attrappend="data-exec-id=${exec.id}">
+								<button
+										class="btn btn-link p-0 toggle-btn bg-primary-subtle"
+										type="button"
+										data-bs-toggle="collapse"
+										th:attr="data-bs-target='#execDesc__' + ${exec.id}"
+										th:attrappend="aria-controls='execDesc__' + ${exec.id}"
+										aria-expanded="false">
+									<i class="bi bi-eye text-primary fs-5"></i>
+									<span class="fw-bold">Ver</span>
+								</button>
+								<i th:if="${exec.temFoto}" class="bi bi-camera-fill text-warning ms-1" title="Possui foto"></i>
+							</td>
+							
+							<td class="d-none d-md-table-cell" th:text="${exec.tecnico}">Técnico</td>
+							<td th:text="${#temporals.format(exec.dataExecucao, 'dd/MM/yyyy HH:mm:ss')}">Data</td>
+							<td>
+								<a th:if="${!exec.pdfGerado}"
+								   th:href="@{'/execucao/' + ${exec.id} + '/pdf'}"
+								   class="btn btn-outline-primary btn-sm" title="Gerar PDF">
+									<i class="bi bi-file-earmark-check"></i>
+								</a>
+								<span th:if="${exec.pdfGerado}" class="text-primary fs-5" title="PDF já gerado">
+                                    <i class="bi bi-check-circle-fill"></i>
+                                </span>
+							</td>
+						</tr>
+						
+						<tr th:id="'execDesc__' + ${exec.id}" class="collapse bg-body-tertiary">
+							<td colspan="8" class="p-3">
+								<div class="collapse-row-content">
+									<div class="d-flex gap-2 align-items-start">
+										<i class="bi bi-wrench-adjustable"></i>
+										<div>
+											<div class="fw-semibold d-flex align-items-center gap-2">
+												Execução
+												<button type="button" class="btn btn-sm btn-outline-secondary copiar-execucao" title="Copiar execução">
+													<i class="bi bi-clipboard"></i> Copiar
+												</button>
+											</div>
+											
+											<pre class="execucao-detalhe p-2 rounded border"
+												 style="background:#000;color:#39ff14;font-family: 'Courier New', monospace; font-size: 0.95rem;"
+												 th:text="${exec.descricao}">Descrição completa da execução...</pre>
+											<div class="mt-2 small text-muted">
                           <span class="me-3">
                             <i class="bi bi-person"></i>
                             <span th:text="${exec.tecnico}">Técnico</span>
                           </span>
-                                                <span>
+												<span>
                             <i class="bi bi-calendar-event"></i>
                             <span th:text="${#temporals.format(exec.dataExecucao, 'dd/MM/yyyy HH:mm')}">Data</span>
                           </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                    </th:block>
-                    </tbody>
-                </table>
-            </div>
+											</div>
 
-            <!-- Paginação -->
-            <div class="d-flex justify-content-between align-items-center mt-3">
-                <div th:if="${paginaAtual > 0}">
-                    <a th:href="@{/relatorioExecucoes(page=${paginaAtual - 1}, size=8, passa=${busca}, pdf=${pdf}, problema=${problema}, execucao=${execucao})}"
-                       class="btn btn-outline-secondary">← Anterior</a>
-                </div>
-                <div>
-                    Página <span th:text="${paginaAtual + 1}">1</span> de <span th:text="${totalPaginas}">1</span>
-                </div>
-                <div th:if="${paginaAtual + 1 < totalPaginas}">
-                    <a th:href="@{/relatorioExecucoes(page=${paginaAtual + 1}, size=8, busca=${busca}, pdf=${pdf}, problema=${problema}, execucao=${execucao})}"
-                       class="btn btn-outline-secondary">Próxima →</a>
-                </div>
-            </div>
-
-        </div>
-    </div>
+											<!-- FOTO DA EXECUÇÃO (se houver) -->
+											<div th:if="${exec.temFoto}" class="mt-3">
+												<div class="fw-semibold mb-1">
+													<i class="bi bi-camera-fill text-warning"></i> Foto da correção
+												</div>
+												<a th:href="@{'/api/fotos/execucao/' + ${exec.id}}" target="_blank" title="Ver foto em tamanho maior">
+													<img th:src="@{'/api/fotos/execucao/' + ${exec.id}}"
+														 alt="Foto da execução"
+														 style="max-width: 160px; max-height: 160px; object-fit: cover; border-radius: 8px; border: 1px solid #444;">
+												</a>
+											</div>
+										</div>
+									</div>
+								</div>
+							</td>
+						</tr>
+					</th:block>
+					</tbody>
+				</table>
+			</div>
+			
+			<nav aria-label="Navegação de páginas" th:if="${totalPaginas > 1}" class="mt-4">
+				<ul class="pagination justify-content-center flex-wrap">
+					<li class="page-item" th:classappend="${paginaAtual == 0} ? 'disabled'">
+						<a class="page-link"
+						   th:href="@{/relatorioExecucoes(page=0, size=10, nf=${nf}, busca=${busca}, pdf=${pdf}, problema=${problema}, execucao=${execucao})}"
+						   title="Ir para a primeira página">
+							<span aria-hidden="true">&laquo;</span>
+						</a>
+					</li>
+					
+					<li class="page-item" th:classappend="${paginaAtual == 0} ? 'disabled'">
+						<a class="page-link"
+						   th:href="@{/relatorioExecucoes(page=${paginaAtual - 1}, size=10, nf=${nf}, busca=${busca}, pdf=${pdf}, problema=${problema}, execucao=${execucao})}"
+						   aria-label="Anterior">
+							<span aria-hidden="true">&lsaquo;</span> </a>
+					</li>
+					<th:block th:with="inicio=${paginaAtual > 2 ? paginaAtual - 2 : 0},
+                                       fim=${paginaAtual + 4 < totalPaginas ? (paginaAtual > 2 ? paginaAtual + 2 : 4) : totalPaginas - 1}">
+						
+						<li class="page-item"
+							th:each="i : ${#numbers.sequence(inicio, fim > inicio ? fim : inicio)}"
+							th:classappend="${paginaAtual == i} ? 'active'">
+							
+							<a class="page-link"
+							   th:text="${i + 1}"
+							   th:href="@{/relatorioExecucoes(page=${i}, size=10, nf=${nf}, busca=${busca}, pdf=${pdf}, problema=${problema}, execucao=${execucao})}">
+							</a>
+						</li>
+					</th:block>
+					
+					<li class="page-item" th:classappend="${paginaAtual + 1 >= totalPaginas} ? 'disabled'">
+						<a class="page-link"
+						   th:href="@{/relatorioExecucoes(page=${paginaAtual + 1}, size=10, nf=${nf}, busca=${busca}, pdf=${pdf}, problema=${problema}, execucao=${execucao})}"
+						   aria-label="Próxima">
+							<span aria-hidden="true">&rsaquo;</span> </a>
+					</li>
+					
+					<li class="page-item" th:classappend="${paginaAtual + 1 >= totalPaginas} ? 'disabled'">
+						<a class="page-link"
+						   th:href="@{/relatorioExecucoes(page=${totalPaginas - 1}, size=10, nf=${nf}, busca=${busca}, pdf=${pdf}, problema=${problema}, execucao=${execucao})}"
+						   title="Ir para a última página">
+							<span aria-hidden="true">&raquo;</span>
+						</a>
+					</li>
+				
+				</ul>
+				
+				<div class="text-center text-muted small mt-1">
+					Página <span th:text="${paginaAtual + 1}"></span> de <span th:text="${totalPaginas}"></span>
+				</div>
+			</nav>
+		</div>
+	</div>
 </div>
 
-<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      /* ================== Toggle Execução: fecha outras, muda ícone/texto, destaca, scroll ================== */
-      document.querySelectorAll('.toggle-btn').forEach(function (btn) {
-        const targetId  = btn.getAttribute('data-bs-target');
-        const collapseEl = document.querySelector(targetId);
-        const mainRow   = btn.closest('tr.row-principal');
+	document.addEventListener('DOMContentLoaded', function () {
+	  /* ================== Toggle Execução ================== */
+	  document.querySelectorAll('.toggle-btn').forEach(function (btn) {
+		const targetId  = btn.getAttribute('data-bs-target');
+		const collapseEl = document.querySelector(targetId);
+		const mainRow   = btn.closest('tr.row-principal');
 
-        function scrollToRow() {
-          const y = collapseEl.getBoundingClientRect().top + window.pageYOffset - 80;
-          window.scrollTo({ top: y, behavior: 'smooth' });
-        }
+		function scrollToRow() {
+		  const y = collapseEl.getBoundingClientRect().top + window.pageYOffset - 80;
+		  window.scrollTo({ top: y, behavior: 'smooth' });
+		}
 
-        collapseEl.addEventListener('show.bs.collapse', function () {
-          // Fecha quaisquer outras linhas abertas
-          document.querySelectorAll('tbody tr.collapse.show').forEach(function (openTr) {
-            if ('#' + openTr.id !== targetId) {
-              const c = bootstrap.Collapse.getOrCreateInstance(openTr, { toggle: false });
-              c.hide();
-            }
-          });
+		collapseEl.addEventListener('show.bs.collapse', function () {
+		  // Fecha outras
+		  document.querySelectorAll('tbody tr.collapse.show').forEach(function (openTr) {
+			if ('#' + openTr.id !== targetId) {
+			  const c = bootstrap.Collapse.getOrCreateInstance(openTr, { toggle: false });
+			  c.hide();
+			}
+		  });
 
-          // Atualiza botão (mobile: fundo vermelho claro)
-          btn.classList.remove('bg-primary-subtle');
-          btn.classList.add('bg-danger-subtle');
-          btn.innerHTML = '<i class="bi bi-eye-slash text-danger fs-5"></i> <span class="fw-bold">Esconder</span>';
+		  // Atualiza botão
+		  btn.classList.remove('bg-primary-subtle');
+		  btn.classList.add('bg-danger-subtle');
+		  btn.innerHTML = '<i class="bi bi-eye-slash text-danger fs-5"></i> <span class="fw-bold">Esconder</span>';
 
-          // Destaca a linha principal
-          mainRow && mainRow.classList.add('table-active');
+		  // Destaca linha
+		  mainRow && mainRow.classList.add('table-active');
 
-          // Scroll suave para a área expandida
-          scrollToRow();
-        });
+		  scrollToRow();
+		});
 
-        collapseEl.addEventListener('hide.bs.collapse', function () {
-          btn.classList.remove('bg-danger-subtle');
-          btn.classList.add('bg-primary-subtle');
-          btn.innerHTML = '<i class="bi bi-eye text-primary fs-5"></i> <span class="fw-bold">Ver</span>';
-          mainRow && mainRow.classList.remove('table-active');
-        });
-      });
+		collapseEl.addEventListener('hide.bs.collapse', function () {
+		  btn.classList.remove('bg-danger-subtle');
+		  btn.classList.add('bg-primary-subtle');
+		  btn.innerHTML = '<i class="bi bi-eye text-primary fs-5"></i> <span class="fw-bold">Ver</span>';
+		  mainRow && mainRow.classList.remove('table-active');
+		});
+	  });
 
-      /* ================== Fechar todos ================== */
-      const fecharTodosBtn = document.getElementById('fecharTodosBtn');
-      if (fecharTodosBtn) {
-        fecharTodosBtn.addEventListener('click', function () {
-          document.querySelectorAll('tbody tr.collapse.show').forEach(function (openTr) {
-            const c = bootstrap.Collapse.getOrCreateInstance(openTr, { toggle: false });
-            c.hide();
-          });
-        });
-      }
+	  /* ================== Copiar execução ================== */
+	  document.body.addEventListener('click', async function (e) {
+		const btn = e.target.closest('.copiar-execucao');
+		if (!btn) return;
+		const detalhe = btn.closest('td').querySelector('.execucao-detalhe');
+		const texto = (detalhe?.innerText || '').trim();
+		if (!texto) return;
 
-      /* ================== Copiar execução (delegação) ================== */
-      document.body.addEventListener('click', async function (e) {
-        const btn = e.target.closest('.copiar-execucao');
-        if (!btn) return;
-        const detalhe = btn.closest('td').querySelector('.execucao-detalhe');
-        const texto = (detalhe?.innerText || '').trim();
-        if (!texto) return;
+		try {
+		  await navigator.clipboard.writeText(texto);
+		  const original = btn.innerHTML;
+		  btn.innerHTML = '<i class="bi bi-check2"></i> Copiado!';
+		  btn.classList.remove('btn-outline-secondary');
+		  btn.classList.add('btn-success');
+		  setTimeout(() => { btn.innerHTML = original; btn.classList.remove('btn-success'); btn.classList.add('btn-outline-secondary'); }, 1200);
+		} catch (err) {
+		  alert('Não foi possível copiar automaticamente.');
+		}
+	  });
+	});
+	
+		document.addEventListener('DOMContentLoaded', function () {
+		  const filtros = document.getElementById('filtrosCollapse');
+		  const btn = document.getElementById('btnFiltros');
+		
+		  if (!filtros || !btn) return;
+		
+		  filtros.addEventListener('show.bs.collapse', function () {
+			btn.innerHTML = '<i class="bi bi-x"></i> Ocultar';
+		  });
+		
+		  filtros.addEventListener('hide.bs.collapse', function () {
+			btn.innerHTML = '<i class="bi bi-funnel"></i> Filtros';
+		  });
+		});
+	
+		document.addEventListener('DOMContentLoaded', function () {
+		  const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+		  tooltipTriggerList.forEach(function (el) {
+			new bootstrap.Tooltip(el);
+		  });
+		});
+	
+	
+		document.addEventListener('DOMContentLoaded', function () {
+		  document.querySelectorAll('[title]').forEach(el => {
+			new bootstrap.Tooltip(el, {
+			  html: false,
+			  boundary: 'window'
+			});
+		  });
+		});
+		
 
-        try {
-          await navigator.clipboard.writeText(texto);
-          const original = btn.innerHTML;
-          btn.innerHTML = '<i class="bi bi-check2"></i> Copiado!';
-          btn.classList.remove('btn-outline-secondary');
-          btn.classList.add('btn-success');
-          setTimeout(() => { btn.innerHTML = original; btn.classList.remove('btn-success'); btn.classList.add('btn-outline-secondary'); }, 1200);
-        } catch (err) {
-          alert('Não foi possível copiar automaticamente. Selecione e copie manualmente.');
-        }
-      });
-    });
+		
+				document.addEventListener('DOMContentLoaded', function () {
+				  const isMobile = window.matchMedia('(hover: none)').matches;
+				  const popoverMap = new Map();
+				  if (!isMobile) {
+					// DESKTOP — inicializa popovers
+					document.querySelectorAll('[data-bs-toggle="popover"]').forEach(td => {
+					  const pop = new bootstrap.Popover(td, {
+						container: 'body',
+						html: false,
+						trigger: 'hover focus'
+					  });
+					  const execId = td.getAttribute('data-exec-id');
+					  popoverMap.set(execId, { pop, td });
+					});
+					// Integração popover x collapse
+					document.querySelectorAll('tr.collapse').forEach(row => {
+					  const execId = row.id.replace('execDesc__', '');
+					  const item = popoverMap.get(execId);
+					  if (!item) return;
+					  const { pop, td } = item;
+					  row.addEventListener('show.bs.collapse', () => {
+						pop.hide();
+						pop.disable();
+						td.removeAttribute('data-bs-toggle');
+					  });
+					  row.addEventListener('hide.bs.collapse', () => {
+						td.setAttribute('data-bs-toggle', 'popover');
+						pop.enable();
+					  });
+					});
+				  } else {
+					// MOBILE — remove completamente popover
+					document.querySelectorAll('[data-bs-toggle="popover"]').forEach(td => {
+					  td.removeAttribute('data-bs-toggle');
+					  td.removeAttribute('data-bs-content');
+					});
+				  }
+				});
 </script>
-
 </body>
 </html>

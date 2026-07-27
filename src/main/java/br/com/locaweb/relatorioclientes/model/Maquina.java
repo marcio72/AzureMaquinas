@@ -20,7 +20,6 @@ import lombok.Setter;
 
 public class Maquina {
 
-
 @Id
 @GeneratedValue(strategy = GenerationType.IDENTITY)	
 private Long id;
@@ -29,15 +28,35 @@ private Long id;
 @JsonProperty("nom_maq")
 private String nom_maq;
 
-
 @Column(name = "jogo")
 @JsonProperty("nom_jogo")
 private String nom_jogo;
 
+
 @Column(name = "numplaca")
 private String numeroPlaca;
-
 private String obs;
-
 private Integer codCliente;
+
+// Peça física atualmente instalada em cada slot (guarda o id_peca).
+@Column(name = "Monitor")
+private Integer monitor;
+
+@Column(name = "fonte")
+private Integer fonte;
+
+@Column(name = "Coletor")
+private Integer coletor;
+
+@Column(name = "Mod_Placa")
+private Integer modPlaca;
+
+// Peça física (categoria "Jogo") instalada — não confundir com o
+// campo "jogo" (nom_jogo), que é o nome do jogo em texto livre e
+// não tem relação com o rastreio de peça física.
+@Column(name = "jogosegundo")
+private Integer jogoSegundo;
+
+@Column(name = "ativo")
+private Boolean ativo;
 }

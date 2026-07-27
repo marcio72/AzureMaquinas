@@ -357,7 +357,10 @@
       usuario: usuarioIdx,
       nome: findIdx(['nome']),
       unidade: findIdx(['unidade']),
-      cidade: findIdx(['cidade'])
+      cidade: findIdx(['cidade']),
+      seguidores: findIdx(['seguidores']),
+      motivo: findIdx(['motivo']),
+      status: findIdx(['status'])
     };
   }
   function escapeHtml(s){
@@ -738,7 +741,11 @@
           username,
           nome: idx.nome>-1 ? String(row[idx.nome]||'').trim() : '',
           unidade: idx.unidade>-1 ? String(row[idx.unidade]||'').trim() : '',
-          cidade: idx.cidade>-1 ? String(row[idx.cidade]||'').trim() : ''
+          cidade: idx.cidade>-1 ? String(row[idx.cidade]||'').trim() : '',
+          seguidores: idx.seguidores>-1 && row[idx.seguidores] !== '' && row[idx.seguidores] !== null && row[idx.seguidores] !== undefined
+            ? Number(row[idx.seguidores]) : null,
+          motivo: idx.motivo>-1 ? String(row[idx.motivo]||'').trim() : '',
+          status: idx.status>-1 ? String(row[idx.status]||'').trim() : ''
         });
       }
       const resultado = await apiImport(linhas);

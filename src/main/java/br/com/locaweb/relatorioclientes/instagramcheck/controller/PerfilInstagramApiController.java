@@ -33,6 +33,9 @@ public class PerfilInstagramApiController {
         public String nome;
         public String unidade;
         public String cidade;
+        public Integer seguidores;
+        public String motivo;
+        public String status;
     }
 
     public static class ImportResultDTO {
@@ -54,6 +57,8 @@ public class PerfilInstagramApiController {
         for (ImportRowDTO linha : linhas) {
             if (linha.username == null || linha.username.isBlank()) continue;
             String username = linha.username.trim().toLowerCase();
+            String statusNormalizado = normalizeStatus(linha.status);
+            String motivoNormalizado = normalizeMotivo(linha.motivo);
 
             Optional<PerfilInstagram> existenteOpt = repository.findByUsername(username);
             if (existenteOpt.isPresent()) {
@@ -71,6 +76,21 @@ public class PerfilInstagramApiController {
                     existente.setCidade(linha.cidade.trim());
                     mudou = true;
                 }
+                // Só preenche seguidores/motivo/status se o perfil ainda não tiver progresso
+                // (nunca sobrescreve uma checagem já feita ao vivo no sistema).
+                if (existente.getSeguidores() == null && linha.seguidores != null) {
+                    existente.setSeguidores(linha.seguidores);
+                    mudou = true;
+                }
+                if (existente.getMotivo() == null && motivoNormalizado != null) {
+                    existente.setMotivo(motivoNormalizado);
+                    mudou = true;
+                }
+                if ("pendente".equals(existente.getStatus()) && !"pendente".equals(statusNormalizado)) {
+                    existente.setStatus(statusNormalizado);
+                    existente.setCheckedEm(LocalDateTime.now());
+                    mudou = true;
+                }
                 if (mudou) {
                     repository.save(existente);
                     atualizados++;
@@ -81,7 +101,12 @@ public class PerfilInstagramApiController {
                 novo.setNome(blankToNull(linha.nome));
                 novo.setUnidade(blankToNull(linha.unidade));
                 novo.setCidade(blankToNull(linha.cidade));
-                novo.setStatus("pendente");
+                novo.setSeguidores(linha.seguidores);
+                novo.setMotivo(motivoNormalizado);
+                novo.setStatus(statusNormalizado);
+                if (!"pendente".equals(statusNormalizado)) {
+                    novo.setCheckedEm(LocalDateTime.now());
+                }
                 repository.save(novo);
                 adicionados++;
             }
@@ -96,6 +121,32 @@ public class PerfilInstagramApiController {
     private String blankToNull(String s) {
         if (isBlank(s)) return null;
         return s.trim();
+    }
+
+    private String stripAccents(String s) {
+        return java.text.Normalizer.normalize(s, java.text.Normalizer.Form.NFD).replaceAll("\\p{M}", "");
+    }
+
+    private String normalizeStatus(String raw) {
+        if (isBlank(raw)) return "pendente";
+        String s = stripAccents(raw.trim().toLowerCase());
+        if (s.equals("aprovado")) return "aprovado";
+        if (s.equals("reprovado")) return "reprovado";
+        return "pendente";
+    }
+
+    private String normalizeMotivo(String raw) {
+        if (isBlank(raw)) return null;
+        String s = raw.trim();
+        if (s.equals("—") || s.equals("-")) return null;
+        String norm = stripAccents(s.toLowerCase());
+        switch (norm) {
+            case "privado": return "Privado";
+            case "inapropriado": return "Inapropriado";
+            case "influenciador": return "Influenciador";
+            case "adequado": return "Adequado";
+            default: return null;
+        }
     }
 
     // ---------- Atualização parcial (seguidores, publica, status, motivo) ----------
