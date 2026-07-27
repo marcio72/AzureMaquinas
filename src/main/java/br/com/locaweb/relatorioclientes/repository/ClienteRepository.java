@@ -54,27 +54,5 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
     	                                        @Param("dataFim") LocalDate dataFim,
     	                                        @Param("regiao") Integer regiao, 
     	                                        Pageable pageable);
-    
-    
-    
-    @Query("select m.codCliente, count(m) from Maquina m group by m.codCliente")
-    List<Object[]> countMaquinasPorCliente();
-    
-    
-    @Query("""
-    SELECT COUNT(c)
-    FROM Cliente c
-    WHERE UPPER(c.nomCliente) = 'INSTALAÇÃO'
-""")
-    long countInstalacoesFeitas();
-
-    // 🔍 Tela Explorer: só as praças que realmente têm cliente ativo,
-    // pra não listar V1..V10 fixo no filtro se só algumas forem usadas.
-    @Query("""
-    SELECT DISTINCT c.praca
-    FROM Cliente c
-    WHERE c.ativo = true AND c.praca IS NOT NULL AND c.praca <> ''
-""")
-    List<String> findPracasDistintasAtivas();
-
 }
+

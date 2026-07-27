@@ -11,7 +11,7 @@
 
   <style>
     .card-header-custom {
-      background-color: #dc3545;
+      background-color: #dc3545; /* vermelho */
       color: white;
       font-weight: bold;
       font-size: 1.25rem;
@@ -28,111 +28,63 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
 
-    .btn-executar {
-      background-color: #198754;
-      color: white;
-      font-weight: 600;
-    }
+    @media (max-width: 767px) {
+      .table thead,
+      .table td,
+      .table th {
+        font-size: 0.85rem;
+      }
 
-    .btn-executar:hover {
-      background-color: #157347;
-      color: white;
+      .btn {
+        width: 100%;
+      }
     }
   </style>
 </head>
-
 <body class="bg-light">
 
 <div class="container py-4">
-
-  <!-- CARD PRINCIPAL -->
   <div class="card">
     <div class="card-header-custom">
-      <i class="bi bi-exclamation-circle"></i>
-      Solicitações Abertas
+      <i class="bi bi-exclamation-circle"></i> Solicitações Abertas
     </div>
 
     <div class="card-body">
-      <a href="/menu" class="btn btn-secondary mb-4">
-        <i class="bi bi-arrow-left"></i> Voltar ao Menu
-      </a>
+      <a href="/menu" class="btn btn-secondary mb-3">Voltar ao Menu</a>
 
-      <!-- GRID DE CARDS -->
-      <div class="row row-cols-1 row-cols-md-2 g-4">
-
-        <!-- CARD POR SOLICITAÇÃO -->
-        <div class="col" th:each="s : ${solicitacoes}">
-          <div class="card h-100">
-
-            <!-- HEADER -->
-            <div class="card-header bg-danger text-white fw-bold">
-              <i class="bi bi-building"></i>
-              <span th:text="${s.cliente.nomCliente}">Cliente</span>
-            </div>
-
-            <!-- BODY -->
-            <div class="card-body">
-
-              <p class="mb-2">
-                <strong>📅 Data:</strong>
-                <span th:text="${#temporals.format(s.dataSolicitacao, 'dd/MM/yyyy HH:mm:ss')}"></span>
-              </p>
-
-              <p class="mb-3">
-                <strong>Status:</strong>
-                <span class="badge bg-dark" th:if="${s.status}">Aberta</span>
-                <span class="badge bg-secondary" th:unless="${s.status}">Fechada</span>
-              </p>
-
-              <hr>
-
-              <!-- PROBLEMAS -->
-              <div th:each="p : ${s.problemas}" class="mb-3">
-                <p class="mb-1">
-                  <strong>🕹 Máquina:</strong>
-                  <span th:text="${p.maquina.nom_maq + ' - ' + p.maquina.nom_jogo}"></span>
-                </p>
-				  
-				  <p class="mb-0">
-					  <span class="text-danger"><strong>❗ Problema: </strong></span>
-					  <span class="text-dark">
-    				 <span th:text="${p.descricao}"></span>
-  					</span>
-				  </p>
-
-				  <!-- FOTO DO PROBLEMA (se houver) -->
-				  <div th:if="${p.foto != null and p.foto.length > 0}" class="mt-2">
-					  <a th:href="@{'/api/fotos/problema/' + ${p.id}}" target="_blank" title="Ver foto em tamanho maior">
-						  <img th:src="@{'/api/fotos/problema/' + ${p.id}}"
-							   alt="Foto do problema"
-							   style="max-width: 90px; max-height: 90px; object-fit: cover; border-radius: 8px; border: 1px solid #dee2e6;">
-					  </a>
-				  </div>
-			  
-			  </div>
-
-            </div>
-
-            <!-- FOOTER COM BOTÃO -->
-            <div class="card-footer  bg-light text-end">
-
-              <!-- ENVIA O ID DA SOLICITAÇÃO -->
-              <a th:href="@{/execucao/solicitacao/{id}(id=${s.id})}"
-                 class="btn btn-success btn-sm px-3">
-                <i class="bi bi-tools"></i>
-                Executar Manutenção
-              </a>
-            </div>
-
-          </div>
-        </div>
-        <!-- FIM CARD -->
-
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Cliente</th>
+              <th>Data da Solicitação</th>
+              <th>Status</th>
+              <th>Máquina</th>
+              <th>Problema</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="s : ${solicitacoes}">
+              <td th:text="${s.cliente.nomCliente}">Cliente</td>
+              <td th:text="${#temporals.format(s.dataSolicitacao, 'dd/MM/yyyy HH:mm:ss')}">Data</td>
+              <td th:text="${s.status ? 'Aberta' : 'Fechada'}">Status</td>
+              <td>
+                <ul class="mb-0 ps-3">
+                  <li th:each="p : ${s.problemas}"
+                      th:text="${p.maquina.nom_maq + ' - ' + p.maquina.nom_jogo}">Máquina</li>
+                </ul>
+              </td>
+              <td>
+                <ul class="mb-0 ps-3">
+                  <li th:each="p : ${s.problemas}"
+                      th:text="${p.descricao}">Problema</li>
+                </ul>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
-
-</div>
-
-</body>
-</html>
+  </div>
+  

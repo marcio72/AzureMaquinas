@@ -22,11 +22,6 @@ public class LoginController {
         return "login";
     }
 
-    @GetMapping("/trocar-senha")
-    public String trocarSenhaForm() {
-        return "trocar_senha";
-    }
-
     @PostMapping("/login")
     public String processLogin(@RequestParam String username, @RequestParam String senha, HttpSession session, Model model) {
         Usuario usuario = usuarioRepository.findByUsernameAndSenha(username, senha);

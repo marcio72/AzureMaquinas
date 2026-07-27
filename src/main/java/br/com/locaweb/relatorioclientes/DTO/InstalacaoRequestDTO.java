@@ -14,18 +14,23 @@ public class InstalacaoRequestDTO {
     public Cliente getCliente() {
         return cliente;
     }
+
     public void setCliente(Cliente cliente) {
         this.cliente = cliente;
     }
+
     public String getDescricaoInstalacao() {
         return descricaoInstalacao;
     }
+
     public void setDescricaoInstalacao(String descricaoInstalacao) {
         this.descricaoInstalacao = descricaoInstalacao;
-    }
+    } 
+
     public LocalDateTime getDataSolicitacao() {
         return dataSolicitacao;
     }
+
     public void setDataSolicitacao(LocalDateTime dataSolicitacao) {
         this.dataSolicitacao = dataSolicitacao;
     }

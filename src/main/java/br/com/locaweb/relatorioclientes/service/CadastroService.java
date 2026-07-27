@@ -20,10 +20,6 @@ public class CadastroService {
 
     @Transactional
     public Cliente cadastrarClienteComMaquinas(ClienteComMaquinasDTO dto) {
-        // Trava de segurança: todo cliente cadastrado por aqui nasce ativo,
-        // independente do que o front mandar (mesmo padrão do ClienteCrudController.salvarCliente).
-        dto.getCliente().setAtivo(true);
-
         // Salva o cliente
         Cliente novoCliente = clienteRepository.save(dto.getCliente());
 

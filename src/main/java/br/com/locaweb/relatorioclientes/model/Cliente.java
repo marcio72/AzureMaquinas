@@ -45,11 +45,6 @@ public class Cliente {
 	@Column(name = "regiao")
     private Integer regiao;
 
-    // Praça (V1, V2, V3...) — identifica o cliente para fins de histórico de peças.
-    // Independente do campo "leiturista": um leiturista pode operar mais de uma praça.
-    @Column(name = "praca")
-    private String praca;
-
     @Column(name = "Dt_Cadastro")
     private LocalDateTime dtCadastro;
 
@@ -68,4 +63,6 @@ public class Cliente {
     public void setMaquinas(List<Maquina> maquinas) {
         this.maquinas = maquinas;
     }
+
+
 }

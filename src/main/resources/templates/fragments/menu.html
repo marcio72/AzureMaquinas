@@ -1,233 +1,86 @@
 <!DOCTYPE html>
 <html lang="pt-br" xmlns:th="http://www.thymeleaf.org" th:fragment="layout(content)">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Sistema Pro - Gestão</title>
-	
-	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-	<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-	
-	<style>
-		:root {
-		   /* Cores corrigidas para evitar o fundo branco */
-		   --bg-sidebar: #0f172a;
-		   --bg-body: #081418; /* Agora igual ao fundo das tabelas */
-		   --primary: #10b981;
-		   --text-muted: #94a3b8;
-		   --sidebar-width: 260px;
-		   --sidebar-collapsed-width: 80px;
-		}
- 
-		/* Força o fundo escuro em todo o documento */
-		html, body {
-		   background-color: var(--bg-body) !important;
-		   color: white;
-		   font-family: 'Inter', sans-serif;
-		   margin: 0;
-		   height: 100%;
-		   min-height: 100vh;
-		}
- 
-		/* Sidebar Base */
-		#sidebar {
-		   width: var(--sidebar-width);
-		   height: 100vh;
-		   position: fixed;
-		   left: 0;
-		   top: 0;
-		   background: var(--bg-sidebar);
-		   color: white;
-		   transition: all 0.3s ease;
-		   z-index: 1000;
-		   overflow-x: hidden;
-		   border-right: 1px solid rgba(255,255,255,0.05);
-		}
- 
-		#sidebar.collapsed {
-		   width: var(--sidebar-collapsed-width);
-		}
- 
-		/* Header do Sidebar */
-		.sidebar-header {
-		   padding: 20px;
-		   display: flex;
-		   align-items: center;
-		   justify-content: space-between;
-		   border-bottom: 1px solid rgba(255,255,255,0.05);
-		}
- 
-		.logo-text {
-		   font-weight: 700;
-		   font-size: 1.1rem;
-		   color: var(--primary);
-		   white-space: nowrap;
-		}
- 
-		#sidebar.collapsed .logo-text { display: none; }
- 
-		/* Links do Menu */
-		.nav-link {
-		   color: var(--text-muted) !important;
-		   padding: 12px 20px !important;
-		   display: flex;
-		   align-items: center;
-		   gap: 15px;
-		   border-left: 3px solid transparent;
-		   transition: 0.2s;
-		   white-space: nowrap;
-		}
- 
-		.nav-link i { font-size: 1.2rem; min-width: 25px; }
- 
-		.nav-link:hover, .nav-link.active {
-		   color: white !important;
-		   background: rgba(255,255,255,0.05);
-		   border-left-color: var(--primary);
-		}
- 
-		/* Submenus */
-		.collapse-menu {
-		   background: rgba(0,0,0,0.2);
-		   list-style: none;
-		   padding: 0;
-		}
- 
-		.collapse-menu .nav-link {
-		   padding-left: 55px !important;
-		   font-size: 0.85rem;
-		}
- 
-		/* Área de Conteúdo Corrigida */
-		#main-content {
-		   margin-left: var(--sidebar-width);
-		   min-height: 100vh;
-		   background-color: var(--bg-body) !important;
-		   padding: 30px;
-		   transition: all 0.3s ease;
-		}
- 
-		#main-content.expanded {
-		   margin-left: var(--sidebar-collapsed-width);
-		}
- 
-		/* Botão de Toggle */
-		.toggle-btn {
-		   cursor: pointer;
-		   background: none;
-		   border: none;
-		   color: white;
-		   font-size: 1.5rem;
-		}
- 
-		@media (max-width: 768px) {
-		   #sidebar { left: -260px; }
-		   #sidebar.active { left: 0; }
-		   #main-content { margin-left: 0 !important; width: 100%; }
-		}
-	</style>
-</head>
-<body>
+    <meta charset="UTF-8">
+    <title>Sistema</title>
 
-<div th:fragment="layout(content)">
-	<nav id="sidebar">
-		<div class="sidebar-header">
-			<span class="logo-text">SISTEMA PRO</span>
-			<div style="display:flex; align-items:center; gap:10px;">
-				<a href="/menu" class="toggle-btn" title="Menu de campo" style="font-size:1.1rem; text-decoration:none;">
-					<i class="bi bi-arrow-left-circle"></i>
-				</a>
-				<button class="toggle-btn" id="sidebarCollapse">
-					<i class="bi bi-list"></i>
-				</button>
-			</div>
-		</div>
-		
-		<ul class="nav flex-column mt-3">
-			<li class="nav-item">
-				<a class="nav-link" th:href="@{/}">
-					<i class="bi bi-speedometer2"></i>
-					<span>Dashboard</span>
-				</a>
-			</li>
-			
-			<li class="nav-item">
-				<a class="nav-link" th:href="@{/explorer}">
-					<i class="bi bi-diagram-3"></i>
-					<span>Explorer</span>
-				</a>
-			</li>
-			
-			<li class="nav-item">
-				<a class="nav-link" data-bs-toggle="collapse" href="#menuClientes">
-					<i class="bi bi-people"></i>
-					<span>Clientes</span>
-					<i class="bi bi-chevron-down ms-auto small"></i>
-				</a>
-				<div class="collapse" id="menuClientes">
-					<ul class="collapse-menu">
-						<li><a class="nav-link" th:href="@{/clientes/clientes-e-maquinas}">Lista c/ Máquina</a></li>
-						<li><a class="nav-link" th:href="@{/clientes/listar}">Lista Geral</a></li>
-						<li><a class="nav-link" th:href="@{/clientes/novo}">Novo Cadastro</a></li>
-					</ul>
-				</div>
-			</li>
-			
-			<li class="nav-item">
-				<a class="nav-link" data-bs-toggle="collapse" href="#menuMaquinas">
-					<i class="bi bi-cpu"></i>
-					<span>Máquinas</span>
-					<i class="bi bi-chevron-down ms-auto small"></i>
-				</a>
-				<div class="collapse" id="menuMaquinas">
-					<ul class="collapse-menu">
-						<li><a class="nav-link" th:href="@{/form-maquinas}">Consulta</a></li>
-						<li><a class="nav-link" th:href="@{/maquinas/form}">Cadastrar</a></li>
-					</ul>
-				</div>
-			</li>
-			
-			<li class="nav-item">
-				<a class="nav-link" data-bs-toggle="collapse" href="#menuEstoque">
-					<i class="bi bi-box-seam"></i>
-					<span>Estoque</span>
-					<i class="bi bi-chevron-down ms-auto small"></i>
-				</a>
-				<div class="collapse" id="menuEstoque">
-					<ul class="collapse-menu">
-						<li><a class="nav-link" th:href="@{/lotes}">Gerenciar Lotes</a></li>
-						<li><a class="nav-link" th:href="@{/categorias}">Categorias</a></li>
-						<li><a class="nav-link" th:href="@{/subcategorias}">Subcategorias</a></li>
-						<li><a class="nav-link" th:href="@{/coletores}">Coletores</a></li>
-						<li><a class="nav-link" th:href="@{/placas}">Placas</a></li>
-					</ul>
-				</div>
-			</li>
-			
-			<li class="nav-item">
-				<a class="nav-link" th:href="@{/relatorio}">
-					<i class="bi bi-file-earmark-bar-graph"></i>
-					<span>Relatórios</span>
-				</a>
-			</li>
-		</ul>
-	</nav>
-	
-	<main id="main-content">
-		<div th:replace="${content}"></div>
-	</main>
-	
-	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-	<script>
-		$(document).ready(function () {
-		   $('#sidebarCollapse').on('click', function () {
-			  $('#sidebar').toggleClass('collapsed');
-			  $('#main-content').toggleClass('expanded');
-		   });
-		});
-	</script>
+    <!-- Bootstrap + Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        body {
+            padding-top: 70px; /* espaço para o menu fixo */
+        }
+        .navbar-custom {
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .navbar-custom .nav-link {
+            color: #333;
+        }
+        .navbar-custom .nav-link:hover {
+            color: #0d6efd;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            color: #0d6efd;
+        }
+        .navbar-brand i {
+            margin-right: 5px;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container my-3 fixed-top">
+
+      <nav class="navbar navbar-expand-lg bg-dark  text-light" data-bs-theme="dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">
+            <i class="bi bi-bar-chart-line-fill"></i> Sistema
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSistema"
+                aria-controls="navbarSistema" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSistema">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/clientes/novo}"><i class="bi bi-person-plus"></i> Novo Cliente</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/clientes/listar}"><i class="bi bi-list-ul"></i> Lista de Clientes</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/relatorio}"><i class="bi bi-table"></i> Relatório</a>
+                </li>
+
+                <!-- Dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="maquinasDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-hdd"></i> Máquinas
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="maquinasDropdown">
+                        <li><a class="dropdown-item" th:href="@{/maquinas/form}"><i class="bi bi-plus-circle"></i> Cadastro</a></li>
+                        <li><a class="dropdown-item" th:href="@{/form-maquinas}"><i class="bi bi-list-ol"></i> Consulta</a></li>
+                    </ul>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/dashboard}"><i class="bi bi-bar-chart"></i> Dashboard</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- CONTEÚDO -->
+<div class="container">
+    <div th:replace="${content}"></div>
 </div>
+</div>>
 </body>
 </html>
