@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checagem de Perfis · Instagram</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --bg:#F3F7F6;
+    --surface:#FFFFFF;
+    --border:#DCE6E3;
+    --border-soft:#E9F0EE;
+    --text:#182625;
+    --text-muted:#647672;
+    --teal:#0D7C77;
+    --teal-dark:#0A5F5B;
+    --teal-tint:#E1F2F0;
+    --teal-tint-strong:#CDEAE6;
+    --plum:#733A61;
+    --plum-dark:#582948;
+    --plum-tint:#F4E7F0;
+    --plum-tint-strong:#EAD3E2;
+    --amber:#9C6B1F;
+    --amber-tint:#FBF0DC;
+    --radius-lg:18px;
+    --radius-md:12px;
+    --radius-sm:8px;
+    --shadow-sm:0 1px 2px rgba(16,36,33,.06),0 1px 1px rgba(16,36,33,.04);
+    --shadow-md:0 8px 24px rgba(16,36,33,.10);
+    --font-display:'Manrope',sans-serif;
+    --font-body:'Inter',sans-serif;
+    --font-mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;
+  }
+  #app{max-width:980px;margin:0 auto;padding:28px 20px 64px;}
+
+  header{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap;margin-bottom:6px;}
+  .header-title h1{font-family:var(--font-display);font-weight:800;font-size:1.55rem;margin:0 0 2px;letter-spacing:-.01em;}
+  .header-title p{margin:0;color:var(--text-muted);font-size:.92rem;}
+  .header-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .btn{
+    font-family:var(--font-body);
+    font-weight:600;
+    font-size:.86rem;
+    padding:9px 14px;
+    border-radius:var(--radius-sm);
+    border:1px solid var(--border);
+    background:var(--surface);
+    color:var(--text);
+    cursor:pointer;
+    transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+    white-space:nowrap;
+  }
+  .btn:hover{box-shadow:var(--shadow-sm);transform:translateY(-1px);}
+  .btn:active{transform:translateY(0);}
+  .btn-teal{background:var(--teal);border-color:var(--teal);color:#fff;}
+  .btn-teal:hover{background:var(--teal-dark);}
+  .btn-ghost{background:transparent;}
+  .btn-danger{color:var(--plum-dark);}
+  .btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none;}
+
+  .privacy-note{
+    margin:14px 0 22px;
+    padding:9px 14px;
+    background:var(--amber-tint);
+    border:1px solid #EAD9AE;
+    color:var(--amber);
+    font-size:.8rem;
+    border-radius:var(--radius-sm);
+    display:flex;gap:8px;align-items:flex-start;
+  }
+
+  .stats-bar{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px;}
+  .stat-card{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius-md);padding:12px 14px;box-shadow:var(--shadow-sm);}
+  .stat-card .num{font-family:var(--font-mono);font-weight:600;font-size:1.4rem;line-height:1;}
+  .stat-card .lbl{font-size:.72rem;color:var(--text-muted);margin-top:5px;text-transform:uppercase;letter-spacing:.04em;}
+  .stat-card.aprov .num{color:var(--teal-dark);}
+  .stat-card.reprov .num{color:var(--plum-dark);}
+  .progress-wrap{margin-bottom:24px;}
+  .progress-track{height:8px;background:var(--border-soft);border-radius:99px;overflow:hidden;}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--teal-dark));border-radius:99px;transition:width .3s ease;}
+  .progress-label{font-size:.78rem;color:var(--text-muted);margin-top:6px;font-family:var(--font-mono);}
+
+  .tabs{display:inline-flex;background:var(--surface);border:1px solid var(--border);border-radius:99px;padding:4px;margin-bottom:22px;box-shadow:var(--shadow-sm);}
+  .tab-btn{border:none;background:transparent;padding:8px 18px;border-radius:99px;font-family:var(--font-body);font-weight:600;font-size:.86rem;color:var(--text-muted);cursor:pointer;}
+  .tab-btn.active{background:var(--teal);color:#fff;}
+
+  #view-fila{display:flex;justify-content:center;padding:12px 0;}
+  .fila-card{
+    position:relative;
+    width:100%;max-width:520px;
+    background:var(--surface);
+    border:1px solid var(--border-soft);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-md);
+    padding:32px 32px 28px;
+    text-align:center;
+    overflow:hidden;
+  }
+  .fila-eyebrow{font-size:.76rem;color:var(--text-muted);font-family:var(--font-mono);margin-bottom:14px;letter-spacing:.03em;}
+  .fila-username{font-family:var(--font-display);font-weight:800;font-size:1.7rem;margin:0 0 6px;word-break:break-all;}
+  .fila-context{color:var(--text-muted);font-size:.88rem;margin-bottom:18px;min-height:1.2em;}
+  .fila-link{
+    display:inline-flex;align-items:center;gap:6px;
+    color:var(--teal-dark);text-decoration:none;font-weight:600;font-size:.9rem;
+    background:var(--teal-tint);padding:9px 16px;border-radius:99px;margin-bottom:22px;
+    transition:background .15s ease;
+  }
+  .fila-link:hover{background:var(--teal-tint-strong);}
+
+  .field-row{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:16px;}
+  .field-row label{font-size:.82rem;color:var(--text-muted);font-weight:600;}
+  .seguidores-input{
+    width:140px;font-family:var(--font-mono);font-size:1.05rem;font-weight:600;
+    padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);
+    text-align:center;color:var(--text);
+  }
+  .seguidores-input:focus{outline:none;border-color:var(--teal);}
+  .criteria-hint{font-size:.76rem;font-family:var(--font-mono);margin-top:-8px;margin-bottom:16px;}
+  .criteria-hint.ok{color:var(--teal-dark);}
+  .criteria-hint.bad{color:var(--amber);}
+
+  .pill-toggle{display:inline-flex;border:1.5px solid var(--border);border-radius:99px;overflow:hidden;margin-bottom:18px;}
+  .pill-toggle button{
+    border:none;background:transparent;padding:8px 18px;font-size:.84rem;font-weight:600;
+    color:var(--text-muted);cursor:pointer;font-family:var(--font-body);
+  }
+  .pill-toggle button.active.pub{background:var(--teal);color:#fff;}
+  .pill-toggle button.active.priv{background:var(--plum);color:#fff;}
+
+  .motivo-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:24px;}
+  .chip{
+    border:1.5px solid var(--border);background:var(--surface);color:var(--text-muted);
+    padding:6px 13px;border-radius:99px;font-size:.78rem;font-weight:600;cursor:pointer;font-family:var(--font-body);
+  }
+  .chip.active{background:var(--plum-tint);border-color:var(--plum);color:var(--plum-dark);}
+  .chip.active[data-val="Adequado"]{background:var(--teal-tint);border-color:var(--teal);color:var(--teal-dark);}
+
+  .decision-row{display:flex;gap:12px;}
+  .decision-btn{
+    flex:1;padding:15px;border-radius:var(--radius-md);border:none;
+    font-family:var(--font-display);font-weight:800;font-size:1rem;letter-spacing:.02em;
+    cursor:pointer;color:#fff;transition:transform .1s ease, filter .1s ease;
+  }
+  .decision-btn:hover{filter:brightness(1.06);}
+  .decision-btn:active{transform:scale(.97);}
+  .decision-btn.approve{background:var(--teal);}
+  .decision-btn.reject{background:var(--plum);}
+  .kbd-hint{margin-top:16px;font-size:.72rem;color:var(--text-muted);}
+  .kbd-hint kbd{background:var(--border-soft);border-radius:4px;padding:1px 6px;font-family:var(--font-mono);}
+
+  .stamp{
+    position:absolute;top:50%;left:50%;
+    padding:10px 26px;border-width:6px;border-style:solid;border-radius:12px;
+    font-family:var(--font-display);font-weight:800;font-size:1.9rem;letter-spacing:.1em;
+    text-transform:uppercase;pointer-events:none;opacity:0;
+    transform:translate(-50%,-50%) scale(2.4) rotate(-9deg);
+  }
+  .stamp.approve{color:var(--teal-dark);animation:stampIn .5s cubic-bezier(.2,1.5,.4,1) forwards, stampOut .35s ease .5s forwards;}
+  .stamp.reject{color:var(--plum-dark);animation:stampIn .5s cubic-bezier(.2,1.5,.4,1) forwards, stampOut .35s ease .5s forwards;}
+  @keyframes stampIn{0%{opacity:0;transform:translate(-50%,-50%) scale(2.4) rotate(-9deg);}55%{opacity:1;transform:translate(-50%,-50%) scale(.9) rotate(-9deg);}100%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(-9deg);}}
+  @keyframes stampOut{to{opacity:0;}}
+
+  .empty-state{padding:40px 20px;text-align:center;color:var(--text-muted);}
+  .empty-state .emoji{font-size:2.2rem;margin-bottom:10px;}
+  .empty-state h3{font-family:var(--font-display);color:var(--text);margin:0 0 6px;}
+
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center;}
+  .toolbar input[type=text], .toolbar select{
+    font-family:var(--font-body);padding:9px 12px;border:1.5px solid var(--border);
+    border-radius:var(--radius-sm);font-size:.86rem;background:var(--surface);color:var(--text);
+  }
+  .toolbar input[type=text]{flex:1;min-width:180px;}
+  .table-wrap{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius-md);overflow:auto;box-shadow:var(--shadow-sm);}
+  table{width:100%;border-collapse:collapse;font-size:.84rem;min-width:760px;}
+  thead th{
+    text-align:left;padding:11px 12px;background:var(--bg);color:var(--text-muted);
+    font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border);
+    position:sticky;top:0;
+  }
+  tbody td{padding:9px 12px;border-bottom:1px solid var(--border-soft);vertical-align:middle;}
+  tbody tr.status-aprovado{background:var(--teal-tint);}
+  tbody tr.status-reprovado{background:var(--plum-tint);}
+  tbody tr:hover{filter:brightness(.98);}
+  .cell-user{font-weight:700;}
+  .cell-user a{color:var(--teal-dark);text-decoration:none;}
+  .table-input{width:90px;font-family:var(--font-mono);padding:5px 7px;border:1px solid var(--border);border-radius:6px;font-size:.82rem;}
+  .table-select{font-family:var(--font-body);padding:5px 7px;border:1px solid var(--border);border-radius:6px;font-size:.78rem;}
+  .status-badge{padding:3px 10px;border-radius:99px;font-size:.72rem;font-weight:700;display:inline-block;}
+  .status-badge.pendente{background:var(--border-soft);color:var(--text-muted);}
+  .status-badge.aprovado{background:var(--teal-tint-strong);color:var(--teal-dark);}
+  .status-badge.reprovado{background:var(--plum-tint-strong);color:var(--plum-dark);}
+  .icon-btn{border:none;background:transparent;color:var(--plum-dark);cursor:pointer;font-size:.95rem;padding:4px 6px;border-radius:6px;}
+  .icon-btn:hover{background:var(--plum-tint);}
+  .pagination{display:flex;justify-content:space-between;align-items:center;margin-top:14px;font-size:.82rem;color:var(--text-muted);}
+  .pagination .btn{padding:6px 12px;}
+
+  #toast-container{position:fixed;bottom:20px;right:20px;display:flex;flex-direction:column;gap:8px;z-index:200;}
+  .toast{
+    background:var(--text);color:#fff;padding:11px 16px;border-radius:var(--radius-sm);
+    font-size:.84rem;box-shadow:var(--shadow-md);animation:toastIn .2s ease;max-width:320px;
+  }
+  .toast.error{background:var(--plum-dark);}
+  .toast.success{background:var(--teal-dark);}
+  @keyframes toastIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+  .modal-overlay{position:fixed;inset:0;background:rgba(20,36,34,.45);display:flex;align-items:center;justify-content:center;z-index:300;}
+  .modal-box{background:var(--surface);border-radius:var(--radius-lg);padding:26px;max-width:380px;width:90%;box-shadow:var(--shadow-md);}
+  .modal-box h3{margin:0 0 8px;font-family:var(--font-display);}
+  .modal-box p{margin:0 0 20px;color:var(--text-muted);font-size:.9rem;}
+  .modal-actions{display:flex;gap:10px;justify-content:flex-end;}
+
+  @media (max-width:640px){
+    .stats-bar{grid-template-columns:repeat(2,1fr);}
+    .decision-row{flex-direction:column;}
+    header{flex-direction:column;}
+    table{min-width:640px;}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header>
+    <div class="header-title">
+      <h1>Checagem de Perfis</h1>
+      <p>Instagram — conta pública e mais de 2.000 seguidores</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn" id="btn-import">Importar planilha</button>
+      <button class="btn btn-ghost" id="btn-test-data" title="Adiciona alguns perfis fictícios para testar o layout">Carregar dados de teste</button>
+      <button class="btn" id="btn-export-approved">Exportar aprovados</button>
+      <button class="btn btn-ghost" id="btn-export-all">Exportar tudo</button>
+      <button class="btn btn-ghost btn-danger" id="btn-clear">Limpar dados</button>
+    </div>
+    <input type="file" id="file-input" accept=".csv,.xlsx,.xls" style="display:none">
+  </header>
+
+  <div class="privacy-note">
+    ⚠️ <span>Módulo de teste: os dados ficam num banco separado do sistema principal, mas esta página ainda não tem login — qualquer pessoa com a URL pode acessar e editar.</span>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat-card"><div class="num" id="stat-total">0</div><div class="lbl">Total</div></div>
+    <div class="stat-card"><div class="num" id="stat-checados">0</div><div class="lbl">Checados</div></div>
+    <div class="stat-card"><div class="num" id="stat-pendentes">0</div><div class="lbl">Pendentes</div></div>
+    <div class="stat-card aprov"><div class="num" id="stat-aprovados">0</div><div class="lbl">Aprovados</div></div>
+    <div class="stat-card reprov"><div class="num" id="stat-reprovados">0</div><div class="lbl">Reprovados</div></div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <div class="progress-label" id="progress-label">0 de 0 checados</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" id="tab-fila">Fila de checagem</button>
+    <button class="tab-btn" id="tab-tabela">Tabela completa</button>
+  </div>
+
+  <section id="view-fila"><div id="fila-content"></div></section>
+
+  <section id="view-tabela" style="display:none">
+    <div class="toolbar">
+      <input type="text" id="table-search" placeholder="Buscar por usuário...">
+      <select id="table-filter">
+        <option value="todos">Todos</option>
+        <option value="pendente">Pendentes</option>
+        <option value="aprovado">Aprovados</option>
+        <option value="reprovado">Reprovados</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Usuário</th><th>Nome</th><th>Unidade</th><th>Cidade</th>
+            <th>Seguidores</th><th>Pública</th><th>Status</th><th>Motivo</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <button class="btn" id="btn-prev">← Anterior</button>
+      <span id="pagination-info">Página 1 de 1</span>
+      <button class="btn" id="btn-next">Próxima →</button>
+    </div>
+  </section>
+
+</div>
+
+<div id="toast-container"></div>
+
+<div class="modal-overlay" id="confirm-modal" style="display:none">
+  <div class="modal-box">
+    <h3 id="confirm-title">Confirmar ação</h3>
+    <p id="confirm-message">Tem certeza?</p>
+    <div class="modal-actions">
+      <button class="btn" id="confirm-cancel">Cancelar</button>
+      <button class="btn btn-teal" id="confirm-yes" style="background:var(--plum);border-color:var(--plum)">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<script th:inline="none">
+(function(){
+  "use strict";
+  const API_BASE = '/api/instagramcheck/perfis';
+  const PAGE_SIZE = 50;
+
+  let profiles = [];
+  let currentView = 'fila';
+  let tablePage = 1;
+  let tableSearch = '';
+  let tableFilter = 'todos';
+  let confirmAction = null;
+  let dataLoaded = false;
+
+  // ---------- Utilities ----------
+  function normalizeHeader(h){
+    return String(h||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+  }
+  function normalizeUsername(raw){
+    let u = String(raw||'').trim();
+    if(!u) return '';
+    u = u.replace(/^(https?:\/\/)?(www\.)?instagram\.com\//i,'');
+    u = u.replace(/^@/,'');
+    u = u.split('?')[0].split('#')[0];
+    u = u.replace(/\/+$/,'');
+    u = u.split('/')[0];
+    return u.trim().toLowerCase();
+  }
+  function findColumnIndexes(headerRow){
+    const norm = headerRow.map(normalizeHeader);
+    const usuarioCandidates = ['instagram','usuario','username','perfil'];
+    const findIdx = (cands) => {
+      for(const c of cands){
+        const i = norm.findIndex(h => h === c || h.includes(c));
+        if(i>-1) return i;
+      }
+      return -1;
+    };
+    let usuarioIdx = findIdx(usuarioCandidates);
+    if(usuarioIdx === -1) usuarioIdx = 0;
+    return {
+      usuario: usuarioIdx,
+      nome: findIdx(['nome']),
+      unidade: findIdx(['unidade']),
+      cidade: findIdx(['cidade'])
+    };
+  }
+  function escapeHtml(s){
+    return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  // ---------- API helpers ----------
+  async function apiGet(){
+    const res = await fetch(API_BASE);
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    return res.json();
+  }
+  async function apiImport(rows){
+    const res = await fetch(API_BASE + '/importar', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(rows)
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    return res.json();
+  }
+  async function apiPatch(username, changes){
+    const res = await fetch(API_BASE + '/' + encodeURIComponent(username), {
+      method: 'PATCH',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(changes)
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    return res.json();
+  }
+  async function apiDeleteOne(username){
+    const res = await fetch(API_BASE + '/' + encodeURIComponent(username), {method: 'DELETE'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+  }
+  async function apiDeleteAll(){
+    const res = await fetch(API_BASE, {method: 'DELETE'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+  }
+  function mapFromApi(p){
+    return {
+      username: p.username,
+      nome: p.nome,
+      unidade: p.unidade,
+      cidade: p.cidade,
+      seguidores: p.seguidores,
+      publica: p.publica,
+      status: p.status,
+      motivo: p.motivo,
+      checkedAt: p.checkedEm
+    };
+  }
+
+  async function loadProfiles(){
+    try{
+      const data = await apiGet();
+      profiles = data.map(mapFromApi);
+    }catch(err){
+      console.error(err);
+      profiles = [];
+      showToast('Não foi possível carregar os dados do servidor.', 'error');
+    }
+    dataLoaded = true;
+  }
+
+  // ---------- Toast ----------
+  function showToast(msg, type){
+    const el = document.createElement('div');
+    el.className = 'toast' + (type ? ' '+type : '');
+    el.textContent = msg;
+    document.getElementById('toast-container').appendChild(el);
+    setTimeout(()=> el.remove(), 3200);
+  }
+
+  // ---------- Confirm modal ----------
+  function openConfirm(title, message, onConfirm, dangerLabel){
+    document.getElementById('confirm-title').textContent = title;
+    document.getElementById('confirm-message').textContent = message;
+    document.getElementById('confirm-yes').textContent = dangerLabel || 'Confirmar';
+    confirmAction = onConfirm;
+    document.getElementById('confirm-modal').style.display = 'flex';
+  }
+  function closeConfirm(){
+    document.getElementById('confirm-modal').style.display = 'none';
+    confirmAction = null;
+  }
+  document.getElementById('confirm-cancel').addEventListener('click', closeConfirm);
+  document.getElementById('confirm-yes').addEventListener('click', () => {
+    const fn = confirmAction;
+    closeConfirm();
+    if(fn) fn();
+  });
+
+  // ---------- Stats ----------
+  function renderStats(){
+    const total = profiles.length;
+    const aprovados = profiles.filter(p=>p.status==='aprovado').length;
+    const reprovados = profiles.filter(p=>p.status==='reprovado').length;
+    const checados = aprovados + reprovados;
+    const pendentes = total - checados;
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-checados').textContent = checados;
+    document.getElementById('stat-pendentes').textContent = pendentes;
+    document.getElementById('stat-aprovados').textContent = aprovados;
+    document.getElementById('stat-reprovados').textContent = reprovados;
+    const pct = total ? Math.round((checados/total)*100) : 0;
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-label').textContent = `${checados} de ${total} checados (${pct}%)`;
+  }
+
+  // ---------- Fila view ----------
+  function getNextPending(){
+    return profiles.find(p => p.status === 'pendente') || null;
+  }
+  function renderFila(){
+    const container = document.getElementById('fila-content');
+    if(!dataLoaded){
+      container.innerHTML = `<div class="empty-state"><div class="emoji">⏳</div><h3>Carregando dados...</h3></div>`;
+      return;
+    }
+    const p = getNextPending();
+    if(!p){
+      const total = profiles.length;
+      container.innerHTML = total
+        ? `<div class="empty-state"><div class="emoji">🎉</div><h3>Fila concluída</h3><p>Todos os ${total} perfis já foram checados.</p></div>`
+        : `<div class="empty-state"><div class="emoji">📋</div><h3>Nenhum perfil na lista</h3><p>Importe uma planilha para começar a checagem.</p></div>`;
+      return;
+    }
+    const pendentesRestantes = profiles.filter(x=>x.status==='pendente').length;
+    const contextParts = [p.nome, p.unidade, p.cidade].filter(Boolean);
+    const seguidoresVal = p.seguidores !== null && p.seguidores !== undefined ? p.seguidores : '';
+    let criteriaHtml = '';
+    if(seguidoresVal !== '' && p.publica !== null){
+      const meets = p.publica === true && Number(seguidoresVal) > 2000;
+      criteriaHtml = `<div class="criteria-hint ${meets ? 'ok' : 'bad'}">${meets ? '✓ atende aos critérios (pública + > 2.000 seguidores)' : '✗ não atende aos critérios'}</div>`;
+    }
+    container.innerHTML = `
+      <div class="fila-card" id="fila-card">
+        <div class="fila-eyebrow">${pendentesRestantes} pendente${pendentesRestantes===1?'':'s'} na fila</div>
+        <div class="fila-username">@${escapeHtml(p.username)}</div>
+        <div class="fila-context">${contextParts.length ? escapeHtml(contextParts.join(' · ')) : '&nbsp;'}</div>
+        <a class="fila-link" href="https://instagram.com/${encodeURIComponent(p.username)}" target="_blank" rel="noopener">Abrir perfil no Instagram ↗</a>
+
+        <div class="field-row">
+          <label for="seguidores-input">Seguidores</label>
+          <input type="number" min="0" id="seguidores-input" class="seguidores-input" value="${seguidoresVal}" placeholder="0">
+        </div>
+        ${criteriaHtml}
+
+        <div>
+          <div class="pill-toggle">
+            <button class="pub ${p.publica===true?'active':''}" id="btn-set-public">Pública</button>
+            <button class="priv ${p.publica===false?'active':''}" id="btn-set-private">Privada</button>
+          </div>
+        </div>
+
+        <div class="motivo-row">
+          ${['Privado','Inapropriado','Influenciador','Adequado'].map(m => `<button class="chip ${p.motivo===m?'active':''}" data-val="${m}">${m}</button>`).join('')}
+        </div>
+
+        <div class="decision-row">
+          <button class="decision-btn approve" id="btn-aprovar">Aprovada</button>
+          <button class="decision-btn reject" id="btn-reprovar">Reprovada</button>
+        </div>
+        <div class="kbd-hint">Atalhos: <kbd>Enter</kbd> pública · <kbd>P</kbd> privada · <kbd>A</kbd> aprovar · <kbd>R</kbd> reprovar</div>
+      </div>
+    `;
+
+    const input = document.getElementById('seguidores-input');
+    input.addEventListener('input', () => {
+      p.seguidores = input.value === '' ? null : Number(input.value);
+      updateCriteriaHint(p);
+    });
+    input.addEventListener('blur', () => {
+      apiPatch(p.username, {seguidores: p.seguidores}).catch(err => {
+        console.error(err);
+        showToast('Erro ao salvar seguidores.', 'error');
+      });
+    });
+
+    document.getElementById('btn-set-public').addEventListener('click', () => setPrivacy(p, true));
+    document.getElementById('btn-set-private').addEventListener('click', () => setPrivacy(p, false));
+    container.querySelectorAll('.chip').forEach(btn => {
+      btn.addEventListener('click', () => toggleMotivo(p, btn.dataset.val));
+    });
+    document.getElementById('btn-aprovar').addEventListener('click', () => finalizeDecision(p, 'aprovado'));
+    document.getElementById('btn-reprovar').addEventListener('click', () => finalizeDecision(p, 'reprovado'));
+
+    input.focus();
+  }
+  function updateCriteriaHint(p){
+    const card = document.getElementById('fila-card');
+    if(!card) return;
+    const existing = card.querySelector('.criteria-hint');
+    const seguidoresVal = p.seguidores;
+    let html = '';
+    if(seguidoresVal !== null && seguidoresVal !== undefined && seguidoresVal !== '' && p.publica !== null){
+      const meets = p.publica === true && Number(seguidoresVal) > 2000;
+      html = `<div class="criteria-hint ${meets?'ok':'bad'}">${meets ? '✓ atende aos critérios (pública + > 2.000 seguidores)' : '✗ não atende aos critérios'}</div>`;
+    }
+    if(existing){
+      if(html) existing.outerHTML = html; else existing.remove();
+    } else if(html){
+      card.querySelector('.field-row').insertAdjacentHTML('afterend', html);
+    }
+  }
+  function setPrivacy(p, value){
+    p.publica = value;
+    renderFila();
+    apiPatch(p.username, {publica: value}).catch(err => {
+      console.error(err);
+      showToast('Erro ao salvar. Tente novamente.', 'error');
+    });
+  }
+  function toggleMotivo(p, value){
+    p.motivo = (p.motivo === value) ? null : value;
+    renderFila();
+    apiPatch(p.username, {motivo: p.motivo}).catch(err => {
+      console.error(err);
+      showToast('Erro ao salvar. Tente novamente.', 'error');
+    });
+  }
+  function finalizeDecision(p, status){
+    const input = document.getElementById('seguidores-input');
+    if(input && input.value !== '') p.seguidores = Number(input.value);
+    p.status = status;
+    playStamp(status);
+    apiPatch(p.username, {seguidores: p.seguidores, status: status})
+      .then(() => renderStats())
+      .catch(err => {
+        console.error(err);
+        showToast('Erro ao salvar decisão. Tente novamente.', 'error');
+      });
+    setTimeout(() => renderFila(), 620);
+  }
+  function playStamp(status){
+    const card = document.getElementById('fila-card');
+    if(!card) return;
+    const stamp = document.createElement('div');
+    stamp.className = 'stamp ' + (status==='aprovado' ? 'approve' : 'reject');
+    stamp.textContent = status==='aprovado' ? 'Aprovada' : 'Reprovada';
+    card.appendChild(stamp);
+    setTimeout(() => stamp.remove(), 900);
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if(currentView !== 'fila') return;
+    const active = document.activeElement;
+    const isSeguidoresInput = active && active.id === 'seguidores-input';
+    if(active && active.tagName === 'INPUT' && !isSeguidoresInput) return;
+    const p = getNextPending();
+    if(!p) return;
+    const key = e.key.toLowerCase();
+    if(e.key === 'Enter'){ e.preventDefault(); setPrivacy(p, true); }
+    else if(key === 'p'){ e.preventDefault(); setPrivacy(p, false); }
+    else if(key === 'a' && !isSeguidoresInput){ e.preventDefault(); finalizeDecision(p, 'aprovado'); }
+    else if(key === 'r' && !isSeguidoresInput){ e.preventDefault(); finalizeDecision(p, 'reprovado'); }
+  });
+
+  // ---------- Table view ----------
+  function getFilteredProfiles(){
+    let list = profiles;
+    if(tableFilter !== 'todos') list = list.filter(p => p.status === tableFilter);
+    if(tableSearch) list = list.filter(p => p.username.includes(tableSearch));
+    return list;
+  }
+  function renderTable(){
+    const list = getFilteredProfiles();
+    const totalPages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+    if(tablePage > totalPages) tablePage = totalPages;
+    const start = (tablePage-1) * PAGE_SIZE;
+    const pageItems = list.slice(start, start+PAGE_SIZE);
+    const tbody = document.getElementById('table-body');
+    if(pageItems.length === 0){
+      tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:24px;">Nenhum perfil encontrado.</td></tr>`;
+    } else {
+      tbody.innerHTML = pageItems.map(p => `
+        <tr class="status-${p.status}" data-username="${escapeHtml(p.username)}">
+          <td class="cell-user"><a href="https://instagram.com/${encodeURIComponent(p.username)}" target="_blank" rel="noopener">@${escapeHtml(p.username)}</a></td>
+          <td>${escapeHtml(p.nome||'—')}</td>
+          <td>${escapeHtml(p.unidade||'—')}</td>
+          <td>${escapeHtml(p.cidade||'—')}</td>
+          <td><input type="number" min="0" class="table-input seguidores-cell" value="${p.seguidores??''}"></td>
+          <td>
+            <select class="table-select privacy-cell">
+              <option value="" ${p.publica===null?'selected':''}>—</option>
+              <option value="true" ${p.publica===true?'selected':''}>Sim</option>
+              <option value="false" ${p.publica===false?'selected':''}>Não</option>
+            </select>
+          </td>
+          <td><span class="status-badge ${p.status}">${p.status}</span></td>
+          <td>${escapeHtml(p.motivo||'—')}</td>
+          <td><button class="icon-btn" title="Remover">✕</button></td>
+        </tr>
+      `).join('');
+      tbody.querySelectorAll('tr').forEach(tr => {
+        const username = tr.dataset.username;
+        const prof = profiles.find(x => x.username === username);
+        tr.querySelector('.seguidores-cell').addEventListener('change', (e) => {
+          const val = e.target.value === '' ? null : Number(e.target.value);
+          prof.seguidores = val;
+          apiPatch(username, {seguidores: val}).catch(err => {
+            console.error(err);
+            showToast('Erro ao salvar.', 'error');
+          });
+        });
+        tr.querySelector('.privacy-cell').addEventListener('change', (e) => {
+          const val = e.target.value === '' ? null : (e.target.value === 'true');
+          prof.publica = val;
+          apiPatch(username, {publica: val}).catch(err => {
+            console.error(err);
+            showToast('Erro ao salvar.', 'error');
+          });
+        });
+        tr.querySelector('.icon-btn').addEventListener('click', () => {
+          openConfirm('Remover perfil', `Remover @${username} da lista? Esta ação não pode ser desfeita.`, () => {
+            apiDeleteOne(username).then(() => {
+              profiles = profiles.filter(x => x.username !== username);
+              renderStats();
+              renderTable();
+              showToast('Perfil removido.', 'success');
+            }).catch(err => {
+              console.error(err);
+              showToast('Erro ao remover perfil.', 'error');
+            });
+          }, 'Remover');
+        });
+      });
+    }
+    document.getElementById('pagination-info').textContent = `Página ${tablePage} de ${totalPages} · ${list.length} perfil(is)`;
+    document.getElementById('btn-prev').disabled = tablePage <= 1;
+    document.getElementById('btn-next').disabled = tablePage >= totalPages;
+  }
+  document.getElementById('table-search').addEventListener('input', (e) => {
+    tableSearch = e.target.value.trim().toLowerCase();
+    tablePage = 1;
+    renderTable();
+  });
+  document.getElementById('table-filter').addEventListener('change', (e) => {
+    tableFilter = e.target.value;
+    tablePage = 1;
+    renderTable();
+  });
+  document.getElementById('btn-prev').addEventListener('click', () => { tablePage--; renderTable(); });
+  document.getElementById('btn-next').addEventListener('click', () => { tablePage++; renderTable(); });
+
+  // ---------- Tabs ----------
+  function switchView(view){
+    currentView = view;
+    document.getElementById('view-fila').style.display = view === 'fila' ? 'flex' : 'none';
+    document.getElementById('view-tabela').style.display = view === 'tabela' ? 'block' : 'none';
+    document.getElementById('tab-fila').classList.toggle('active', view === 'fila');
+    document.getElementById('tab-tabela').classList.toggle('active', view === 'tabela');
+    if(view === 'fila') renderFila(); else renderTable();
+  }
+  document.getElementById('tab-fila').addEventListener('click', () => switchView('fila'));
+  document.getElementById('tab-tabela').addEventListener('click', () => switchView('tabela'));
+
+  // ---------- Import ----------
+  const fileInput = document.getElementById('file-input');
+  document.getElementById('btn-import').addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    try{
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, {type:'array'});
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, {header:1, defval:''});
+      if(!rows.length){ showToast('Planilha vazia.', 'error'); fileInput.value=''; return; }
+      const idx = findColumnIndexes(rows[0]);
+      const linhas = [];
+      for(let i=1;i<rows.length;i++){
+        const row = rows[i];
+        if(!row || row.every(c => c==='' || c===null || c===undefined)) continue;
+        const username = normalizeUsername(row[idx.usuario]);
+        if(!username) continue;
+        linhas.push({
+          username,
+          nome: idx.nome>-1 ? String(row[idx.nome]||'').trim() : '',
+          unidade: idx.unidade>-1 ? String(row[idx.unidade]||'').trim() : '',
+          cidade: idx.cidade>-1 ? String(row[idx.cidade]||'').trim() : ''
+        });
+      }
+      const resultado = await apiImport(linhas);
+      await loadProfiles();
+      renderStats();
+      if(currentView === 'fila') renderFila(); else renderTable();
+      showToast(`${resultado.adicionados} novo(s) perfil(is) importado(s)${resultado.atualizados ? ', '+resultado.atualizados+' já existente(s) atualizados' : ''}.`, 'success');
+    }catch(err){
+      console.error(err);
+      showToast('Não foi possível ler o arquivo ou salvar no servidor.', 'error');
+    }
+    fileInput.value = '';
+  });
+
+  // ---------- Test data (demo only) ----------
+  document.getElementById('btn-test-data').addEventListener('click', async () => {
+    const samples = [
+      {username:'academia.fitplus', nome:'Ana Ferreira', unidade:'Unidade Centro', cidade:'Campo Grande'},
+      {username:'joaotreinos', nome:'João Pedro', unidade:'Unidade Norte', cidade:'Dourados'},
+      {username:'vidasaudavel.oficial', nome:'', unidade:'Unidade Sul', cidade:'Campo Grande'},
+      {username:'marifit_', nome:'Mariana Costa', unidade:'Unidade Centro', cidade:'Três Lagoas'},
+      {username:'personal.rafael', nome:'Rafael Souza', unidade:'', cidade:'Dourados'}
+    ];
+    try{
+      const resultado = await apiImport(samples);
+      await loadProfiles();
+      renderStats();
+      if(currentView === 'fila') renderFila(); else renderTable();
+      showToast(resultado.adicionados ? `${resultado.adicionados} perfil(is) de teste adicionado(s).` : 'Os perfis de teste já estão na lista.', 'success');
+    }catch(err){
+      console.error(err);
+      showToast('Erro ao adicionar dados de teste.', 'error');
+    }
+  });
+
+  // ---------- Export ----------
+  function buildExportRows(onlyApproved){
+    const rows = onlyApproved ? profiles.filter(p => p.status === 'aprovado') : profiles;
+    const hasNome = profiles.some(p=>p.nome);
+    const hasUnidade = profiles.some(p=>p.unidade);
+    const hasCidade = profiles.some(p=>p.cidade);
+    return rows.map(p => {
+      const obj = {'Usuário': p.username};
+      if(hasNome) obj['Nome'] = p.nome || '';
+      if(hasUnidade) obj['Unidade'] = p.unidade || '';
+      if(hasCidade) obj['Cidade'] = p.cidade || '';
+      obj['Seguidores'] = p.seguidores ?? '';
+      obj['Pública'] = p.publica === true ? 'Sim' : (p.publica === false ? 'Não' : '');
+      obj['Status'] = p.status;
+      obj['Motivo'] = p.motivo || '';
+      return obj;
+    });
+  }
+  function exportXlsx(onlyApproved){
+    const data = buildExportRows(onlyApproved);
+    if(!data.length){ showToast('Nada para exportar.', 'error'); return; }
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Perfis');
+    const wbout = XLSX.write(wb, {bookType:'xlsx', type:'array'});
+    const blob = new Blob([wbout], {type:'application/octet-stream'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = onlyApproved ? 'perfis_aprovados.xlsx' : 'perfis_todos.xlsx';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Exportação concluída.', 'success');
+  }
+  document.getElementById('btn-export-approved').addEventListener('click', () => exportXlsx(true));
+  document.getElementById('btn-export-all').addEventListener('click', () => exportXlsx(false));
+
+  // ---------- Clear all ----------
+  document.getElementById('btn-clear').addEventListener('click', () => {
+    openConfirm('Limpar todos os dados', 'Isso apagará permanentemente todos os perfis e o progresso do banco de teste. Deseja continuar?', async () => {
+      try{
+        await apiDeleteAll();
+        profiles = [];
+        renderStats();
+        if(currentView === 'fila') renderFila(); else renderTable();
+        showToast('Todos os dados foram apagados.', 'success');
+      }catch(err){
+        console.error(err);
+        showToast('Erro ao limpar dados.', 'error');
+      }
+    }, 'Limpar tudo');
+  });
+
+  // ---------- Init ----------
+  async function init(){
+    renderFila();
+    await loadProfiles();
+    renderStats();
+    renderFila();
+    renderTable();
+  }
+  init();
+})();
+</script>
+</body>
+</html>

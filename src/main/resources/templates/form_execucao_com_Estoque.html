@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Execução de Manutenção</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <style>
+    .btn-roxo {
+      background-color: #5a32a3;
+      color: #fff;
+      border: none;
+    }
+    .btn-roxo:hover {
+      background-color: #6f42c1;
+    }
+    .painel-categoria {
+      border: 1px solid #ccc;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 10px;
+      background-color: #f8f9fa;
+    }
+  </style>
+</head>
+
+<body class="bg-light">
+
+<div class="container py-5">
+  <div class="card shadow rounded-4">
+
+    <div class="card-header bg-success text-white d-flex justify-content-between">
+      <h5 class="mb-0"><i class="bi bi-check2-square"></i> Execução de Serviço</h5>
+    </div>
+
+    <div class="card-body">
+
+      <form id="form_execucao">
+
+        <!-- SELECT SOLICITAÇÃO -->
+        <div class="mb-3">
+          <label class="form-label">Selecione o Serviço</label>
+          <select id="solicitacao_cliente" class="form-select" onchange="atualizarFormulario()">
+            <option disabled selected>Carregando...</option>
+          </select>
+        </div>
+
+        <!-- FORM DE MANUTENÇÃO -->
+        <div id="form-manutencao">
+
+          <!-- SELECIONAR MÁQUINA -->
+          <div class="row mb-3">
+            <div class="col-md-10">
+              <label class="form-label">Máquina</label>
+              <select id="maquina_execucao_select" class="form-select" disabled>
+                <option disabled selected>Escolha uma máquina</option>
+              </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+              <button type="button" id="btn-adicionar-execucao"
+                      class="btn btn-secondary w-100"
+                      onclick="adicionarMaquinaExecucao()" disabled>
+                <i class="bi bi-plus-circle"></i> Adicionar
+              </button>
+            </div>
+          </div>
+
+          <!-- CONTAINER DE EXECUÇÕES -->
+          <div id="execucoes_container"></div>
+
+        </div>
+
+        <!-- BOTÕES FINAIS -->
+        <div class="mt-4 d-flex justify-content-between">
+          <a href="/menu" class="btn btn-outline-secondary">Voltar ao Menu</a>
+
+          <button type="button" id="btn-confirmar-execucao"
+                  class="btn btn-success"
+                  onclick="confirmarExecucoes()" disabled>
+            <i class="bi bi-check-circle"></i> Confirmar Execuções
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<!-- SCRIPT -->
+<!-- ================================================================== -->
+<script>
+  let solicitacoes = {};
+
+  /* =======================================================
+     ONLOAD
+  ========================================================= */
+  window.onload = () => {
+    carregarSolicitacoes();
+  };
+
+  /* =======================================================
+     CARREGAR SOLICITAÇÕES
+  ========================================================= */
+  function carregarSolicitacoes() {
+    fetch('/api/solicitacao')
+      .then(r => r.json())
+      .then(data => {
+        const select = document.getElementById('solicitacao_cliente');
+        select.innerHTML = '<option disabled selected>Selecione...</option>';
+
+        data.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.id;
+          opt.text = s.cliente;
+          solicitacoes[s.id] = s;
+          select.appendChild(opt);
+        });
+      })
+      .catch(err => {
+        console.error(err);
+        alert('Erro ao carregar solicitações.');
+      });
+  }
+
+  /* =======================================================
+     ATUALIZAR FORM AO ESCOLHER SOLICITAÇÃO
+  ========================================================= */
+  function atualizarFormulario() {
+    const id = document.getElementById('solicitacao_cliente').value;
+    const maquinas = document.getElementById('maquina_execucao_select');
+    const btnAdd = document.getElementById('btn-adicionar-execucao');
+    const btnConf = document.getElementById('btn-confirmar-execucao');
+
+    document.getElementById('execucoes_container').innerHTML = '';
+
+    maquinas.disabled = false;
+    btnAdd.disabled = false;
+    btnConf.disabled = false;
+
+    maquinas.innerHTML = '<option disabled selected>Escolha...</option>';
+
+    solicitacoes[id].problemas.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.idProblema;
+      opt.text = p.maquina;
+      opt.dataset.descricao = p.descricao ?? '';
+      maquinas.appendChild(opt);
+    });
+  }
+
+  /* =======================================================
+     ADICIONAR BLOCO DE EXECUÇÃO
+  ========================================================= */
+  function adicionarMaquinaExecucao() {
+    const select = document.getElementById('maquina_execucao_select');
+    const idProblema = select.value;
+    if (!idProblema || document.getElementById("execucao_" + idProblema)) return;
+
+    const nome = select.selectedOptions[0].text;
+    const desc = select.selectedOptions[0].dataset.descricao || '';
+    const agora = new Date().toISOString().slice(0,16);
+
+    const bloco = document.createElement('div');
+    bloco.className = "execucao-bloco mb-3 p-3 border rounded bg-light";
+    bloco.id = "execucao_" + idProblema;
+
+    bloco.innerHTML = `
+      <label class="fw-bold">${nome}${desc ? ' - <span class="text-danger">' + desc + '</span>' : ''}</label>
+
+      <div class="row mt-2">
+        <div class="col-md-4">
+          <label class="form-label small">Data Execução</label>
+          <input type="datetime-local" class="form-control"
+                 name="data_execucao_${idProblema}" value="${agora}">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small">Técnico</label>
+          <input type="text" class="form-control" name="tecnico_${idProblema}">
+        </div>
+      </div>
+
+      <label class="form-label small mt-2">O que foi feito</label>
+      <textarea class="form-control" rows="4"
+                name="descricao_execucao_${idProblema}"></textarea>
+
+      <div class="mt-2 d-flex gap-2">
+        <select class="form-select categoria_estoque" disabled>
+          <option disabled selected>Escolha a Categoria</option>
+        </select>
+
+        <button type="button" class="btn btn-sm btn-roxo"
+                onclick="abrirPainelCategoria(this)">
+          Detalhar / Selecionar Peça
+        </button>
+      </div>
+    `;
+
+    document.getElementById('execucoes_container').appendChild(bloco);
+    carregarCategoriasNoSelect(bloco.querySelector('.categoria_estoque'));
+  }
+
+  /* =======================================================
+     CARREGAR CATEGORIAS (DO BANCO)
+  ========================================================= */
+  async function carregarCategoriasNoSelect(selectElement) {
+    try {
+      const res = await fetch('/api/categorias');
+      const categorias = await res.json();
+
+      selectElement.innerHTML = '<option disabled selected>Escolha a Categoria</option>';
+
+      categorias.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;   // ajuste se o campo for outro
+        opt.text = c.nome;  // ajuste se for descricao etc.
+        selectElement.appendChild(opt);
+      });
+
+      selectElement.disabled = false;
+    } catch (e) {
+      console.error(e);
+      alert('Erro ao carregar categorias do estoque.');
+    }
+  }
+
+  /* =======================================================
+     DISPATCH POR CATEGORIA
+  ========================================================= */
+  function abrirPainelCategoria(btn) {
+    const bloco = btn.closest('.execucao-bloco');
+    const selCat = bloco.querySelector('.categoria_estoque');
+
+    const opt = selCat.selectedOptions[0];
+    if (!opt) {
+      alert("Selecione uma categoria.");
+      return;
+    }
+
+    // remove painéis anteriores
+    bloco.querySelectorAll('.painel-categoria').forEach(p => p.remove());
+
+    const categoriaId = opt.value;
+    const nome = opt.text.toUpperCase();
+
+    if (nome.includes("PLACA")) {
+      abrirPainelPlaca(bloco, categoriaId);
+    } else {
+      abrirPainelGenerico(bloco, categoriaId, nome);
+    }
+  }
+
+  /* =======================================================
+     PAINEL PARA PLACA (2 CAMPOS: ANTIGA / NOVA)
+  ========================================================= */
+  function abrirPainelPlaca(bloco, categoriaId) {
+    const painel = document.createElement('div');
+    painel.className = 'painel-categoria';
+
+    painel.innerHTML = `
+      <strong>TROCA DE PLACA</strong>
+
+      <div class="row mt-2">
+        <div class="col-md-6">
+          <label class="form-label small">Placa Antiga</label>
+          <input type="text" class="form-control campo-placa-antiga">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small">Placa Nova</label>
+          <input type="text" class="form-control campo-placa-nova" readonly>
+        </div>
+      </div>
+
+      <div class="mt-3">
+        <label class="form-label small">Selecione a Peça</label>
+        <select class="form-select select_pecas" disabled>
+          <option disabled selected>Carregando...</option>
+        </select>
+      </div>
+
+      <button type="button" class="btn btn-primary btn-sm mt-2"
+              onclick="transferirPlaca(this)">
+        Transferir
+      </button>
+    `;
+
+    bloco.appendChild(painel);
+
+    const selPecas = painel.querySelector('.select_pecas');
+    carregarPecasNoSelect(selPecas, categoriaId);
+
+    selPecas.addEventListener("change", () => {
+      const opt = selPecas.selectedOptions[0];
+      if (!opt) return;
+      const loteTxt = opt.dataset.lote ? ` (Lote ${opt.dataset.lote})` : "";
+      painel.querySelector('.campo-placa-nova').value =
+        `${opt.dataset.codigo}${loteTxt}`;
+    });
+  }
+
+  /* =======================================================
+     PAINEL GENÉRICO (MONITOR, FONTE, JOGO, ETC)
+  ========================================================= */
+  function abrirPainelGenerico(bloco, categoriaId, nomeCategoria) {
+    const painel = document.createElement('div');
+    painel.className = 'painel-categoria';
+
+    const rotuloBase = nomeCategoria.split(" ")[0];
+
+    painel.innerHTML = `
+      <strong>${nomeCategoria}</strong>
+
+      <div class="row mt-2">
+        <div class="col-md-6">
+          <label class="form-label small">${rotuloBase} Antigo</label>
+          <input type="text" class="form-control campo-antigo">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small">${rotuloBase} Atual</label>
+          <input type="text" class="form-control campo-atual" readonly>
+        </div>
+      </div>
+
+      <div class="mt-3">
+        <label class="form-label small">Selecione a Peça</label>
+        <select class="form-select select_pecas" disabled>
+          <option disabled selected>Carregando...</option>
+        </select>
+      </div>
+
+      <button type="button" class="btn btn-primary btn-sm mt-2"
+              onclick="transferirPecaGenerica(this, '${nomeCategoria}')">
+        Transferir
+      </button>
+    `;
+
+    bloco.appendChild(painel);
+
+    const selPecas = painel.querySelector('.select_pecas');
+    carregarPecasNoSelect(selPecas, categoriaId);
+
+    selPecas.addEventListener("change", () => {
+      const opt = selPecas.selectedOptions[0];
+      if (!opt) return;
+      const loteTxt = opt.dataset.lote ? ` (Lote ${opt.dataset.lote})` : "";
+      painel.querySelector('.campo-atual').value =
+        `${opt.dataset.codigo}${loteTxt}`;
+    });
+  }
+
+  /* =======================================================
+     CARREGAR PEÇAS POR CATEGORIA
+  ========================================================= */
+  async function carregarPecasNoSelect(selectElement, categoriaId) {
+
+  const res = await fetch(`/api/pecas/disponiveis/${categoriaId}`);
+  const pecas = await res.json();
+
+  selectElement.innerHTML = '<option disabled selected>Selecione...</option>';
+
+  pecas.forEach(p => {
+
+    const opt = document.createElement('option');
+    opt.value = p.idPeca ?? p.id;
+
+    // captura robusta do lote
+    const loteId =
+      p.lote?.id_lote ??
+      p.lote?.idLote ??
+      p.lote?.id ??
+      null;
+
+    opt.dataset.codigo = p.codigo;
+    opt.dataset.lote = loteId;
+
+    // NÃO MOSTRA LOTE NO TEXTO
+    opt.text = p.codigo;
+
+    selectElement.appendChild(opt);
+  });
+
+  selectElement.disabled = false;
+}
+
+
+  /* =======================================================
+     TRANSFERIR PLACA (PADRÃO TEXTO)
+  ========================================================= */
+  function transferirPlaca(btn) {
+    const bloco = btn.closest('.execucao-bloco');
+    const textarea = bloco.querySelector("textarea");
+    const painel = btn.closest('.painel-categoria');
+
+    const placaAntiga = painel.querySelector(".campo-placa-antiga").value;
+    const placaNova   = painel.querySelector(".campo-placa-nova").value;
+
+    const sel = painel.querySelector('.select_pecas');
+    const opt = sel.selectedOptions[0];
+
+    if (!opt) {
+      alert("Selecione uma peça.");
+      return;
+    }
+
+    const codigo = opt.dataset.codigo;
+    const lote   = opt.dataset.lote;
+    const loteTxt = lote ? ` (LOTE ${lote})` : "";
+    const idPeca = opt.value;
+
+    textarea.value +=
+      (textarea.value ? "\n\n" : "") +
+      `TROCA DE PLACA
+  Ret.: ${placaAntiga}
+  Rep.: ${placaNova}`;
+
+
+    const hidden = document.createElement('input');
+    hidden.type = 'hidden';
+    hidden.className = 'id-peca-estoque';
+    hidden.value = idPeca;
+    bloco.appendChild(hidden);
+
+    painel.remove();
+  }
+
+  /* =======================================================
+     TRANSFERIR GENÉRICO (MONITOR, FONTE, JOGO etc)
+  ========================================================= */
+  function transferirPecaGenerica(btn, nomeCategoria) {
+    const bloco = btn.closest('.execucao-bloco');
+    const textarea = bloco.querySelector("textarea");
+    const painel = btn.closest('.painel-categoria');
+
+    const valorAntigo = painel.querySelector(".campo-antigo").value;
+    const valorAtual  = painel.querySelector(".campo-atual").value;
+
+    const sel = painel.querySelector('.select_pecas');
+    const opt = sel.selectedOptions[0];
+
+    if (!opt) {
+      alert("Selecione uma peça.");
+      return;
+    }
+
+    const codigo = opt.dataset.codigo;
+    const lote   = opt.dataset.lote;
+    const loteTxt = lote ? ` (LOTE ${lote})` : "";
+    const idPeca = opt.value;
+
+    textarea.value +=
+      (textarea.value ? "\n\n" : "") +
+      `TROCA DE ${nomeCategoria.toUpperCase()}
+  Ret.: ${valorAntigo}
+  Rep.: ${valorAtual}`;
+
+    const hidden = document.createElement('input');
+    hidden.type = 'hidden';
+    hidden.className = 'id-peca-estoque';
+    hidden.value = idPeca;
+    bloco.appendChild(hidden);
+
+    painel.remove();
+  }
+
+  /* =======================================================
+     CONFIRMAR EXECUÇÕES (ENVIA PRO BACK)
+  ========================================================= */
+  function confirmarExecucoes() {
+    const solicitacaoId = document.getElementById('solicitacao_cliente').value;
+    const blocos = document.querySelectorAll('.execucao-bloco');
+
+    if (!solicitacaoId) {
+      alert('Selecione uma solicitação.');
+      return;
+    }
+
+    const exec = [];
+
+    blocos.forEach(b => {
+      const id = b.id.replace("execucao_", "");
+
+      const pecasUsadas = [];
+      b.querySelectorAll('.id-peca-estoque').forEach(p => {
+        if (p.value && !isNaN(p.value)) {
+          pecasUsadas.push(Number(p.value));
+        }
+      });
+
+      exec.push({
+        problemaId: parseInt(id),
+        solicitacaoId: parseInt(solicitacaoId),
+        dataExecucao: b.querySelector(`[name='data_execucao_${id}']`).value,
+        tecnico: b.querySelector(`[name='tecnico_${id}']`).value,
+        descricao: b.querySelector(`[name='descricao_execucao_${id}']`).value,
+        pecasUsadas: pecasUsadas.length > 0 ? pecasUsadas : []
+      });
+    });
+
+    if (exec.length === 0) {
+      alert('Nenhuma execução preenchida.');
+      return;
+    }
+
+    console.log("JSON enviado para /api/execucoes-com-estoque/registrar:", exec);
+
+    fetch('/api/execucoes-com-estoque/registrar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(exec)
+    })
+    .then(r => r.json().catch(() => null).then(data => ({ ok: r.ok, data })))
+    .then(resp => {
+      if (resp.ok) {
+        alert("Execuções registradas com sucesso!");
+        window.location.reload();
+      } else {
+        console.error(resp.data);
+        alert("Erro ao registrar execuções. Veja o console.");
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      alert("Erro inesperado ao registrar execuções.");
+    });
+  }
+
+</script>
+
+</body>
+</html>
