@@ -72,6 +72,12 @@ public class SolicitacaoManutencao {
     @Column(name = "status")
     private Boolean status;
 
+    // Quem abriu o chamado: técnico (fluxo já existente) ou cliente (app novo).
+    // Nullable/default TECNICO para não quebrar os registros já existentes.
+    @Enumerated(EnumType.STRING)
+    @Column(name = "origem", length = 20)
+    private OrigemSolicitacao origem = OrigemSolicitacao.TECNICO;
+
     @OneToMany(mappedBy = "solicitacao", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProblemaMaquina> problemas = new ArrayList<>();
 

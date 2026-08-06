@@ -20,6 +20,16 @@ public interface ExecucaoRepository extends CrudRepository<ExecucaoManutencao, L
                    "LEFT JOIN FETCH p.maquina m " +
                    "ORDER BY e.id DESC")
     List<ExecucaoManutencao> findAllWithCliente();
-    
+
+    // Usado pelo app do cliente: só as execuções do próprio ponto (cod_cliente da sessão).
+    @Query("SELECT e FROM ExecucaoManutencao e " +
+                   "LEFT JOIN FETCH e.solicitacaoManutencao s " +
+                   "LEFT JOIN FETCH s.cliente c " +
+                   "LEFT JOIN FETCH e.problema p " +
+                   "LEFT JOIN FETCH p.maquina m " +
+                   "WHERE c.codCliente = :codCliente " +
+                   "ORDER BY e.id DESC")
+    List<ExecucaoManutencao> findAllByClienteId(@Param("codCliente") Long codCliente);
+
 }
 

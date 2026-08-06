@@ -55,8 +55,17 @@ public class Cliente {
 
     @Column(name = "Ativo")
     private Boolean ativo;
-    
-    
+
+    // ---------- App do Cliente (login por telefone + PIN) ----------
+    // Ambos ficam null até o cliente fazer o primeiro acesso e definir um PIN.
+    // Nunca armazenar o PIN em texto puro — mesmo padrão de hash+salt usado
+    // no módulo instagramcheck (SHA-256 com salt por registro).
+    @Column(name = "pin_hash")
+    private String pinHash;
+
+    @Column(name = "pin_salt")
+    private String pinSalt;
+
     @Transient // Esta anotação diz ao JPA para ignorar este campo no banco de dados
     private List<Maquina> maquinas;
 

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login · Checagem de Perfis Instagram</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F3F7F6; --surface:#FFFFFF; --border:#DCE6E3; --text:#182625; --text-muted:#647672;
+    --teal:#0D7C77; --teal-dark:#0A5F5B; --teal-tint:#E1F2F0;
+    --plum:#733A61; --plum-dark:#582948; --plum-tint:#F4E7F0;
+    --radius-lg:18px; --radius-sm:8px;
+    --shadow-md:0 8px 24px rgba(16,36,33,.10);
+    --font-display:'Manrope',sans-serif; --font-body:'Inter',sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+    background:var(--bg); color:var(--text); font-family:var(--font-body); -webkit-font-smoothing:antialiased;
+  }
+  .login-card{
+    width:100%; max-width:380px; background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius-lg); box-shadow:var(--shadow-md); padding:36px 32px; text-align:center;
+  }
+  h1{font-family:var(--font-display); font-weight:800; font-size:1.35rem; margin:0 0 4px;}
+  .subtitle{color:var(--text-muted); font-size:.86rem; margin:0 0 28px;}
+  label{display:block; text-align:left; font-size:.82rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;}
+  input[type=text], input[type=password]{
+    width:100%; padding:11px 14px; border:1.5px solid var(--border); border-radius:var(--radius-sm);
+    font-family:var(--font-body); font-size:.95rem; margin-bottom:18px; color:var(--text);
+  }
+  input[type=text]:focus, input[type=password]:focus{outline:none; border-color:var(--teal);}
+  button{
+    width:100%; padding:13px; border:none; border-radius:var(--radius-sm); background:var(--teal); color:#fff;
+    font-family:var(--font-display); font-weight:800; font-size:.95rem; cursor:pointer; transition:background .15s ease;
+  }
+  button:hover{background:var(--teal-dark);}
+  .erro{
+    background:var(--plum-tint); color:var(--plum-dark); border-radius:var(--radius-sm);
+    padding:10px 14px; font-size:.84rem; margin-bottom:18px; text-align:left;
+  }
+</style>
+</head>
+<body>
+  <div class="login-card">
+    <h1>Checagem de Perfis</h1>
+    <p class="subtitle">Instagram — acesso restrito</p>
+
+    <div class="erro" th:if="${erro}" th:text="${erro}"></div>
+
+    <form method="post" th:action="@{/checagem-instagram/login}">
+      <label for="username">Usuário</label>
+      <input type="text" id="username" name="username" autofocus required>
+
+      <label for="senha">Senha</label>
+      <input type="password" id="senha" name="senha" required>
+
+      <button type="submit">Entrar</button>
+    </form>
+  </div>
+</body>
+</html>

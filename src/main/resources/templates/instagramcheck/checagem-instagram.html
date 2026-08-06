@@ -243,12 +243,14 @@
       <button class="btn" id="btn-export-approved">Exportar aprovados</button>
       <button class="btn btn-ghost" id="btn-export-all">Exportar tudo</button>
       <button class="btn btn-ghost btn-danger" id="btn-clear">Limpar dados</button>
+      <a class="btn btn-ghost" th:href="@{/checagem-instagram/usuarios}">Usuários</a>
+      <a class="btn btn-ghost" th:href="@{/checagem-instagram/logout}">Sair</a>
     </div>
     <input type="file" id="file-input" accept=".csv,.xlsx,.xls" style="display:none">
   </header>
 
   <div class="privacy-note">
-    ⚠️ <span>Módulo de teste: os dados ficam num banco separado do sistema principal, mas esta página ainda não tem login — qualquer pessoa com a URL pode acessar e editar.</span>
+    ⚠️ <span>Módulo de teste: os dados ficam num banco separado do sistema principal. Acesso protegido por login próprio desta tela.</span>
   </div>
 
   <div class="stats-bar">
