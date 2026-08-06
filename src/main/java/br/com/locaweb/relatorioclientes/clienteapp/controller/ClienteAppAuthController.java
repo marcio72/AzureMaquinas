@@ -75,4 +75,4 @@ public class ClienteAppAuthController {
         session.setAttribute(ClienteAppSessionInterceptor.ATRIBUTO_SESSAO_CLIENTE_ID, cliente.getCodCliente());
         return ResponseEntity.ok(new ClienteLoginResponseDTO(cliente.getCodCliente(), cliente.getNomCliente(), false, true));
     }
-}git
+}
