@@ -9,13 +9,21 @@ public class ClienteLoginResponseDTO {
     // o app deve mostrar a tela de "criar PIN" em vez da tela de chamados.
     private boolean precisaCriarPin;
 
+    // true só quando a sessão foi realmente aberta (PIN conferiu, ou acabou
+    // de ser definido). Quando telefone existe + já tem PIN + nenhum PIN foi
+    // enviado ainda (primeira chamada, só "sondando" o telefone), isso vem
+    // false e precisaCriarPin também false — sinal pro app mostrar a tela de
+    // "digite seu PIN" (sem ainda estar logado).
+    private boolean autenticado;
+
     public ClienteLoginResponseDTO() {
     }
 
-    public ClienteLoginResponseDTO(Long clienteId, String nomeCliente, boolean precisaCriarPin) {
+    public ClienteLoginResponseDTO(Long clienteId, String nomeCliente, boolean precisaCriarPin, boolean autenticado) {
         this.clienteId = clienteId;
         this.nomeCliente = nomeCliente;
         this.precisaCriarPin = precisaCriarPin;
+        this.autenticado = autenticado;
     }
 
     public Long getClienteId() {
@@ -40,5 +48,13 @@ public class ClienteLoginResponseDTO {
 
     public void setPrecisaCriarPin(boolean precisaCriarPin) {
         this.precisaCriarPin = precisaCriarPin;
+    }
+
+    public boolean isAutenticado() {
+        return autenticado;
+    }
+
+    public void setAutenticado(boolean autenticado) {
+        this.autenticado = autenticado;
     }
 }
