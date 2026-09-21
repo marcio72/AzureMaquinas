@@ -1,0 +1,166 @@
+<!--
+  Modal de envio do relatório por e-mail.
+  Arquivo: src/main/resources/templates/fragments/modal-email.html
+
+  1) Uma vez por página, antes de </body>:
+        <div th:replace="~{fragments/modal-email :: modalEmail}"></div>
+
+  2) No card-footer da solicitação (solicitacoes_abertas.html), ao lado do
+     botão "Executar Manutenção":
+        <button type="button" class="btn btn-outline-primary btn-sm px-3"
+                th:attr="data-id=${s.id}"
+                onclick="abrirModalEmail(this.dataset.id)">
+            <i class="bi bi-envelope"></i> Enviar por e-mail
+        </button>
+
+  Usa o Bootstrap 5 que já está nas telas — nenhum CSS novo é obrigatório.
+-->
+<div th:fragment="modalEmail">
+
+  <div class="modal fade" id="modalEmail" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="bi bi-envelope"></i> Enviar relatório por e-mail
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+
+        <div class="modal-body">
+
+          <div id="emailAviso" class="alert alert-warning py-2 d-none"></div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="emailDestinatario">Destinatário</label>
+            <input type="email" class="form-control" id="emailDestinatario"
+                   placeholder="cliente@empresa.com.br">
+            <div class="form-check mt-2">
+              <input class="form-check-input" type="checkbox" id="emailSalvarCliente" checked>
+              <label class="form-check-label small" for="emailSalvarCliente">
+                Salvar este e-mail no cadastro do cliente
+              </label>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="emailAssunto">Assunto</label>
+            <input type="text" class="form-control" id="emailAssunto">
+          </div>
+
+          <label class="form-label fw-semibold">
+            Corpo do e-mail
+            <span class="text-muted fw-normal small">— clique no texto para editar</span>
+          </label>
+          <div id="emailCorpo" contenteditable="true"
+               style="background:#fff;border:1px solid #dee2e6;border-radius:6px;
+                      padding:20px;max-height:420px;overflow-y:auto"></div>
+
+        </div>
+
+        <div class="modal-footer">
+          <span id="emailStatus" class="me-auto small"></span>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-success" id="emailEnviar" onclick="confirmarEnvioEmail()">
+            <i class="bi bi-send"></i> Enviar
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let emailSolicitacaoId = null;
+    let emailModalInstance = null;
+
+    async function abrirModalEmail(id) {
+      emailSolicitacaoId = id;
+
+      if (!emailModalInstance) {
+        emailModalInstance = new bootstrap.Modal(document.getElementById('modalEmail'));
+      }
+
+      const aviso  = document.getElementById('emailAviso');
+      const status = document.getElementById('emailStatus');
+      const btn    = document.getElementById('emailEnviar');
+
+      aviso.classList.add('d-none');
+      status.textContent = '';
+      status.className = 'me-auto small';
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bi bi-send"></i> Enviar';
+      document.getElementById('emailCorpo').innerHTML =
+        '<p class="text-muted">Carregando relatório...</p>';
+
+      emailModalInstance.show();
+
+      try {
+        const r = await fetch(`/api/email/solicitacao/${id}/preview`);
+        if (!r.ok) throw new Error();
+        const d = await r.json();
+
+        document.getElementById('emailDestinatario').value = d.destinatario || '';
+        document.getElementById('emailAssunto').value = d.assunto || '';
+        document.getElementById('emailCorpo').innerHTML = d.html;
+        document.getElementById('emailSalvarCliente').checked = !d.destinatario;
+
+        if (!d.destinatario) {
+          aviso.textContent = 'Este cliente ainda não tem e-mail cadastrado. Digite o endereço abaixo.';
+          aviso.classList.remove('d-none');
+          document.getElementById('emailDestinatario').focus();
+        } else if (d.jaEnviado) {
+          aviso.textContent = 'O relatório deste chamado já foi enviado antes.';
+          aviso.classList.remove('d-none');
+        }
+      } catch (e) {
+        document.getElementById('emailCorpo').innerHTML =
+          '<p class="text-danger">Não foi possível carregar o relatório. Feche e tente de novo.</p>';
+      }
+    }
+
+    async function confirmarEnvioEmail() {
+      const btn    = document.getElementById('emailEnviar');
+      const status = document.getElementById('emailStatus');
+      const destinatario = document.getElementById('emailDestinatario').value.trim();
+
+      if (!destinatario.includes('@')) {
+        status.textContent = 'Informe um e-mail válido.';
+        status.className = 'me-auto small text-danger';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = 'Enviando...';
+      status.textContent = '';
+      status.className = 'me-auto small';
+
+      try {
+        const r = await fetch(`/api/email/solicitacao/${emailSolicitacaoId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            destinatario: destinatario,
+            assunto: document.getElementById('emailAssunto').value,
+            html: document.getElementById('emailCorpo').innerHTML,
+            salvarNoCliente: document.getElementById('emailSalvarCliente').checked
+          })
+        });
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.erro || 'Falha no envio.');
+
+        status.textContent = 'E-mail enviado.';
+        status.className = 'me-auto small text-success';
+        btn.innerHTML = 'Enviado';
+        setTimeout(() => { emailModalInstance.hide(); location.reload(); }, 1200);
+      } catch (e) {
+        status.textContent = e.message;
+        status.className = 'me-auto small text-danger';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-send"></i> Enviar';
+      }
+    }
+  </script>
+
+</div>

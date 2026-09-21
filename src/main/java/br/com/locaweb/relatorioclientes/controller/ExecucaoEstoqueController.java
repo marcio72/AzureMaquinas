@@ -15,6 +15,7 @@ import br.com.locaweb.relatorioclientes.repository.SolicitacaoRepository;
 import br.com.locaweb.relatorioclientes.service.EstoqueService;
 import br.com.locaweb.relatorioclientes.service.FotoStorageService;
 import br.com.locaweb.relatorioclientes.service.SignalService;
+import br.com.locaweb.relatorioclientes.service.WhatsAppChamadoService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +38,7 @@ public class ExecucaoEstoqueController {
     private final SignalService signalService;
     private final PecaRepository pecaRepository;
     private final FotoStorageService fotoStorageService;
+    private final WhatsAppChamadoService whatsAppChamadoService;
     
     @PostMapping("/registrar")
     @Transactional
@@ -82,7 +84,11 @@ public class ExecucaoEstoqueController {
             
             solicitacao.setStatus(false);
             solicitacaoRepository.save(solicitacao);
-            
+
+            // 📲 Chamado de CLIENTE finalizado: pede confirmação via WhatsApp
+            // (o serviço ignora origem TECNICO e não repete envio no loop)
+            whatsAppChamadoService.notificarFinalizacao(solicitacao);
+
             // Montagem da Mensagem
             if (nomeCliente == null) {
                 nomeCliente = (solicitacao.getCliente() != null) ? solicitacao.getCliente().getNomCliente() : "N/I";

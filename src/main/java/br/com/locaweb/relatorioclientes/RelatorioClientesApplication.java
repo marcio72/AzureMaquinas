@@ -12,8 +12,15 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 // banco principal tente enxergar as entidades do novo módulo "instagramcheck", que tem seu
 // próprio banco de dados isolado (ver InstagramDataSourceConfig).
 @SpringBootApplication
-@EntityScan(basePackages = "br.com.locaweb.relatorioclientes.model")
-@EnableJpaRepositories(basePackages = "br.com.locaweb.relatorioclientes.repository")
+// Módulos novos que usam o banco principal precisam entrar nas duas listas (ex: "chave").
+@EntityScan(basePackages = {
+        "br.com.locaweb.relatorioclientes.model",
+        "br.com.locaweb.relatorioclientes.chave.model"
+})
+@EnableJpaRepositories(basePackages = {
+        "br.com.locaweb.relatorioclientes.repository",
+        "br.com.locaweb.relatorioclientes.chave.repository"
+})
 @EnableScheduling
 @EnableAsync
 public class RelatorioClientesApplication {

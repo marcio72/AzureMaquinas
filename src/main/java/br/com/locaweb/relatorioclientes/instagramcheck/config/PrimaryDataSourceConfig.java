@@ -61,7 +61,9 @@ public class PrimaryDataSourceConfig {
         props.put("hibernate.jdbc.time_zone", "UTC");
         return builder
                 .dataSource(dataSource)
-                .packages("br.com.locaweb.relatorioclientes.model")
+                .packages(
+                        "br.com.locaweb.relatorioclientes.model",
+                        "br.com.locaweb.relatorioclientes.chave.model")
                 .persistenceUnit("primary")
                 .properties(props)
                 .build();

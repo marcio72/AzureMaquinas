@@ -187,7 +187,22 @@
 					</ul>
 				</div>
 			</li>
-			
+
+			<li class="nav-item">
+				<a class="nav-link" data-bs-toggle="collapse" href="#menuChaves">
+					<i class="bi bi-key"></i>
+					<span>Chaves</span>
+					<i class="bi bi-chevron-down ms-auto small"></i>
+				</a>
+				<div class="collapse" id="menuChaves">
+					<ul class="collapse-menu">
+						<li><a class="nav-link" th:href="@{/chaves}">Consulta</a></li>
+						<li><a class="nav-link" th:href="@{/chaves/novo}">Nova Chave</a></li>
+						<li><a class="nav-link" th:href="@{/chaves/fornecedores}">Fornecedores</a></li>
+					</ul>
+				</div>
+			</li>
+
 			<li class="nav-item">
 				<a class="nav-link" data-bs-toggle="collapse" href="#menuEstoque">
 					<i class="bi bi-box-seam"></i>

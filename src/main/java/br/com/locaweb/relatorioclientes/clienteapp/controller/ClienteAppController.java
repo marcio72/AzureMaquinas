@@ -17,6 +17,7 @@ import br.com.locaweb.relatorioclientes.repository.MaquinaRepository;
 import br.com.locaweb.relatorioclientes.repository.SolicitacaoManutencaoRepository;
 import br.com.locaweb.relatorioclientes.service.FotoStorageService;
 import br.com.locaweb.relatorioclientes.service.SignalService;
+import br.com.locaweb.relatorioclientes.service.WhatsAppChamadoService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +38,7 @@ public class ClienteAppController {
     @Autowired private FotoStorageService fotoStorageService;
     @Autowired private SignalService signalService;
     @Autowired private HorarioAtendimentoService horarioService;
+    @Autowired private WhatsAppChamadoService whatsAppChamadoService;
 
     // ---------- Máquinas do ponto (pra montar a tela de "novo chamado") ----------
 
@@ -122,6 +124,9 @@ public class ClienteAppController {
         solicitacaoRepository.save(solicitacao);
 
         enviarSignalChamadoCliente(cliente, problemas);
+
+        // 📲 Retorno ao cliente via WhatsApp (falha aqui nunca quebra o chamado)
+        whatsAppChamadoService.notificarAbertura(solicitacao);
 
         return ResponseEntity.ok().build();
     }

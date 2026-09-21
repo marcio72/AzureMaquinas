@@ -133,13 +133,19 @@
 		}
 
 
-		/* ===== Estilo retrô para execução (apenas no <pre>.execucao-detalhe) ===== */
+		/* ===== Execução estilo TERMINAL (igual ao popover) ===== */
 		.execucao-detalhe {
-		  background-color: #000 !important;     /* fundo preto */
-		  color: #39ff14 !important;             /* verde fluorescente */
-		  font-family: "Courier New", monospace; /* estilo terminal antigo */
+		  background-color: #000 !important;
+		  color: #39ff14 !important;
+		  font-family: "Courier New", monospace;
 		  font-size: 0.95rem;
-		  text-shadow: 0 0 5px #39ff14;          /* leve brilho */
+		  line-height: 1.4;
+		  padding: 12px;
+		  border-radius: 6px;
+		  border: 1px solid #000 !important;
+		  text-shadow: 0 0 4px #39ff14;
+		  box-shadow: inset 0 0 8px rgba(57, 255, 20, 0.15);
+		  white-space: pre-wrap;
 		}
 		
 		@media (max-width: 767px) {
@@ -151,23 +157,6 @@
 				white-space: nowrap;
 			  }
 			}
-		
-		/* ===== Execução estilo TERMINAL (igual ao popover) ===== */
-			.execucao-detalhe {
-			  background-color: #000 !important;
-			  color: #39ff14 !important;
-			  font-family: "Courier New", monospace;
-			  font-size: 0.95rem;
-			  line-height: 1.4;
-			  padding: 12px;
-			  border-radius: 6px;
-			  border: 1px solid #000 !important;
-			  text-shadow: 0 0 4px #39ff14;
-			  box-shadow: inset 0 0 8px rgba(57, 255, 20, 0.15);
-			  white-space: pre-wrap;
-			}
-		
-		
 	
 	</style>
 </head>
@@ -198,53 +187,53 @@
 				</button>
 			</div>
 			<div class="collapse" id="filtrosCollapse">
-			
-			<form method="get" action="/relatorioExecucoes">
-				<div class="row row-cols-1 row-cols-md-5 g-2 mb-3 align-items-end">
-					
-					<div class="col">
-						<label class="form-label small fw-bold text-secondary mb-1">Numero da Ficha (NF)</label>
-						<input type="number" class="form-control" name="nf"
-							   placeholder="Nº" th:value="${nf}">
-					</div>
-					
-					<div class="col">
-						<label class="form-label small fw-bold text-secondary mb-1">Busca Geral</label>
-						<input type="text" class="form-control" name="busca"
-							   placeholder="Cliente ou técnico" th:value="${busca}">
-					</div>
-					
-					<div class="col">
-						<label class="form-label small fw-bold text-secondary mb-1">Problema</label>
-						<input type="text" class="form-control" name="problema"
-							   placeholder="Desc. Problema" th:value="${problema}">
-					</div>
-					
-					<div class="col">
-						<label class="form-label small fw-bold text-secondary mb-1">Execução</label>
-						<input type="text" class="form-control" name="execucao"
-							   placeholder="Desc. Execução" th:value="${execucao}">
-					</div>
-					
-					<div class="col">
-						<label class="form-label small fw-bold text-secondary mb-1">PDF</label>
-						<select class="form-select" name="pdf">
-							<option th:selected="${pdf == null}" value="">Todos</option>
-							<option th:selected="${pdf == 'true'}" value="true">Sim</option>
-							<option th:selected="${pdf == 'false'}" value="false">Não</option>
-						</select>
-					</div>
-				</div>
 				
-				<div class="d-flex flex-wrap gap-2 mb-3">
-					<button type="submit" class="btn btn-primary">
-						<i class="bi bi-funnel"></i> Filtrar
-					</button>
-					<a href="/relatorioExecucoes" class="btn btn-outline-secondary">
-						<i class="bi bi-x-circle"></i> Limpar
-					</a>
-				</div>
-			</form>
+				<form method="get" action="/relatorioExecucoes">
+					<div class="row row-cols-1 row-cols-md-5 g-2 mb-3 align-items-end">
+						
+						<div class="col">
+							<label class="form-label small fw-bold text-secondary mb-1">Numero da Ficha (NF)</label>
+							<input type="number" class="form-control" name="nf"
+								   placeholder="Nº" th:value="${nf}">
+						</div>
+						
+						<div class="col">
+							<label class="form-label small fw-bold text-secondary mb-1">Busca Geral</label>
+							<input type="text" class="form-control" name="busca"
+								   placeholder="Cliente ou técnico" th:value="${busca}">
+						</div>
+						
+						<div class="col">
+							<label class="form-label small fw-bold text-secondary mb-1">Problema</label>
+							<input type="text" class="form-control" name="problema"
+								   placeholder="Desc. Problema" th:value="${problema}">
+						</div>
+						
+						<div class="col">
+							<label class="form-label small fw-bold text-secondary mb-1">Execução</label>
+							<input type="text" class="form-control" name="execucao"
+								   placeholder="Desc. Execução" th:value="${execucao}">
+						</div>
+						
+						<div class="col">
+							<label class="form-label small fw-bold text-secondary mb-1">PDF</label>
+							<select class="form-select" name="pdf">
+								<option th:selected="${pdf == null}" value="">Todos</option>
+								<option th:selected="${pdf == 'true'}" value="true">Sim</option>
+								<option th:selected="${pdf == 'false'}" value="false">Não</option>
+							</select>
+						</div>
+					</div>
+					
+					<div class="d-flex flex-wrap gap-2 mb-3">
+						<button type="submit" class="btn btn-primary">
+							<i class="bi bi-funnel"></i> Filtrar
+						</button>
+						<a href="/relatorioExecucoes" class="btn btn-outline-secondary">
+							<i class="bi bi-x-circle"></i> Limpar
+						</a>
+					</div>
+				</form>
 			</div>
 			<a href="/menu" class="btn btn-secondary mb-3">Voltar ao Menu</a>
 			
@@ -257,7 +246,10 @@
 						<th>Máquina</th>
 						<th class="d-none d-md-table-cell">Problema</th>
 						<th>Execução</th>
-						<th class="d-none d-md-table-cell">Técnico</th> <th>Data</th>         <th>Relatório</th>    </tr>
+						<th class="d-none d-md-table-cell">Técnico</th>
+						<th>Data</th>
+						<th>Relatório</th>
+					</tr>
 					</thead>
 					<tbody>
 					<th:block th:each="exec : ${execucoes}">
@@ -298,6 +290,16 @@
 								<span th:if="${exec.pdfGerado}" class="text-primary fs-5" title="PDF já gerado">
                                     <i class="bi bi-check-circle-fill"></i>
                                 </span>
+								
+								<button type="button"
+										class="btn btn-link btn-sm p-0 ms-2"
+										th:id="'btnEmail_' + ${exec.solicitacaoId}"
+										th:classappend="${exec.emailEnviado} ? 'text-success' : 'text-secondary'"
+										th:attr="data-solicitacao-id=${exec.solicitacaoId}"
+										th:onclick="'abrirModalEmail(' + ${exec.solicitacaoId} + ')'"
+										th:title="${exec.emailEnviado} ? 'E-mail enviado (clique para reenviar)' : 'Enviar relatório por e-mail'">
+									<i class="bi" th:classappend="${exec.emailEnviado} ? 'bi-envelope-fill' : 'bi-envelope'"></i>
+								</button>
 							</td>
 						</tr>
 						
@@ -327,7 +329,7 @@
                             <span th:text="${#temporals.format(exec.dataExecucao, 'dd/MM/yyyy HH:mm')}">Data</span>
                           </span>
 											</div>
-
+											
 											<!-- FOTO DA EXECUÇÃO (se houver) -->
 											<div th:if="${exec.temFoto}" class="mt-3">
 												<div class="fw-semibold mb-1">
@@ -405,7 +407,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
 <script>
 	document.addEventListener('DOMContentLoaded', function () {
 	  /* ================== Toggle Execução ================== */
@@ -466,7 +467,12 @@
 		  alert('Não foi possível copiar automaticamente.');
 		}
 	  });
-	});
+	  
+	  
+	  
+	  
+
+	  
 	
 		document.addEventListener('DOMContentLoaded', function () {
 		  const filtros = document.getElementById('filtrosCollapse');
@@ -540,6 +546,8 @@
 					});
 				  }
 				});
+	
 </script>
+<div th:replace="~{fragments/modal-email :: modalEmail}"></div>
 </body>
 </html>

@@ -68,6 +68,12 @@ public class SolicitacaoManutencao {
     @Column(name = "data_solicitacao")
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime dataSolicitacao;
+    
+    @Column(name = "data_envio_email")
+    private LocalDateTime dataEnvioEmail;
+    
+    @Column(name = "email_enviado_para", length = 150)
+    private String emailEnviadoPara;
 
     @Column(name = "status")
     private Boolean status;
@@ -77,6 +83,15 @@ public class SolicitacaoManutencao {
     @Enumerated(EnumType.STRING)
     @Column(name = "origem", length = 20)
     private OrigemSolicitacao origem = OrigemSolicitacao.TECNICO;
+
+    // Confirmação do serviço pelo cliente via WhatsApp (só chamados de
+    // origem CLIENTE). NULL = sem pendência de confirmação.
+    @Enumerated(EnumType.STRING)
+    @Column(name = "confirmacao_cliente", length = 20)
+    private ConfirmacaoCliente confirmacaoCliente;
+
+    @Column(name = "data_confirmacao_cliente")
+    private LocalDateTime dataConfirmacaoCliente;
 
     @OneToMany(mappedBy = "solicitacao", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProblemaMaquina> problemas = new ArrayList<>();

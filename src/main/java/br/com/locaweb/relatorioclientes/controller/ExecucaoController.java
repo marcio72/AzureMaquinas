@@ -5,6 +5,7 @@ import br.com.locaweb.relatorioclientes.DTO.ExecucaoRequestDTO;
 import br.com.locaweb.relatorioclientes.model.*;
 import br.com.locaweb.relatorioclientes.repository.*;
 import br.com.locaweb.relatorioclientes.service.EstoqueService;
+import br.com.locaweb.relatorioclientes.service.WhatsAppChamadoService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,7 @@ public class ExecucaoController {
     private final SolicitacaoRepository solicitacaoRepository;
     private final ProblemaRepository problemaRepository;
     private final EstoqueService estoqueService;
+    private final WhatsAppChamadoService whatsAppChamadoService;
 
     /**
      * RECEBE TODAS AS EXECUÇÕES DO FRONT
@@ -80,6 +82,9 @@ public class ExecucaoController {
             // ================================
             solicitacao.setStatus(false);
             solicitacaoRepository.save(solicitacao);
+
+            // 📲 Chamado de CLIENTE finalizado: pede confirmação via WhatsApp
+            whatsAppChamadoService.notificarFinalizacao(solicitacao);
         }
 
         return ResponseEntity.ok("Execuções registradas com sucesso.");

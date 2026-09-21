@@ -26,4 +26,8 @@ public interface SolicitacaoManutencaoRepository extends JpaRepository<Solicitac
 
     List<SolicitacaoManutencao> findByCliente_CodClienteAndDataSolicitacaoBetweenOrderByDataSolicitacaoDesc(
             Long codCliente, LocalDateTime inicio, LocalDateTime fim);
+
+    // 📲 WhatsApp: chamados do cliente aguardando confirmação de serviço (1/2)
+    List<SolicitacaoManutencao> findByCliente_CodClienteAndConfirmacaoClienteOrderByIdDesc(
+            Long codCliente, br.com.locaweb.relatorioclientes.model.ConfirmacaoCliente confirmacao);
 	}

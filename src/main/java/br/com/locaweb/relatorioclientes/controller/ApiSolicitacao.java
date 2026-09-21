@@ -141,6 +141,13 @@ public class ApiSolicitacao {
                                               } else {
                                                   dto.setNomeCliente("Desconhecido");
                                               }
+                                              if (exec.getSolicitacaoManutencao() != null) {
+                                                  dto.setSolicitacaoId(exec.getSolicitacaoManutencao().getId());
+                                              }
+                                              if (exec.getSolicitacaoManutencao() != null) {
+                                                  dto.setSolicitacaoId(exec.getSolicitacaoManutencao().getId());
+                                                  dto.setEmailEnviado(exec.getSolicitacaoManutencao().getDataEnvioEmail() != null);
+                                              }
                                               
                                               if (exec.getProblema() != null) {
                                                   dto.setDescricaoProblema(exec.getProblema().getDescricao());

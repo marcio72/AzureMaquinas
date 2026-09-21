@@ -25,6 +25,7 @@ import br.com.locaweb.relatorioclientes.model.SolicitacaoManutencao;
 import br.com.locaweb.relatorioclientes.repository.ExecucaoManutencaoRepository;
 import br.com.locaweb.relatorioclientes.repository.ProblemaRepository;
 import br.com.locaweb.relatorioclientes.repository.SolicitacaoManutencaoRepository;
+import br.com.locaweb.relatorioclientes.service.WhatsAppChamadoService;
 //import ch.qos.logback.core.model.Model;
 import org.springframework.ui.Model;
 
@@ -42,6 +43,9 @@ public class ExecucaoManutencaoController {
 	    
 	    @Autowired
 	    private ProblemaRepository problemaRepository;
+
+	    @Autowired
+	    private WhatsAppChamadoService whatsAppChamadoService;
 
 
 	   /* @GetMapping("/nova/{idSolicitacao}")
@@ -63,6 +67,10 @@ public class ExecucaoManutencaoController {
 	        solicitacaoRepo.save(solicitacao);
 
 	        execucaoRepo.save(execucao);
+
+	        // 📲 Chamado de CLIENTE finalizado: pede confirmação via WhatsApp
+	        whatsAppChamadoService.notificarFinalizacao(solicitacao);
+
 	        return "redirect:/solicitacoes"; // ou outra tela de confirmação
 	    }
 	    
@@ -110,6 +118,9 @@ public class ExecucaoManutencaoController {
 	        // Atualiza o status da solicitação para 'false' (resolvida)
 	        solicitacao.setStatus(false);
 	        solicitacaoRepo.save(solicitacao);
+
+	        // 📲 Chamado de CLIENTE finalizado: pede confirmação via WhatsApp
+	        whatsAppChamadoService.notificarFinalizacao(solicitacao);
 
 	        return ResponseEntity.ok().build();
 	    }

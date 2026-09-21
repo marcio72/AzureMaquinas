@@ -26,4 +26,9 @@ public interface MovimentoEstoqueRepository extends JpaRepository<MovimentoEstoq
 
     // Movimentos de saída (trocas) dessa máquina, com a execução que originou cada um
     List<MovimentoEstoque> findByMaquina_IdAndTipoOrderByDataMovimentoDesc(Long maquinaId, String tipo);
+    
+    
+    // nova consulta: peças trocadas de uma execução
+    List<MovimentoEstoque> findByExecucao_IdAndTipoOrderByDataMovimentoAsc(Long execucaoId, String tipo);
+
 }

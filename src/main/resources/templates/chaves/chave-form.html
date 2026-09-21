@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<title>Cadastro de Chave - Sistema Pro</title>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+	<style>
+		:root {
+			--bg-body: #081418;
+			--bg-card: #10242a;
+			--primary-green: #1ee4ac;
+			--accent-blue: #3d8bff;
+			--accent-red: #ff4d4d;
+			--text-white: #ffffff;
+			--text-gray: #8ea1a7;
+			--border-color: rgba(255, 255, 255, 0.05);
+			--input-bg: #081418;
+		}
+
+		* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+		body { background-color: var(--bg-body); color: var(--text-white); padding: 15px; display: flex; flex-direction: column; align-items: center; }
+
+		.container { width: 100%; max-width: 600px; margin: 0 auto; }
+
+		header { margin-bottom: 25px; width: 100%; }
+		.breadcrumb { font-size: 12px; color: var(--text-gray); margin-bottom: 10px; list-style: none; display: flex; gap: 5px; }
+		.breadcrumb a { color: var(--primary-green); text-decoration: none; }
+		.page-title { font-size: 22px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+
+		.card-custom { background: var(--bg-card); border-radius: 24px; padding: 30px; border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+
+		.top-actions { display: flex; gap: 10px; margin-bottom: 25px; }
+		.btn-mini { padding: 8px 15px; border-radius: 8px; font-size: 12px; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 5px; transition: 0.2s; }
+		.btn-secondary { background: rgba(255,255,255,0.05); color: var(--text-white); }
+
+		.alert-erro { padding: 12px 16px; border-radius: 12px; font-size: 14px; margin-bottom: 20px; display: flex; gap: 10px; align-items: center;
+			background: rgba(255, 77, 77, 0.1); color: var(--accent-red); border: 1px solid rgba(255, 77, 77, 0.2); }
+
+		.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+		@media (max-width: 500px) { .form-row { grid-template-columns: 1fr; } }
+
+		.form-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+		label { font-size: 12px; font-weight: 600; color: var(--text-gray); text-transform: uppercase; letter-spacing: 0.5px; }
+		.hint { font-size: 12px; color: var(--text-gray); }
+
+		input[type="text"], input[type="number"], select {
+			background: var(--input-bg); border: 1px solid var(--border-color); color: white;
+			padding: 14px 18px; border-radius: 12px; font-size: 15px; outline: none; transition: 0.3s; width: 100%;
+		}
+		input:focus, select:focus { border-color: var(--primary-green); box-shadow: 0 0 12px rgba(30, 228, 172, 0.15); }
+
+		.preview { font-family: monospace; font-size: 20px; font-weight: 700; color: var(--primary-green);
+			background: var(--input-bg); border-radius: 12px; padding: 12px 18px; text-align: center; margin-bottom: 20px; }
+
+		.checkbox-row { display: flex; align-items: center; gap: 12px; background: var(--input-bg); border: 1px solid var(--border-color); padding: 14px 18px; border-radius: 12px; }
+		.checkbox-row input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--primary-green); }
+		.checkbox-row label { margin: 0; }
+
+		.footer-actions { margin-top: 30px; display: flex; gap: 15px; border-top: 1px solid var(--border-color); padding-top: 25px; }
+		.btn-save { background: var(--primary-green); color: #081418; padding: 14px; border-radius: 12px; border: none; font-weight: 700; font-size: 14px; cursor: pointer; flex: 2;
+			display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; }
+		.btn-cancel { background: rgba(255,255,255,0.05); color: var(--text-white); padding: 14px; border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 14px; flex: 1; text-align: center; transition: 0.2s; }
+		.btn-save:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(30, 228, 172, 0.3); }
+		.btn-cancel:hover { background: rgba(255,255,255,0.1); }
+	</style>
+</head>
+
+<body>
+
+<div class="container">
+	<header>
+		<ul class="breadcrumb">
+			<li><a href="/">Home</a> /</li>
+			<li><a href="/chaves">Chaves</a> /</li>
+			<li style="color: var(--text-gray)" th:text="${chave.id == null} ? 'Nova' : 'Edição'">Cadastro</li>
+		</ul>
+		<h1 class="page-title"><span>🔑</span>
+			<span th:text="${chave.id == null} ? 'Nova Chave' : 'Editar Chave'">Cadastro de Chave</span>
+		</h1>
+	</header>
+
+	<div class="card-custom">
+		<div class="top-actions">
+			<a href="/chaves" class="btn-mini btn-secondary"><i class="bi bi-arrow-left"></i> Voltar</a>
+		</div>
+
+		<div th:if="${erro}" class="alert-erro"><i class="bi bi-exclamation-triangle"></i><span th:text="${erro}"></span></div>
+
+		<div class="preview" id="preview">-</div>
+
+		<form th:action="@{/chaves/salvar}" th:object="${chave}" method="post">
+
+			<input type="hidden" th:field="*{id}">
+
+			<div class="form-row">
+				<div class="form-group">
+					<label for="tipo">Tipo</label>
+					<select th:field="*{tipo}" id="tipo" required>
+						<option value="">Selecione...</option>
+						<option th:each="t : ${tipos}" th:value="${t}" th:text="${t.name() + ' - ' + t.descricao}"></option>
+					</select>
+				</div>
+
+				<div class="form-group">
+					<label for="numero">Número da Chave</label>
+					<input type="text" th:field="*{numero}" id="numero" maxlength="30"
+						   placeholder="Ex: 1234" required autofocus autocomplete="off">
+				</div>
+			</div>
+
+			<div class="form-row">
+				<div class="form-group">
+					<label for="fornecedorId">Fornecedor</label>
+					<select th:field="*{fornecedorId}" id="fornecedorId" required>
+						<option value="">Selecione...</option>
+						<option th:each="f : ${fornecedores}" th:value="${f.id()}" th:text="${f.nome()}"></option>
+					</select>
+					<a href="/chaves/fornecedores" class="hint" style="color: var(--accent-blue); text-decoration: none;">
+						<i class="bi bi-plus"></i> Cadastrar fornecedor
+					</a>
+				</div>
+
+				<div class="form-group">
+					<label for="quantidadeCopias">Qtd. de Cópias</label>
+					<input type="number" th:field="*{quantidadeCopias}" id="quantidadeCopias" min="1" required>
+				</div>
+			</div>
+
+			<div class="form-group" id="grupoCadeados" style="display: none;">
+				<label for="quantidadeCadeados">Qtd. de Cadeados</label>
+				<input type="number" th:field="*{quantidadeCadeados}" id="quantidadeCadeados" min="0">
+				<span class="hint">Quantos cadeados essa mesma chave abre.</span>
+			</div>
+
+			<div class="form-group">
+				<label for="observacao">Observação <span id="obsObrigatoria" style="color: var(--accent-red); display: none;">(obrigatória para Outros)</span></label>
+				<input type="text" th:field="*{observacao}" id="observacao" maxlength="255"
+					   placeholder="Ex: chave da porta do painel">
+			</div>
+
+			<div class="form-group">
+				<div class="checkbox-row">
+					<input type="checkbox" th:field="*{ativo}" id="ativo">
+					<label for="ativo" style="text-transform: none; font-size: 14px;">Chave ativa</label>
+				</div>
+			</div>
+
+			<div class="footer-actions">
+				<a href="/chaves" class="btn-cancel">VOLTAR</a>
+				<button type="submit" class="btn-save"><i class="bi bi-check-lg"></i> SALVAR CHAVE</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<script>
+	const tipo = document.getElementById('tipo');
+	const numero = document.getElementById('numero');
+	const obs = document.getElementById('observacao');
+	const obsAviso = document.getElementById('obsObrigatoria');
+	const preview = document.getElementById('preview');
+	const grupoCadeados = document.getElementById('grupoCadeados');
+	const qtdCadeados = document.getElementById('quantidadeCadeados');
+
+	function atualizar() {
+		const t = tipo.value || '?';
+		const n = numero.value.trim().toUpperCase() || '____';
+		preview.textContent = t + '-' + n;
+
+		const outros = tipo.value === 'O';
+		obs.required = outros;
+		obsAviso.style.display = outros ? 'inline' : 'none';
+
+		// Cadeados só valem para o tipo D; nos outros tipos o campo zera.
+		const cadeado = tipo.value === 'D';
+		grupoCadeados.style.display = cadeado ? 'flex' : 'none';
+		if (!cadeado) {
+			qtdCadeados.value = 0;
+		}
+	}
+
+	tipo.addEventListener('change', atualizar);
+	numero.addEventListener('input', atualizar);
+	atualizar();
+</script>
+
+</body>
+</html>
