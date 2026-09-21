@@ -12,7 +12,7 @@ public class ChaveRequest {
     private String numero;
     private Long fornecedorId;
     private TipoChave tipo;
-    private Integer quantidadeCopias = 1;
+    private Integer quantidadeCopias = 0;
     private Integer quantidadeCadeados = 0;
     private String observacao;
     private Boolean ativo = true;

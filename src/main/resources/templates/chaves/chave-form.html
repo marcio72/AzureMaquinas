@@ -126,14 +126,14 @@
 
 				<div class="form-group">
 					<label for="quantidadeCopias">Qtd. de Cópias</label>
-					<input type="number" th:field="*{quantidadeCopias}" id="quantidadeCopias" min="1" required>
+					<input type="number" th:field="*{quantidadeCopias}" id="quantidadeCopias" min="0" required>
 				</div>
 			</div>
 
-			<div class="form-group" id="grupoCadeados" style="display: none;">
+			<div class="form-group" id="grupoCadeados">
 				<label for="quantidadeCadeados">Qtd. de Cadeados</label>
 				<input type="number" th:field="*{quantidadeCadeados}" id="quantidadeCadeados" min="0">
-				<span class="hint">Quantos cadeados essa mesma chave abre.</span>
+				<span class="hint" id="hintCadeados">Quantos cadeados essa mesma chave abre.</span>
 			</div>
 
 			<div class="form-group">
@@ -163,8 +163,6 @@
 	const obs = document.getElementById('observacao');
 	const obsAviso = document.getElementById('obsObrigatoria');
 	const preview = document.getElementById('preview');
-	const grupoCadeados = document.getElementById('grupoCadeados');
-	const qtdCadeados = document.getElementById('quantidadeCadeados');
 
 	function atualizar() {
 		const t = tipo.value || '?';
@@ -175,12 +173,6 @@
 		obs.required = outros;
 		obsAviso.style.display = outros ? 'inline' : 'none';
 
-		// Cadeados só valem para o tipo D; nos outros tipos o campo zera.
-		const cadeado = tipo.value === 'D';
-		grupoCadeados.style.display = cadeado ? 'flex' : 'none';
-		if (!cadeado) {
-			qtdCadeados.value = 0;
-		}
 	}
 
 	tipo.addEventListener('change', atualizar);

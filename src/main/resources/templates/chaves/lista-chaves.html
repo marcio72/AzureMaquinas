@@ -216,7 +216,7 @@
 						<span class="tipo-badge" th:classappend="${'tipo-' + c.tipo()}" th:text="${c.tipoDescricao()}"></span>
 					</td>
 					<td data-label="Cópias" th:text="${c.quantidadeCopias()}"></td>
-					<td data-label="Cadeados" th:text="${c.tipo().name() == 'D'} ? ${c.quantidadeCadeados()} : '-'"></td>
+					<td data-label="Cadeados" th:text="${c.quantidadeCadeados()}"></td>
 					<td data-label="Observação" class="obs" th:text="${c.observacao() != null ? c.observacao() : '-'}"></td>
 					<td data-label="Status">
 						<span th:if="${c.ativo()}" class="status-badge status-ativo">Ativa</span>

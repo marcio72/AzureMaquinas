@@ -32,9 +32,9 @@ public class Chave {
     private TipoChave tipo;
 
     @Column(name = "quantidade_copias", nullable = false)
-    private Integer quantidadeCopias = 1;
+    private Integer quantidadeCopias = 0;
 
-    /** Quantos cadeados esse segredo abre (só faz sentido no tipo Cadeado). */
+    /** Quantos cadeados esse segredo abre (vale pra qualquer tipo: cofre com cadeado, etc.). */
     @Column(name = "quantidade_cadeados", nullable = false)
     private Integer quantidadeCadeados = 0;
 

@@ -110,15 +110,11 @@ public class ChaveService {
         if (req.getTipo() == null) {
             throw new RegraNegocioChaveException("Tipo da chave é obrigatório");
         }
-        if (req.getQuantidadeCopias() != null && req.getQuantidadeCopias() < 1) {
-            throw new RegraNegocioChaveException("Quantidade de cópias deve ser pelo menos 1");
+        if (req.getQuantidadeCopias() != null && req.getQuantidadeCopias() < 0) {
+            throw new RegraNegocioChaveException("Quantidade de cópias não pode ser negativa");
         }
         if (req.getQuantidadeCadeados() != null && req.getQuantidadeCadeados() < 0) {
             throw new RegraNegocioChaveException("Quantidade de cadeados não pode ser negativa");
-        }
-        if (req.getTipo() != TipoChave.D
-                && req.getQuantidadeCadeados() != null && req.getQuantidadeCadeados() > 0) {
-            throw new RegraNegocioChaveException("Só chave do tipo Cadeado pode ter cadeados vinculados");
         }
         String obs = req.getObservacao();
         if (req.getTipo() == TipoChave.O && (obs == null || obs.isBlank())) {
@@ -134,7 +130,7 @@ public class ChaveService {
         c.setNumero(numero);
         c.setFornecedor(fornecedorService.buscarEntidade(req.getFornecedorId()));
         c.setTipo(req.getTipo());
-        c.setQuantidadeCopias(req.getQuantidadeCopias() == null ? 1 : req.getQuantidadeCopias());
+        c.setQuantidadeCopias(req.getQuantidadeCopias() == null ? 0 : req.getQuantidadeCopias());
         c.setQuantidadeCadeados(req.getQuantidadeCadeados() == null ? 0 : req.getQuantidadeCadeados());
         String obs = req.getObservacao();
         c.setObservacao(obs == null || obs.isBlank() ? null : obs.trim());
