@@ -3,11 +3,16 @@ package br.com.locaweb.relatorioclientes.chave.web;
 import br.com.locaweb.relatorioclientes.chave.dto.ChaveRequest;
 import br.com.locaweb.relatorioclientes.chave.dto.ChaveResponse;
 import br.com.locaweb.relatorioclientes.chave.dto.FornecedorChaveResponse;
+import br.com.locaweb.relatorioclientes.chave.dto.MaquinaOpcaoResponse;
+import br.com.locaweb.relatorioclientes.chave.dto.VinculoChaveRequest;
+import br.com.locaweb.relatorioclientes.chave.dto.VinculoChaveResponse;
 import br.com.locaweb.relatorioclientes.chave.exception.ChaveNaoEncontradaException;
 import br.com.locaweb.relatorioclientes.chave.exception.RegraNegocioChaveException;
 import br.com.locaweb.relatorioclientes.chave.model.TipoChave;
+import br.com.locaweb.relatorioclientes.chave.model.UsoChave;
 import br.com.locaweb.relatorioclientes.chave.service.ChaveService;
 import br.com.locaweb.relatorioclientes.chave.service.FornecedorChaveService;
+import br.com.locaweb.relatorioclientes.chave.service.MaquinaChaveService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -22,10 +27,14 @@ public class ChaveWebController {
 
     private final ChaveService chaveService;
     private final FornecedorChaveService fornecedorService;
+    private final MaquinaChaveService maquinaChaveService;
 
-    public ChaveWebController(ChaveService chaveService, FornecedorChaveService fornecedorService) {
+    public ChaveWebController(ChaveService chaveService,
+                              FornecedorChaveService fornecedorService,
+                              MaquinaChaveService maquinaChaveService) {
         this.chaveService = chaveService;
         this.fornecedorService = fornecedorService;
+        this.maquinaChaveService = maquinaChaveService;
     }
 
     // ================= CHAVES =================
@@ -119,6 +128,80 @@ public class ChaveWebController {
         return alterarAtivo(id, true, ra);
     }
 
+    // ================= MÁQUINAS DA CHAVE =================
+
+    /**
+     * Vínculos da chave + busca de máquina pelo número (praça opcional).
+     * GET /chaves/5/maquinas?historico=true&numero=51&praca=V1
+     */
+    @GetMapping("/{id}/maquinas")
+    public String maquinas(@PathVariable Long id,
+                           @RequestParam(defaultValue = "false") boolean historico,
+                           @RequestParam(required = false) String numero,
+                           @RequestParam(required = false) String praca,
+                           Model model, RedirectAttributes ra) {
+        ChaveResponse chave;
+        try {
+            chave = chaveService.buscarPorId(id);
+        } catch (ChaveNaoEncontradaException e) {
+            ra.addFlashAttribute("erro", e.getMessage());
+            return "redirect:/chaves";
+        }
+
+        List<VinculoChaveResponse> vinculos = maquinaChaveService.daChave(id, historico);
+
+        List<MaquinaOpcaoResponse> resultados = null; // null = não buscou
+        if (numero != null && !numero.isBlank()) {
+            try {
+                resultados = maquinaChaveService.buscarMaquinas(numero, praca);
+            } catch (RegraNegocioChaveException e) {
+                model.addAttribute("erro", e.getMessage());
+            }
+        }
+
+        model.addAttribute("chave", chave);
+        model.addAttribute("vinculos", vinculos);
+        model.addAttribute("historico", historico);
+        model.addAttribute("pracas", maquinaChaveService.pracas());
+        model.addAttribute("usos", UsoChave.values());
+        model.addAttribute("usoPadrao", UsoChave.padraoPara(chave.tipo()));
+        model.addAttribute("resultados", resultados);
+        model.addAttribute("fNumero", numero);
+        model.addAttribute("fPraca", praca);
+        return "chaves/maquinas-chave";
+    }
+
+    @PostMapping("/{id}/maquinas/vincular")
+    public String vincularMaquina(@PathVariable Long id,
+                                  @RequestParam Long maquinaId,
+                                  @RequestParam(required = false) UsoChave uso,
+                                  @RequestParam(required = false) String observacao,
+                                  RedirectAttributes ra) {
+        try {
+            VinculoChaveResponse v = maquinaChaveService.vincular(maquinaId, new VinculoChaveRequest(id, uso, observacao));
+            ra.addFlashAttribute("sucesso", "Chave " + v.chaveCodigo() + " vinculada à máquina "
+                    + rotuloMaquina(v.praca(), v.maquinaNome()) + " (" + v.usoDescricao() + ").");
+        } catch (RegraNegocioChaveException | ChaveNaoEncontradaException e) {
+            ra.addFlashAttribute("erro", e.getMessage());
+        }
+        return "redirect:/chaves/" + id + "/maquinas";
+    }
+
+    @PostMapping("/{id}/maquinas/encerrar/{vinculoId}")
+    public String encerrarVinculo(@PathVariable Long id,
+                                  @PathVariable Long vinculoId,
+                                  @RequestParam(required = false) String observacao,
+                                  RedirectAttributes ra) {
+        try {
+            VinculoChaveResponse v = maquinaChaveService.encerrar(vinculoId, observacao);
+            ra.addFlashAttribute("sucesso", "Chave " + v.chaveCodigo() + " retirada da máquina "
+                    + rotuloMaquina(v.praca(), v.maquinaNome()) + ". Ficou no histórico.");
+        } catch (RegraNegocioChaveException | ChaveNaoEncontradaException e) {
+            ra.addFlashAttribute("erro", e.getMessage());
+        }
+        return "redirect:/chaves/" + id + "/maquinas";
+    }
+
     // ================= FORNECEDORES =================
 
     @GetMapping("/fornecedores")
@@ -162,6 +245,11 @@ public class ChaveWebController {
         model.addAttribute("fornecedores", fornecedorService.listar());
         model.addAttribute("tipos", TipoChave.values());
         return "chaves/chave-form";
+    }
+
+    private static String rotuloMaquina(String praca, String numero) {
+        String n = numero == null ? "?" : numero.trim();
+        return (praca == null || praca.isBlank()) ? n : praca.trim() + " - " + n;
     }
 
     private String alterarAtivo(Long id, boolean ativo, RedirectAttributes ra) {

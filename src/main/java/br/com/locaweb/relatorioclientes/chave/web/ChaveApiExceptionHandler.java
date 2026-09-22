@@ -11,10 +11,10 @@ import java.util.Map;
 
 /**
  * Erros da API de chaves em JSON { "erro": "..." }.
- * Limitado ao ChaveApiController pra não interferir nas telas
+ * Limitado aos controllers REST de chaves pra não interferir nas telas
  * nem nos outros controllers do sistema.
  */
-@RestControllerAdvice(assignableTypes = ChaveApiController.class)
+@RestControllerAdvice(assignableTypes = {ChaveApiController.class, MaquinaChaveApiController.class})
 public class ChaveApiExceptionHandler {
 
     @ExceptionHandler(RegraNegocioChaveException.class)

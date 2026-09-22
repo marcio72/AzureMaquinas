@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<title>Máquinas da Chave - Sistema Pro</title>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+	<style>
+		:root {
+			--bg-body: #081418;
+			--bg-card: #10242a;
+			--primary-green: #1ee4ac;
+			--accent-blue: #3d8bff;
+			--accent-red: #ff4d4d;
+			--accent-yellow: #ffc94d;
+			--text-white: #ffffff;
+			--text-gray: #8ea1a7;
+			--border-color: rgba(255, 255, 255, 0.05);
+			--input-bg: #081418;
+		}
+
+		* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+
+		body { background-color: var(--bg-body); color: var(--text-white); padding: 15px; }
+
+		.container { max-width: 1100px; margin: 0 auto; }
+
+		header { margin-bottom: 25px; }
+		.breadcrumb { font-size: 12px; color: var(--text-gray); margin-bottom: 10px; list-style: none; display: flex; gap: 5px; flex-wrap: wrap; }
+		.breadcrumb a { color: var(--primary-green); text-decoration: none; }
+		.page-title { font-size: 22px; font-weight: 700; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+		.card-custom {
+			background: var(--bg-card); border-radius: 24px; padding: 20px;
+			border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+			margin-bottom: 20px;
+		}
+		.card-title { font-size: 15px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+		.card-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+		.card-head .card-title { margin-bottom: 0; }
+
+		.btn-custom {
+			padding: 10px 20px; border-radius: 12px; font-size: 13px; font-weight: 600; text-decoration: none;
+			display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; border: none; cursor: pointer;
+		}
+		.btn-green { background: var(--primary-green); color: #081418; }
+		.btn-ghost { background: rgba(255,255,255,0.05); color: var(--text-white); }
+		.btn-custom:hover { transform: translateY(-2px); opacity: 0.9; }
+
+		.alert { padding: 12px 16px; border-radius: 12px; font-size: 14px; margin-bottom: 20px; display: flex; gap: 10px; align-items: center; }
+		.alert-ok { background: rgba(30, 228, 172, 0.1); color: var(--primary-green); border: 1px solid rgba(30, 228, 172, 0.2); }
+		.alert-erro { background: rgba(255, 77, 77, 0.1); color: var(--accent-red); border: 1px solid rgba(255, 77, 77, 0.2); }
+
+		.codigo-badge { background: #081418; padding: 3px 10px; border-radius: 6px; font-family: monospace; font-size: 18px; color: var(--primary-green); font-weight: 700; }
+		.info-chave { color: var(--text-gray); font-size: 13px; margin-top: 6px; }
+		.status-inativo { background: rgba(255, 77, 77, 0.1); color: var(--accent-red); padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+
+		/* toggle histórico */
+		.toggle { display: inline-flex; background: rgba(255,255,255,0.04); border-radius: 10px; padding: 3px; }
+		.toggle a { padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; color: var(--text-gray); text-decoration: none; }
+		.toggle a.on { background: var(--primary-green); color: #081418; }
+
+		/* lista de vínculos / resultados */
+		.lista { display: flex; flex-direction: column; gap: 10px; }
+		.item {
+			background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 15px;
+			padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+		}
+		.item.encerrado { opacity: 0.6; }
+		.item-main { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+		.maq { font-size: 17px; font-weight: 700; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+		.sub { font-size: 13px; color: var(--text-gray); }
+		.datas { font-size: 12px; color: var(--text-gray); }
+
+		.uso-badge { padding: 3px 9px; border-radius: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; background: rgba(255, 201, 77, 0.1); color: var(--accent-yellow); }
+		.encerrado-badge { padding: 3px 9px; border-radius: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; background: rgba(142, 161, 167, 0.12); color: var(--text-gray); }
+
+		.acao-form { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+		.acao-form input, .acao-form select, .filtro input, .filtro select {
+			background: var(--input-bg); border: 1px solid var(--border-color); color: white;
+			padding: 9px 12px; border-radius: 10px; font-size: 13px; outline: none;
+		}
+		.acao-form input:focus, .acao-form select:focus, .filtro input:focus, .filtro select:focus { border-color: var(--primary-green); }
+
+		.btn-action {
+			padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; text-decoration: none;
+			display: inline-flex; align-items: center; gap: 5px; transition: 0.2s; border: none; cursor: pointer;
+		}
+		.btn-tirar { background: rgba(255, 77, 77, 0.1); color: var(--accent-red); }
+		.btn-vincular { background: var(--primary-green); color: #081418; }
+		.btn-action:hover { filter: brightness(1.15); }
+
+		/* busca */
+		.filtros { display: grid; grid-template-columns: 1fr 2fr auto; gap: 10px; align-items: end; margin-bottom: 16px; }
+		.filtro { display: flex; flex-direction: column; gap: 6px; }
+		.filtro label { font-size: 11px; font-weight: 600; color: var(--text-gray); text-transform: uppercase; letter-spacing: 0.5px; }
+		.filtro input, .filtro select { width: 100%; font-size: 14px; padding: 10px 14px; }
+		@media (max-width: 767px) {
+			.filtros { grid-template-columns: 1fr 1fr; }
+			.filtros .btn-custom { grid-column: span 2; justify-content: center; }
+			.item { flex-direction: column; align-items: stretch; }
+			.acao-form { width: 100%; }
+			.acao-form input, .acao-form select { flex: 1; }
+		}
+
+		.aviso { font-size: 12px; color: var(--text-gray); margin-bottom: 12px; }
+		.vazio { text-align: center; padding: 30px 10px; color: var(--text-gray); font-size: 14px; }
+		.vazio i { font-size: 28px; display: block; margin-bottom: 8px; }
+	</style>
+</head>
+
+<body>
+
+<div class="container">
+	<header>
+		<ul class="breadcrumb">
+			<li><a href="/">Home</a> /</li>
+			<li><a href="/chaves">Chaves</a> /</li>
+			<li style="color: var(--text-gray)">Máquinas</li>
+		</ul>
+		<h1 class="page-title">
+			<span>🔗</span> Máquinas da chave
+			<span class="codigo-badge" th:text="${chave.codigo()}">C-CP07</span>
+			<span th:unless="${chave.ativo()}" class="status-inativo">Inativa</span>
+		</h1>
+		<div class="info-chave">
+			<span th:text="${chave.fornecedorNome()}"></span> ·
+			<span th:text="${chave.tipoDescricao()}"></span> ·
+			<span th:text="${chave.quantidadeCopias()}"></span> chave(s) ·
+			<span th:text="${chave.quantidadeCadeados()}"></span> cadeado(s)
+		</div>
+	</header>
+
+	<div th:if="${sucesso}" class="alert alert-ok"><i class="bi bi-check-circle"></i><span th:text="${sucesso}"></span></div>
+	<div th:if="${erro}" class="alert alert-erro"><i class="bi bi-exclamation-triangle"></i><span th:text="${erro}"></span></div>
+
+	<!-- ============ ONDE A CHAVE ESTÁ ============ -->
+	<div class="card-custom">
+		<div class="card-head">
+			<div class="card-title"><i class="bi bi-hdd-stack"></i> Onde essa chave está</div>
+			<div class="toggle">
+				<a th:href="@{/chaves/{id}/maquinas(id=${chave.id()})}" th:classappend="${!historico} ? 'on'">Atuais</a>
+				<a th:href="@{/chaves/{id}/maquinas(id=${chave.id()},historico=true)}" th:classappend="${historico} ? 'on'">Com histórico</a>
+			</div>
+		</div>
+
+		<div class="vazio" th:if="${#lists.isEmpty(vinculos)}">
+			<i class="bi bi-link-45deg"></i>
+			<span th:text="${historico} ? 'Essa chave nunca foi vinculada a uma máquina.' : 'Essa chave não está em nenhuma máquina.'"></span>
+		</div>
+
+		<div class="lista" th:unless="${#lists.isEmpty(vinculos)}">
+			<div class="item" th:each="v : ${vinculos}" th:classappend="${!v.ativo()} ? 'encerrado'">
+				<div class="item-main">
+					<div class="maq">
+						<span th:text="${(v.praca() != null and !#strings.isEmpty(v.praca()) ? v.praca() + ' - ' : '') + #strings.trim(v.maquinaNome())}">V1 - 51</span>
+						<span class="uso-badge" th:text="${v.usoDescricao()}">Cofre</span>
+						<span class="encerrado-badge" th:unless="${v.ativo()}">Encerrado</span>
+					</div>
+					<div class="sub">
+						<span th:text="${v.clienteNome() != null ? v.clienteNome() : '-'}"></span>
+						<span th:if="${v.maquinaJogo() != null and !#strings.isEmpty(v.maquinaJogo())}" th:text="${' · ' + v.maquinaJogo()}"></span>
+					</div>
+					<div class="datas" th:if="${v.ativo()}">
+						Desde <span th:text="${#temporals.format(v.vinculadoEm(), 'dd/MM/yyyy HH:mm')}"></span>
+					</div>
+					<div class="datas" th:unless="${v.ativo()}">
+						<span th:text="${#temporals.format(v.vinculadoEm(), 'dd/MM/yyyy')}"></span> →
+						<span th:text="${v.desvinculadoEm() != null ? #temporals.format(v.desvinculadoEm(), 'dd/MM/yyyy') : '-'}"></span>
+					</div>
+					<div class="datas" th:if="${v.observacao() != null}" th:text="${v.observacao()}"></div>
+				</div>
+
+				<form th:if="${v.ativo()}" class="acao-form" method="post"
+					  th:action="@{/chaves/{id}/maquinas/encerrar/{vid}(id=${chave.id()},vid=${v.id()})}"
+					  onsubmit="return confirm('Tirar a chave dessa máquina? O vínculo fica no histórico.');">
+					<input type="text" name="observacao" placeholder="Motivo (opcional)" maxlength="255">
+					<button type="submit" class="btn-action btn-tirar"><i class="bi bi-x-circle"></i> Tirar</button>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<!-- ============ VINCULAR ============ -->
+	<div class="card-custom" th:if="${chave.ativo()}">
+		<div class="card-title"><i class="bi bi-plus-circle"></i> Vincular a uma máquina</div>
+
+		<form method="get" th:action="@{/chaves/{id}/maquinas(id=${chave.id()})}" class="filtros">
+			<input type="hidden" name="historico" th:value="${historico}">
+			<div class="filtro">
+				<label for="praca">Praça</label>
+				<select id="praca" name="praca">
+					<option value="">Todas</option>
+					<option th:each="p : ${pracas}" th:value="${p}" th:text="${p}" th:selected="${p == fPraca}"></option>
+				</select>
+			</div>
+			<div class="filtro">
+				<label for="numero">Número da máquina</label>
+				<input type="text" id="numero" name="numero" th:value="${fNumero}" placeholder="Ex: 51" inputmode="numeric" autofocus>
+			</div>
+			<button type="submit" class="btn-custom btn-green"><i class="bi bi-search"></i> Buscar</button>
+		</form>
+
+		<div th:if="${resultados != null}">
+			<div class="vazio" th:if="${#lists.isEmpty(resultados)}">
+				<i class="bi bi-search"></i>
+				Nenhuma máquina ativa com o número <strong th:text="${fNumero}"></strong><span th:if="${fPraca != null and !#strings.isEmpty(fPraca)}" th:text="${' na ' + fPraca}"></span>.
+			</div>
+
+			<div th:unless="${#lists.isEmpty(resultados)}">
+				<p class="aviso" th:if="${#lists.size(resultados) > 1}">
+					Mais de uma máquina com esse número — confira praça e cliente antes de vincular.
+				</p>
+				<p class="aviso">
+					Cofre e Tampa: se a máquina já tiver uma chave desse uso, a anterior sai e vai pro histórico.
+				</p>
+
+				<div class="lista">
+					<div class="item" th:each="m : ${resultados}">
+						<div class="item-main">
+							<div class="maq" th:text="${(m.praca() != null and !#strings.isEmpty(m.praca()) ? m.praca() + ' - ' : '') + m.numero()}">V1 - 51</div>
+							<div class="sub">
+								<span th:text="${m.clienteNome() != null ? m.clienteNome() : '-'}"></span>
+								<span th:if="${m.jogo() != null and !#strings.isEmpty(m.jogo())}" th:text="${' · ' + m.jogo()}"></span>
+							</div>
+						</div>
+
+						<form class="acao-form" method="post" th:action="@{/chaves/{id}/maquinas/vincular(id=${chave.id()})}">
+							<input type="hidden" name="maquinaId" th:value="${m.id()}">
+							<select name="uso" title="Usada como">
+								<option th:each="u : ${usos}" th:value="${u}" th:text="${u.descricao}" th:selected="${u == usoPadrao}"></option>
+							</select>
+							<button type="submit" class="btn-action btn-vincular"><i class="bi bi-link-45deg"></i> Vincular</button>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="card-custom" th:unless="${chave.ativo()}">
+		<div class="vazio" style="padding: 10px;">Chave inativa não pode ser vinculada a máquinas.</div>
+	</div>
+
+	<a href="/chaves" class="btn-custom btn-ghost"><i class="bi bi-arrow-left"></i> Voltar para chaves</a>
+</div>
+
+</body>
+</html>

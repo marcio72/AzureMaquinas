@@ -100,6 +100,7 @@
 		.btn-edit { background: rgba(61, 139, 255, 0.1); color: var(--accent-blue); }
 		.btn-deactivate { background: rgba(255, 77, 77, 0.1); color: var(--accent-red); }
 		.btn-activate { background: rgba(30, 228, 172, 0.1); color: var(--primary-green); }
+		.btn-maquinas { background: rgba(255, 201, 77, 0.1); color: var(--accent-yellow); }
 		.btn-action:hover { filter: brightness(1.2); }
 
 		.codigo-badge { background: #081418; padding: 3px 10px; border-radius: 6px; font-family: monospace; font-size: 14px; color: var(--primary-green); font-weight: 700; }
@@ -225,6 +226,9 @@
 					<td data-label="Ações" class="actions-cell" style="text-align: center; white-space: nowrap;">
 						<a th:href="@{/chaves/editar/{id}(id=${c.id()})}" class="btn-action btn-edit">
 							<i class="bi bi-pencil-square"></i> Editar
+						</a>
+						<a th:href="@{/chaves/{id}/maquinas(id=${c.id()})}" class="btn-action btn-maquinas">
+							<i class="bi bi-link-45deg"></i> Máquinas
 						</a>
 						<a th:if="${c.ativo()}"
 						   th:href="@{/chaves/desativar/{id}(id=${c.id()})}"
