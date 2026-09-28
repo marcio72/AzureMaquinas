@@ -1,515 +1,2088 @@
+```html
 <!DOCTYPE html>
 <html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Cadastro de Cliente e Máquinas</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
     <style>
+
+        /* =========================================================
+           TEMA
+        ========================================================= */
+
         :root {
-            --bg-body: #081418;
-            --bg-card: #10242a;
-            --bg-card-header: #0a1a20;
+            --bg-body: #071114;
+            --bg-card: #0d1b20;
+            --bg-card-2: #101f25;
+            --bg-input: rgba(255, 255, 255, 0.045);
+
             --primary-green: #1ee4ac;
+            --primary-green-dark: #13bd90;
+
             --accent-blue: #3d8bff;
-            --text-white: #ffffff;
-            --text-gray: #8ea1a7;
+
+            --text-white: #f5f7f8;
+            --text-gray: #91a3aa;
+            --text-soft: #b8c5ca;
+
             --border-color: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(30, 228, 172, 0.35);
+
+            --danger: #ff6b6b;
+
+            --shadow:
+                    0 25px 60px rgba(0, 0, 0, 0.35);
+
+            --radius: 18px;
+        }
+
+
+        /* =========================================================
+           BASE
+        ========================================================= */
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
-            background: var(--bg-body) !important;
+            margin: 0;
+            min-height: 100vh;
+
+            background:
+                    radial-gradient(
+                            circle at top right,
+                            rgba(61, 139, 255, 0.08),
+                            transparent 30%
+                    ),
+                    radial-gradient(
+                            circle at top left,
+                            rgba(30, 228, 172, 0.06),
+                            transparent 28%
+                    ),
+                    var(--bg-body);
+
             color: var(--text-white);
+
             font-family: 'Inter', sans-serif;
         }
 
-        .card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            color: var(--text-white);
+
+        /* =========================================================
+           CONTAINER PRINCIPAL
+        ========================================================= */
+
+        .page-wrapper {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 35px 20px 60px;
         }
 
-        .card-header {
-            background: var(--bg-card-header) !important;
+
+        /* =========================================================
+           CABEÇALHO
+        ========================================================= */
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            margin-bottom: 24px;
+        }
+
+        .page-title-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .page-icon {
+            width: 52px;
+            height: 52px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 14px;
+
+            background:
+                    linear-gradient(
+                            135deg,
+                            rgba(30, 228, 172, 0.18),
+                            rgba(61, 139, 255, 0.12)
+                    );
+
+            border: 1px solid rgba(30, 228, 172, 0.18);
+
+            color: var(--primary-green);
+
+            font-size: 24px;
+        }
+
+        .page-title {
+            margin: 0;
+
+            font-size: 25px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .page-subtitle {
+            margin: 4px 0 0;
+
+            color: var(--text-gray);
+            font-size: 13px;
+        }
+
+
+        /* =========================================================
+           CARD PRINCIPAL
+        ========================================================= */
+
+        .main-card {
+            background:
+                    linear-gradient(
+                            180deg,
+                            rgba(255, 255, 255, 0.025),
+                            rgba(255, 255, 255, 0)
+                    ),
+                    var(--bg-card);
+
+            border: 1px solid var(--border-color);
+
+            border-radius: var(--radius);
+
+            box-shadow: var(--shadow);
+
+            overflow: hidden;
+        }
+
+
+        /* =========================================================
+           SEÇÕES
+        ========================================================= */
+
+        .section {
+            padding: 28px 30px;
+
             border-bottom: 1px solid var(--border-color);
-            color: var(--text-white) !important;
         }
-        .card-header i { color: var(--primary-green); }
 
-        .form-label { color: var(--text-gray); font-size: 13px; font-weight: 600; }
+        .section:last-child {
+            border-bottom: none;
+        }
 
-        .form-control, .form-select {
-            background: rgba(255, 255, 255, 0.05);
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+
+            margin-bottom: 22px;
+        }
+
+        .section-number {
+            width: 31px;
+            height: 31px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 9px;
+
+            background: rgba(30, 228, 172, 0.10);
+
+            border: 1px solid rgba(30, 228, 172, 0.16);
+
+            color: var(--primary-green);
+
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .section-title h5 {
+            margin: 0;
+
+            font-size: 17px;
+            font-weight: 700;
+        }
+
+        .section-description {
+            margin: -12px 0 22px 42px;
+
+            color: var(--text-gray);
+
+            font-size: 12px;
+        }
+
+
+        /* =========================================================
+           CAMPOS
+        ========================================================= */
+
+        .form-label {
+            margin-bottom: 7px;
+
+            color: var(--text-soft);
+
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .form-control,
+        .form-select {
+
+            min-height: 45px;
+
+            background: var(--bg-input);
+
             border: 1px solid var(--border-color);
+
+            border-radius: 10px;
+
             color: var(--text-white);
+
+            font-size: 13px;
+
+            transition:
+                    border-color .2s ease,
+                    background .2s ease,
+                    box-shadow .2s ease;
         }
-        .form-control:focus, .form-select:focus {
-            background: rgba(255, 255, 255, 0.08);
+
+        .form-control:hover,
+        .form-select:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+
+            background: rgba(255, 255, 255, 0.065);
+
             border-color: var(--primary-green);
-            box-shadow: 0 0 0 0.2rem rgba(30, 228, 172, 0.15);
+
             color: var(--text-white);
+
+            box-shadow:
+                    0 0 0 3px rgba(30, 228, 172, 0.10);
+
+            outline: none;
         }
-        .form-control::placeholder { color: var(--text-gray); }
-        .form-select option { background: var(--bg-card); color: var(--text-white); }
 
-        .bg-light { background: rgba(255, 255, 255, 0.03) !important; }
-        fieldset.border { border-color: var(--border-color) !important; }
-        .text-muted { color: var(--text-gray) !important; }
-        legend.scheduler-border { color: var(--text-gray) !important; }
-        hr { border-color: var(--border-color); opacity: 1; }
+        .form-control::placeholder {
+            color: #64777e;
+        }
 
-        .btn-outline-secondary { color: var(--text-gray); border-color: var(--border-color); }
-        .btn-outline-secondary:hover { background: rgba(255,255,255,0.08); color: var(--text-white); border-color: var(--border-color); }
-        .btn-secondary { background: rgba(255,255,255,0.08); border-color: var(--border-color); color: var(--text-white); }
-        .btn-secondary:hover { background: rgba(255,255,255,0.15); border-color: var(--border-color); color: var(--text-white); }
-        .btn-success { background: var(--primary-green); border-color: var(--primary-green); color: #081418 !important; font-weight: 700; }
-        .btn-success:hover { background: #17c99a; border-color: #17c99a; }
-        .btn-outline-danger { color: #ff6b6b; border-color: rgba(255,107,107,0.4); }
-        .btn-outline-danger:hover { background: rgba(255,107,107,0.15); color: #ff6b6b; border-color: rgba(255,107,107,0.4); }
+        .form-select option {
+            background: #10242a;
+            color: white;
+        }
 
-        .machine-card {
-            background-color: rgba(255, 255, 255, 0.04);
+
+        /* =========================================================
+           CARD DE MÁQUINA
+        ========================================================= */
+
+        .machine-form-card {
+
+            padding: 22px;
+
+            background:
+                    linear-gradient(
+                            145deg,
+                            rgba(255, 255, 255, 0.035),
+                            rgba(255, 255, 255, 0.015)
+                    );
+
             border: 1px solid var(--border-color);
-            border-radius: .5rem;
-            padding: 1rem;
-            margin-bottom: 1rem;
+
+            border-radius: 14px;
+        }
+
+        .machine-form-header {
+
+            display: flex;
+            align-items: center;
+
+            gap: 10px;
+
+            margin-bottom: 20px;
+
+            color: var(--text-soft);
+
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .machine-form-header i {
+            color: var(--accent-blue);
+            font-size: 17px;
+        }
+
+
+        /* =========================================================
+           LEITURA
+        ========================================================= */
+
+        .reading-box {
+
+            margin-top: 8px;
+
+            padding: 18px;
+
+            background: rgba(0, 0, 0, 0.12);
+
+            border: 1px solid var(--border-color);
+
+            border-radius: 13px;
+        }
+
+        .reading-title {
+
+            display: flex;
+            align-items: center;
+
+            gap: 8px;
+
+            margin-bottom: 14px;
+
+            color: var(--text-soft);
+
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .reading-title i {
+            color: var(--primary-green);
+        }
+
+
+        /* =========================================================
+           BOTÕES
+        ========================================================= */
+
+        .btn {
+
+            border-radius: 10px;
+
+            font-size: 13px;
+            font-weight: 600;
+
+            padding: 10px 17px;
+
+            transition:
+                    transform .15s ease,
+                    background .2s ease,
+                    border-color .2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+
+            background: var(--primary-green);
+
+            border-color: var(--primary-green);
+
+            color: #061411 !important;
+
+            font-weight: 800;
+        }
+
+        .btn-success:hover {
+
+            background: var(--primary-green-dark);
+
+            border-color: var(--primary-green-dark);
+
+            color: #061411 !important;
+        }
+
+        .btn-secondary {
+
+            background: rgba(255, 255, 255, 0.07);
+
+            border-color: var(--border-color);
+
             color: var(--text-white);
         }
-        .machine-card small { color: var(--text-gray); }
+
+        .btn-secondary:hover {
+
+            background: rgba(255, 255, 255, 0.12);
+
+            border-color: rgba(255, 255, 255, 0.15);
+
+            color: white;
+        }
+
+        .btn-outline-secondary {
+
+            color: var(--text-gray);
+
+            border-color: var(--border-color);
+        }
+
+        .btn-outline-secondary:hover {
+
+            background: rgba(255, 255, 255, 0.06);
+
+            color: white;
+
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-outline-danger {
+
+            color: var(--danger);
+
+            border-color: rgba(255, 107, 107, 0.25);
+
+            background: transparent;
+        }
+
+        .btn-outline-danger:hover {
+
+            background: rgba(255, 107, 107, 0.10);
+
+            color: var(--danger);
+
+            border-color: rgba(255, 107, 107, 0.40);
+        }
+
+
+        /* =========================================================
+           LISTA DE MÁQUINAS
+        ========================================================= */
+
+        .machines-header {
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            margin-bottom: 15px;
+        }
+
+        .machines-title {
+
+            display: flex;
+            align-items: center;
+            gap: 9px;
+
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .machines-title i {
+            color: var(--accent-blue);
+        }
 
         .summary-link {
-            cursor: pointer;
-            color: var(--accent-blue) !important;
-            text-decoration: none;
-            font-weight: 500;
-        }
-        .summary-link:hover { text-decoration: underline; }
 
-        /* Estilo para a legenda do fieldset */
-        legend.scheduler-border {
-            font-size: 1rem !important;
-            font-weight: 500 !important;
-            text-align: left !important;
-            width: auto;
-            padding: 0 10px;
-            border-bottom: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+
+            padding: 8px 12px;
+
+            border-radius: 8px;
+
+            background: rgba(61, 139, 255, 0.08);
+
+            border: 1px solid rgba(61, 139, 255, 0.14);
+
+            color: #72aaff !important;
+
+            text-decoration: none;
+
+            font-size: 12px;
+            font-weight: 600;
+
+            cursor: pointer;
+
+            transition: .2s ease;
+        }
+
+        .summary-link:hover {
+
+            background: rgba(61, 139, 255, 0.14);
+
+            color: #9ac2ff !important;
+        }
+
+
+        /* =========================================================
+           MACHINE CARD DA LISTA
+        ========================================================= */
+
+        .machine-card {
+
+            position: relative;
+
+            margin-bottom: 12px;
+
+            padding: 17px;
+
+            background: rgba(255, 255, 255, 0.035);
+
+            border: 1px solid var(--border-color);
+
+            border-radius: 12px;
+
+            color: var(--text-white);
+
+            transition:
+                    border-color .2s ease,
+                    background .2s ease;
+        }
+
+        .machine-card:hover {
+
+            background: rgba(255, 255, 255, 0.045);
+
+            border-color: rgba(30, 228, 172, 0.18);
+        }
+
+        .machine-card strong {
+            color: var(--text-white);
+        }
+
+        .machine-card small {
+            color: var(--text-gray);
+            font-size: 11px;
+        }
+
+        .machine-card hr {
+            border-color: var(--border-color);
+            opacity: 1;
+        }
+
+
+        /* =========================================================
+           ESTADO VAZIO
+        ========================================================= */
+
+        #maquinas_container > p {
+
+            padding: 25px;
+
+            margin: 0;
+
+            text-align: center;
+
+            background: rgba(255, 255, 255, 0.02);
+
+            border: 1px dashed var(--border-color);
+
+            border-radius: 12px;
+
+            color: var(--text-gray) !important;
+
+            font-size: 12px;
+        }
+
+
+        /* =========================================================
+           RODAPÉ
+        ========================================================= */
+
+        .actions {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            gap: 15px;
+
+            padding: 22px 30px;
+
+            background: rgba(0, 0, 0, 0.12);
+
+            border-top: 1px solid var(--border-color);
+        }
+
+        .btn-save {
+
+            min-width: 245px;
+
+            padding: 13px 22px;
+
+            font-size: 13px;
+        }
+
+
+        /* =========================================================
+           TEXTOS BOOTSTRAP
+        ========================================================= */
+
+        .text-muted {
             color: var(--text-gray) !important;
         }
+
+        hr {
+            border-color: var(--border-color);
+
+            opacity: 1;
+        }
+
+
+        /* =========================================================
+           RESPONSIVO
+        ========================================================= */
+
+        @media (max-width: 768px) {
+
+            .page-wrapper {
+                padding: 20px 12px 35px;
+            }
+
+            .page-header {
+                margin-bottom: 18px;
+            }
+
+            .page-icon {
+                width: 44px;
+                height: 44px;
+
+                font-size: 20px;
+            }
+
+            .page-title {
+                font-size: 20px;
+            }
+
+            .page-subtitle {
+                font-size: 11px;
+            }
+
+            .section {
+                padding: 22px 18px;
+            }
+
+            .actions {
+
+                flex-direction: column-reverse;
+
+                align-items: stretch;
+
+                padding: 18px;
+            }
+
+            .actions .btn,
+            .btn-save {
+                width: 100%;
+            }
+
+            .machine-form-card {
+                padding: 17px;
+            }
+
+            .machines-header {
+                align-items: flex-start;
+
+                flex-direction: column;
+
+                gap: 10px;
+            }
+        }
+
+
+        @media (max-width: 480px) {
+
+            .page-title {
+                font-size: 18px;
+            }
+
+            .page-icon {
+                width: 40px;
+                height: 40px;
+
+                border-radius: 11px;
+            }
+
+            .section-title h5 {
+                font-size: 15px;
+            }
+
+            .form-control,
+            .form-select {
+                min-height: 43px;
+            }
+        }
+
     </style>
 </head>
+
+
 <body>
 
-<div class="container py-5">
-    <div class="card shadow-sm">
-        <div class="card-header">
-            <h4 class="mb-0"><i class="bi bi-person-plus-fill"></i> Novo Cliente e Máquinas</h4>
+<div class="page-wrapper">
+
+    <!-- =====================================================
+         CABEÇALHO
+    ====================================================== -->
+
+    <div class="page-header">
+
+        <div class="page-title-area">
+
+            <div class="page-icon">
+                <i class="bi bi-person-plus-fill"></i>
+            </div>
+
+            <div>
+                <h1 class="page-title">
+                    Novo Cliente e Máquinas
+                </h1>
+
+                <p class="page-subtitle">
+                    Cadastre o ponto e suas máquinas no sistema
+                </p>
+            </div>
+
         </div>
-        <div class="card-body">
 
-            <!-- DADOS DO CLIENTE -->
-            <h5 class="mb-3">1. Dados do Cliente</h5>
-            <div id="form-cliente" class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label">Nome do Ponto</label>
-                    <input type="text" id="nomCliente" class="form-control" th:value="${nomePonto}" required>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Logradouro</label>
-                    <input type="text" id="logradouro" class="form-control" required>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Bairro</label>
-                    <input type="text" id="bairro" class="form-control" required>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Telefone</label>
-                    <input type="text" id="telefone" class="form-control" required>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Contato</label>
-                    <input type="text" id="contato" class="form-control">
-                </div>
-
-                <!-- CAMPO PRAÇA: vai pra coluna `praca` de Tbl_Cliente -->
-                <div class="col-md-4">
-                    <label class="form-label">Praça</label>
-                    <select id="praca" class="form-select" required>
-                        <option value="">Selecione...</option>
-                        <option th:each="i : ${#numbers.sequence(1, 10)}" th:value="'V' + ${i}" th:text="'V' + ${i}"></option>
-                    </select>
-                </div>
-
-                <div class="col-md-4">
-                    <label class="form-label">Região</label>
-                    <select id="regiao" class="form-select" required>
-                        <option value="">Selecione...</option>
-                        <option value="1">Norte</option>
-                        <option value="2">Sul</option>
-                        <option value="3">Leste</option>
-                        <option value="4">Oeste</option>
-                        <option value="5">Centro</option>
-                        <option value="6">ABC</option>
-                    </select>
-                </div>
-            </div>
-
-            <hr class="my-4">
-
-            <h5 class="mb-3">2. Adicionar Máquinas</h5>
-            <div class="card p-3 mb-3">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label">Nº da Máquina</label>
-                        <input type="text" id="maq_nome" class="form-control">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Nome do Jogo</label>
-                        <input type="text" id="maq_jogo" class="form-control">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Nº da Placa</label>
-                        <input type="text" id="maq_placa" class="form-control">
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label">Observação</label>
-                        <input type="text" id="maq_obs" class="form-control">
-                    </div>
-
-                    <!-- Seção Leitura Inicial -->
-                    <div class="col-12 mt-3">
-                        <fieldset class="border p-3 rounded bg-light">
-                            <legend class="float-none w-auto px-2 h6 scheduler-border text-muted">Leitura Inicial</legend>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <label for="Entrada" class="form-label">Entrada</label>
-                                    <input type="text" id="Entrada" class="form-control">
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="Saida" class="form-label">Saída</label>
-                                    <input type="text" id="Saida" class="form-control">
-                                </div>
-                            </div>
-                        </fieldset>
-                    </div>
-
-                    <!-- Botão de adicionar alinhado à direita -->
-                    <div class="col-12 text-end">
-                        <button type="button" class="btn btn-secondary mt-3" onclick="adicionarMaquina()">
-                            <i class="bi bi-plus-circle"></i> Adicionar à Lista
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <h5 class="mb-3">Máquinas a serem Cadastradas</h5>
-            <div id="maquinas_container">
-                <p class="text-muted">Nenhuma máquina adicionada.</p>
-            </div>
-
-            <div class="mt-4 d-flex justify-content-between">
-                <a href="/menu" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Voltar ao Menu</a>
-                <button type="button" class="btn btn-success btn-lg" onclick="salvarTudo()">
-                    <i class="bi bi-check-circle-fill"></i> Salvar Cliente e Máquinas
-                </button>
-            </div>
-        </div>
     </div>
+
+
+    <!-- =====================================================
+         CARD PRINCIPAL
+    ====================================================== -->
+
+    <div class="main-card">
+
+
+        <!-- =================================================
+             1 — DADOS DO CLIENTE
+        ================================================== -->
+
+        <section class="section">
+
+            <div class="section-title">
+
+                <div class="section-number">
+                    01
+                </div>
+
+                <h5>
+                    Dados do Cliente
+                </h5>
+
+            </div>
+
+            <div class="section-description">
+                Informe os dados principais do ponto de atendimento.
+            </div>
+
+
+            <div id="form-cliente" class="row g-3">
+
+
+                <!-- Nome -->
+
+                <div class="col-md-6">
+
+                    <label class="form-label">
+                        Nome do Ponto
+                    </label>
+
+                    <input
+                            type="text"
+                            id="nomCliente"
+                            class="form-control"
+                            th:value="${nomePonto}"
+                            placeholder="Ex.: Bar do João"
+                            required>
+
+                </div>
+
+
+                <!-- Logradouro -->
+
+                <div class="col-md-6">
+
+                    <label class="form-label">
+                        Logradouro
+                    </label>
+
+                    <input
+                            type="text"
+                            id="logradouro"
+                            class="form-control"
+                            placeholder="Rua, avenida, número..."
+                            required>
+
+                </div>
+
+
+                <!-- Bairro -->
+
+                <div class="col-md-4">
+
+                    <label class="form-label">
+                        Bairro
+                    </label>
+
+                    <input
+                            type="text"
+                            id="bairro"
+                            class="form-control"
+                            placeholder="Informe o bairro"
+                            required>
+
+                </div>
+
+
+                <!-- Telefone -->
+
+                <div class="col-md-4">
+
+                    <label class="form-label">
+                        Telefone
+                    </label>
+
+                    <input
+                            type="text"
+                            id="telefone"
+                            class="form-control"
+                            placeholder="(11) 99999-9999"
+                            required>
+
+                </div>
+
+
+                <!-- Contato -->
+
+                <div class="col-md-4">
+
+                    <label class="form-label">
+                        Contato
+                    </label>
+
+                    <input
+                            type="text"
+                            id="contato"
+                            class="form-control"
+                            placeholder="Nome do responsável">
+
+                </div>
+
+
+                <!-- Praça -->
+
+                <div class="col-md-4">
+
+                    <label class="form-label">
+                        Praça
+                    </label>
+
+                    <select
+                            id="praca"
+                            class="form-select"
+                            required>
+
+                        <option value="">
+                            Selecione...
+                        </option>
+
+                        <option
+                                th:each="i : ${#numbers.sequence(1, 10)}"
+                                th:value="'V' + ${i}"
+                                th:text="'V' + ${i}">
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- Região -->
+
+                <div class="col-md-4">
+
+                    <label class="form-label">
+                        Região
+                    </label>
+
+                    <select
+                            id="regiao"
+                            class="form-select"
+                            required>
+
+                        <option value="">
+                            Selecione...
+                        </option>
+
+                        <option value="1">
+                            Norte
+                        </option>
+
+                        <option value="2">
+                            Sul
+                        </option>
+
+                        <option value="3">
+                            Leste
+                        </option>
+
+                        <option value="4">
+                            Oeste
+                        </option>
+
+                        <option value="5">
+                            Centro
+                        </option>
+
+                        <option value="6">
+                            ABC
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             2 — MÁQUINA
+        ================================================== -->
+
+        <section class="section">
+
+            <div class="section-title">
+
+                <div class="section-number">
+                    02
+                </div>
+
+                <h5>
+                    Adicionar Máquina
+                </h5>
+
+            </div>
+
+            <div class="section-description">
+                Cadastre uma máquina por vez e adicione-a à lista.
+            </div>
+
+
+            <div class="machine-form-card">
+
+
+                <div class="machine-form-header">
+
+                    <i class="bi bi-hdd-network"></i>
+
+                    <span>
+                        Informações da máquina
+                    </span>
+
+                </div>
+
+
+                <div class="row g-3">
+
+
+                    <!-- Número -->
+
+                    <div class="col-md-4">
+
+                        <label class="form-label">
+                            Nº da Máquina
+                        </label>
+
+                        <input
+                                type="text"
+                                id="maq_nome"
+                                class="form-control"
+                                placeholder="Ex.: 101">
+
+                    </div>
+
+
+                    <!-- Jogo -->
+
+                    <div class="col-md-4">
+
+                        <label class="form-label">
+                            Nome do Jogo
+                        </label>
+
+                        <input
+                                type="text"
+                                id="maq_jogo"
+                                class="form-control"
+                                placeholder="Ex.: Bingo 90">
+
+                    </div>
+
+
+                    <!-- Placa -->
+
+                    <div class="col-md-4">
+
+                        <label class="form-label">
+                            Nº da Placa
+                        </label>
+
+                        <input
+                                type="text"
+                                id="maq_placa"
+                                class="form-control"
+                                placeholder="Número da placa">
+
+                    </div>
+
+
+                    <!-- Observação -->
+
+                    <div class="col-12">
+
+                        <label class="form-label">
+                            Observação
+                        </label>
+
+                        <input
+                                type="text"
+                                id="maq_obs"
+                                class="form-control"
+                                placeholder="Alguma informação importante sobre a máquina">
+
+                    </div>
+
+
+                    <!-- LEITURA -->
+
+                    <div class="col-12">
+
+                        <div class="reading-box">
+
+                            <div class="reading-title">
+
+                                <i class="bi bi-speedometer2"></i>
+
+                                <span>
+                                    Leitura Inicial
+                                </span>
+
+                            </div>
+
+
+                            <div class="row g-3">
+
+                                <div class="col-md-6">
+
+                                    <label
+                                            for="Entrada"
+                                            class="form-label">
+
+                                        Entrada
+
+                                    </label>
+
+                                    <input
+                                            type="text"
+                                            id="Entrada"
+                                            class="form-control"
+                                            placeholder="0">
+
+                                </div>
+
+
+                                <div class="col-md-6">
+
+                                    <label
+                                            for="Saida"
+                                            class="form-label">
+
+                                        Saída
+
+                                    </label>
+
+                                    <input
+                                            type="text"
+                                            id="Saida"
+                                            class="form-control"
+                                            placeholder="0">
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ADICIONAR -->
+
+                    <div class="col-12 text-end">
+
+                        <button
+                                type="button"
+                                class="btn btn-secondary mt-2"
+                                onclick="adicionarMaquina()">
+
+                            <i class="bi bi-plus-circle me-1"></i>
+
+                            Adicionar à Lista
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             3 — LISTA DE MÁQUINAS
+        ================================================== -->
+
+        <section class="section">
+
+            <div class="section-title">
+
+                <div class="section-number">
+                    03
+                </div>
+
+                <h5>
+                    Máquinas a serem cadastradas
+                </h5>
+
+            </div>
+
+            <div class="section-description">
+                Confira as máquinas adicionadas antes de salvar.
+            </div>
+
+
+            <div id="maquinas_container">
+
+                <p class="text-muted">
+                    Nenhuma máquina adicionada.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             AÇÕES
+        ================================================== -->
+
+        <div class="actions">
+
+
+            <a
+                    href="/menu"
+                    class="btn btn-outline-secondary">
+
+                <i class="bi bi-arrow-left me-1"></i>
+
+                Voltar ao Menu
+
+            </a>
+
+
+            <button
+                    type="button"
+                    class="btn btn-success btn-save"
+                    onclick="salvarTudo()">
+
+                <i class="bi bi-check-circle-fill me-1"></i>
+
+                Salvar Cliente e Máquinas
+
+            </button>
+
+
+        </div>
+
+    </div>
+
 </div>
 
+
+<!-- =========================================================
+     SCRIPT ORIGINAL
+     NÃO ALTERADO
+========================================================= -->
+
 <script>
+
     /* ========= CONFIG ========= */
-    // URL do Form_execucao (com técnico fixo Admin)
-    const FORM_EXECUCAO_URL = 'http://localhost:8080/form_execucao?tecnico=Admin';
+
+    const FORM_EXECUCAO_URL =
+        'http://localhost:8080/form_execucao?tecnico=Admin';
+
 
     /* ========= ESTADO ========= */
+
     let maquinasAdicionadas = [];
 
-    /* =======================================================
-       PRÉ-PREENCHER COM OS DADOS DO PEDIDO (vindo do form_execucao)
-       Formato esperado (3 linhas):
-         Nome do Ponto
-         Logradouro - Bairro
-         Telefone / Contato
-    ========================================================= */
-    function parseTextoPedido(texto) {
-        const linhas = texto.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-        const dados = { nomeCliente: '', logradouro: '', bairro: '', telefone: '', contato: '' };
 
-        if (linhas[0]) dados.nomeCliente = linhas[0];
+    /* =======================================================
+       PRÉ-PREENCHER COM OS DADOS DO PEDIDO
+    ========================================================= */
+
+    function parseTextoPedido(texto) {
+
+        const linhas =
+            texto
+                .split('\n')
+                .map(l => l.trim())
+                .filter(l => l.length > 0);
+
+        const dados = {
+            nomeCliente: '',
+            logradouro: '',
+            bairro: '',
+            telefone: '',
+            contato: ''
+        };
+
+        if (linhas[0])
+            dados.nomeCliente = linhas[0];
 
         if (linhas[1]) {
-            const partes = linhas[1].split(' - ');
-            dados.logradouro = (partes[0] || '').trim();
-            dados.bairro = partes.length > 1 ? partes.slice(1).join(' - ').trim() : '';
+
+            const partes =
+                linhas[1].split(' - ');
+
+            dados.logradouro =
+                (partes[0] || '').trim();
+
+            dados.bairro =
+                partes.length > 1
+                    ? partes.slice(1).join(' - ').trim()
+                    : '';
         }
 
         if (linhas[2]) {
-            const partes = linhas[2].split(' - ');
-            dados.telefone = (partes[0] || '').trim();
-            dados.contato = partes.length > 1 ? partes.slice(1).join(' - ').trim() : '';
+
+            const partes =
+                linhas[2].split(' - ');
+
+            dados.telefone =
+                (partes[0] || '').trim();
+
+            dados.contato =
+                partes.length > 1
+                    ? partes.slice(1).join(' - ').trim()
+                    : '';
         }
 
         return dados;
     }
 
+
     function preencherComDadosDoPedido() {
-        const params = new URLSearchParams(window.location.search);
-        const pedidoTexto = params.get('pedidoTexto');
-        if (!pedidoTexto) return;
 
-        const dados = parseTextoPedido(pedidoTexto);
+        const params =
+            new URLSearchParams(window.location.search);
 
-        const campoNome = document.getElementById('nomCliente');
-        if (campoNome && !campoNome.value) campoNome.value = dados.nomeCliente;
+        const pedidoTexto =
+            params.get('pedidoTexto');
 
-        const campoLog = document.getElementById('logradouro');
-        if (campoLog && !campoLog.value) campoLog.value = dados.logradouro;
+        if (!pedidoTexto)
+            return;
 
-        const campoBairro = document.getElementById('bairro');
-        if (campoBairro && !campoBairro.value) campoBairro.value = dados.bairro;
+        const dados =
+            parseTextoPedido(pedidoTexto);
 
-        const campoTelefone = document.getElementById('telefone');
-        if (campoTelefone && !campoTelefone.value) campoTelefone.value = dados.telefone;
 
-        const campoContato = document.getElementById('contato');
-        if (campoContato && !campoContato.value) campoContato.value = dados.contato;
+        const campoNome =
+            document.getElementById('nomCliente');
+
+        if (campoNome && !campoNome.value)
+            campoNome.value = dados.nomeCliente;
+
+
+        const campoLog =
+            document.getElementById('logradouro');
+
+        if (campoLog && !campoLog.value)
+            campoLog.value = dados.logradouro;
+
+
+        const campoBairro =
+            document.getElementById('bairro');
+
+        if (campoBairro && !campoBairro.value)
+            campoBairro.value = dados.bairro;
+
+
+        const campoTelefone =
+            document.getElementById('telefone');
+
+        if (campoTelefone && !campoTelefone.value)
+            campoTelefone.value = dados.telefone;
+
+
+        const campoContato =
+            document.getElementById('contato');
+
+        if (campoContato && !campoContato.value)
+            campoContato.value = dados.contato;
     }
 
-    document.addEventListener('DOMContentLoaded', preencherComDadosDoPedido);
+
+    document.addEventListener(
+        'DOMContentLoaded',
+        preencherComDadosDoPedido
+    );
+
 
     /* ========= UI ========= */
+
     function toggleListaMaquinas() {
-        const lista = document.getElementById('lista-maquinas-detalhes');
+
+        const lista =
+            document.getElementById(
+                'lista-maquinas-detalhes'
+            );
+
         if (lista) {
-            lista.style.display = (lista.style.display === 'none' || lista.style.display === '') ? 'block' : 'none';
+
+            lista.style.display =
+                (
+                    lista.style.display === 'none' ||
+                    lista.style.display === ''
+                )
+                    ? 'block'
+                    : 'none';
         }
     }
 
+
     function renderizarMaquinas() {
-        const container = document.getElementById('maquinas_container');
+
+        const container =
+            document.getElementById(
+                'maquinas_container'
+            );
+
         container.innerHTML = '';
 
+
         if (maquinasAdicionadas.length === 0) {
-            container.innerHTML = '<p class="text-muted">Nenhuma máquina adicionada.</p>';
+
+            container.innerHTML =
+                '<p class="text-muted">Nenhuma máquina adicionada.</p>';
+
             return;
         }
 
-        const summaryLink = document.createElement('a');
-        summaryLink.href = 'javascript:void(0);';
-        summaryLink.className = 'summary-link mb-2 d-inline-block';
-        summaryLink.onclick = toggleListaMaquinas;
-        summaryLink.innerHTML = `<i class="bi bi-hdd-stack"></i> <strong>${maquinasAdicionadas.length}</strong> máquinas adicionadas (clique para ver/ocultar)`;
+
+        const summaryLink =
+            document.createElement('a');
+
+        summaryLink.href =
+            'javascript:void(0);';
+
+        summaryLink.className =
+            'summary-link mb-2 d-inline-flex';
+
+        summaryLink.onclick =
+            toggleListaMaquinas;
+
+        summaryLink.innerHTML =
+            `<i class="bi bi-hdd-stack"></i>
+             <strong>${maquinasAdicionadas.length}</strong>
+             máquinas adicionadas
+             <span>— clique para ver/ocultar</span>`;
+
+
         container.appendChild(summaryLink);
 
-        const listContainer = document.createElement('div');
-        listContainer.id = 'lista-maquinas-detalhes';
-        listContainer.style.display = 'none';
 
-        maquinasAdicionadas.forEach((maq, index) => {
-            const div = document.createElement('div');
-            div.className = 'machine-card';
-            div.innerHTML = `
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <strong>Máquina:</strong> ${maq.nom_maq} | <strong>Jogo:</strong> ${maq.nom_jogo}<br>
-                        <small><strong>Placa:</strong> ${maq.numeroPlaca || '-'} | <strong>Obs:</strong> ${maq.obs || '-'}</small>
+        const listContainer =
+            document.createElement('div');
+
+        listContainer.id =
+            'lista-maquinas-detalhes';
+
+        listContainer.style.display =
+            'none';
+
+
+        maquinasAdicionadas.forEach(
+            (maq, index) => {
+
+                const div =
+                    document.createElement('div');
+
+                div.className =
+                    'machine-card';
+
+
+                div.innerHTML = `
+
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+
+                        <div>
+
+                            <div class="mb-2">
+
+                                <strong>
+                                    Máquina:
+                                </strong>
+
+                                ${maq.nom_maq}
+
+                                <span class="mx-1 text-muted">
+                                    •
+                                </span>
+
+                                <strong>
+                                    Jogo:
+                                </strong>
+
+                                ${maq.nom_jogo}
+
+                            </div>
+
+                            <small>
+
+                                <strong>
+                                    Placa:
+                                </strong>
+
+                                ${maq.numeroPlaca || '-'}
+
+                                <span class="mx-1">
+                                    •
+                                </span>
+
+                                <strong>
+                                    Obs:
+                                </strong>
+
+                                ${maq.obs || '-'}
+
+                            </small>
+
+                        </div>
+
+
+                        <button
+                                type="button"
+                                class="btn btn-sm btn-outline-danger"
+                                onclick="removerMaquina(${index})"
+                                title="Remover máquina">
+
+                            <i class="bi bi-trash"></i>
+
+                        </button>
+
                     </div>
-                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removerMaquina(${index})">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </div>
-                <hr class="my-2">
-                <small><strong>Leitura:</strong> E: ${maq.entrada || '0'} | S: ${maq.saida || '0'}</small>
-            `;
-            listContainer.appendChild(div);
-        });
+
+
+                    <hr class="my-3">
+
+
+                    <small>
+
+                        <i class="bi bi-speedometer2 me-1"></i>
+
+                        <strong>
+                            Leitura:
+                        </strong>
+
+                        E: ${maq.entrada || '0'}
+
+                        <span class="mx-2">
+                            |
+                        </span>
+
+                        S: ${maq.saida || '0'}
+
+                    </small>
+
+                `;
+
+
+                listContainer.appendChild(div);
+
+            }
+        );
+
 
         container.appendChild(listContainer);
     }
 
+
     /* ========= AÇÕES ========= */
+
     function adicionarMaquina() {
-        const nome = document.getElementById('maq_nome').value;
-        const jogo = document.getElementById('maq_jogo').value;
-        const placa = document.getElementById('maq_placa').value;
-        const obs = document.getElementById('maq_obs').value;
-        const entrada = document.getElementById('Entrada').value;
-        const saida = document.getElementById('Saida').value;
+
+        const nome =
+            document.getElementById(
+                'maq_nome'
+            ).value;
+
+        const jogo =
+            document.getElementById(
+                'maq_jogo'
+            ).value;
+
+        const placa =
+            document.getElementById(
+                'maq_placa'
+            ).value;
+
+        const obs =
+            document.getElementById(
+                'maq_obs'
+            ).value;
+
+        const entrada =
+            document.getElementById(
+                'Entrada'
+            ).value;
+
+        const saida =
+            document.getElementById(
+                'Saida'
+            ).value;
+
 
         if (!nome || !jogo) {
-            alert('Preencha pelo menos o Nº da Máquina e o Nome do Jogo.');
+
+            alert(
+                'Preencha pelo menos o Nº da Máquina e o Nome do Jogo.'
+            );
+
             return;
         }
 
+
         const maquina = {
+
             nom_maq: nome,
+
             nom_jogo: jogo,
+
             numeroPlaca: placa,
+
             obs: obs,
+
             entrada: entrada,
+
             saida: saida
         };
 
-        maquinasAdicionadas.push(maquina);
+
+        maquinasAdicionadas.push(
+            maquina
+        );
+
+
         renderizarMaquinas();
 
-        // Limpa campos do formulário da máquina
-        document.getElementById('maq_nome').value = '';
-        document.getElementById('maq_jogo').value = '';
-        document.getElementById('maq_placa').value = '';
-        document.getElementById('maq_obs').value = '';
-        document.getElementById('Entrada').value = '';
-        document.getElementById('Saida').value = '';
-        document.getElementById('maq_nome').focus();
 
-        // Atualiza ponte
-        if (typeof sincronizarPonteExecucao === 'function') {
-            try { sincronizarPonteExecucao(); } catch (e) { console.warn(e); }
+        document.getElementById(
+            'maq_nome'
+        ).value = '';
+
+        document.getElementById(
+            'maq_jogo'
+        ).value = '';
+
+        document.getElementById(
+            'maq_placa'
+        ).value = '';
+
+        document.getElementById(
+            'maq_obs'
+        ).value = '';
+
+        document.getElementById(
+            'Entrada'
+        ).value = '';
+
+        document.getElementById(
+            'Saida'
+        ).value = '';
+
+
+        document.getElementById(
+            'maq_nome'
+        ).focus();
+
+
+        if (
+            typeof sincronizarPonteExecucao ===
+            'function'
+        ) {
+
+            try {
+
+                sincronizarPonteExecucao();
+
+            } catch (e) {
+
+                console.warn(e);
+
+            }
         }
     }
+
 
     function removerMaquina(index) {
-        maquinasAdicionadas.splice(index, 1);
+
+        maquinasAdicionadas.splice(
+            index,
+            1
+        );
+
+
         renderizarMaquinas();
 
-        // Atualiza ponte
-        if (typeof sincronizarPonteExecucao === 'function') {
-            try { sincronizarPonteExecucao(); } catch (e) { console.warn(e); }
+
+        if (
+            typeof sincronizarPonteExecucao ===
+            'function'
+        ) {
+
+            try {
+
+                sincronizarPonteExecucao();
+
+            } catch (e) {
+
+                console.warn(e);
+
+            }
         }
     }
 
+
     function salvarTudo() {
-        const pracaSelecionada = document.getElementById('praca').value;
+
+        const pracaSelecionada =
+            document.getElementById(
+                'praca'
+            ).value;
+
+
         const cliente = {
-            nomCliente: (document.getElementById('nomCliente').value || '').toUpperCase(),
-            logradouro: document.getElementById('logradouro').value,
-            bairro: document.getElementById('bairro').value,
-            telefone: document.getElementById('telefone').value,
-            contato: document.getElementById('contato').value,
-            praca: pracaSelecionada,
-            leiturista: parseInt((pracaSelecionada || '').replace('V', '')) || null,
-            regiao: parseInt(document.getElementById('regiao').value),
+
+            nomCliente:
+                (
+                    document.getElementById(
+                        'nomCliente'
+                    ).value || ''
+                ).toUpperCase(),
+
+            logradouro:
+            document.getElementById(
+                'logradouro'
+            ).value,
+
+            bairro:
+            document.getElementById(
+                'bairro'
+            ).value,
+
+            telefone:
+            document.getElementById(
+                'telefone'
+            ).value,
+
+            contato:
+            document.getElementById(
+                'contato'
+            ).value,
+
+            praca:
+            pracaSelecionada,
+
+            leiturista:
+                parseInt(
+                    (
+                        pracaSelecionada || ''
+                    ).replace('V', '')
+                ) || null,
+
+            regiao:
+                parseInt(
+                    document.getElementById(
+                        'regiao'
+                    ).value
+                ),
+
             ativo: true,
-            dtCadastro: new Date().toISOString()
+
+            dtCadastro:
+                new Date().toISOString()
         };
 
-        if (!cliente.nomCliente || !cliente.logradouro || !cliente.bairro) {
-            alert('Por favor, preencha todos os dados do cliente.');
+
+        if (
+            !cliente.nomCliente ||
+            !cliente.logradouro ||
+            !cliente.bairro
+        ) {
+
+            alert(
+                'Por favor, preencha todos os dados do cliente.'
+            );
+
             return;
         }
 
+
         const payload = {
+
             cliente: cliente,
-            maquinas: maquinasAdicionadas.map(m => ({
-                // Envia apenas o que o backend espera
-                nom_maq: m.nom_maq,
-                nom_jogo: m.nom_jogo,
-                numeroPlaca: m.numeroPlaca,
-                obs: m.obs
-            }))
+
+            maquinas:
+                maquinasAdicionadas.map(
+                    m => ({
+
+                        nom_maq:
+                        m.nom_maq,
+
+                        nom_jogo:
+                        m.nom_jogo,
+
+                        numeroPlaca:
+                        m.numeroPlaca,
+
+                        obs:
+                        m.obs
+                    })
+                )
         };
 
-        fetch('/api/cadastros/cliente-com-maquinas', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        })
-        .then(response => {
-            if (response.ok) {
-                // Volta pra tela de execução, levando o resumo direto na URL
-                // (em vez de localStorage, que ficava "vazando" entre abas/execuções diferentes)
-                const params = new URLSearchParams(window.location.search);
-                const solicitacaoId = params.get('solicitacaoId');
-                const idProblema = params.get('idProblema');
-                const tecnico = params.get('tecnico') || '';
-                const texto = montarResumoInstalacao();
 
-                if (solicitacaoId && idProblema) {
-                    const qs = new URLSearchParams({
-                        solicitacaoId: solicitacaoId,
-                        idProblema: idProblema,
-                        tecnico: tecnico,
-                        resumoInstalacao: texto
-                    }).toString();
-                    window.location.href = '/form_execucao?' + qs;
-                } else {
-                    // Não veio de uma execução (acesso direto pelo menu/dashboard) — volta pro menu
-                    alert('Cliente e máquinas cadastrados com sucesso!');
-                    window.location.href = '/menu';
-                }
-            } else {
-                return response.text().then(text => {
-                    throw new Error(text || ('Status ' + response.status));
-                });
+        fetch(
+            '/api/cadastros/cliente-com-maquinas',
+            {
+
+                method: 'POST',
+
+                headers: {
+                    'Content-Type':
+                        'application/json'
+                },
+
+                body:
+                    JSON.stringify(payload)
             }
-        })
-        .catch(err => {
-            console.error('Erro ao cadastrar:', err);
-            alert('Erro ao cadastrar: ' + (err && err.message ? err.message : err));
-        });
+        )
+
+            .then(response => {
+
+                if (response.ok) {
+
+                    const params =
+                        new URLSearchParams(
+                            window.location.search
+                        );
+
+                    const solicitacaoId =
+                        params.get(
+                            'solicitacaoId'
+                        );
+
+                    const idProblema =
+                        params.get(
+                            'idProblema'
+                        );
+
+                    const tecnico =
+                        params.get(
+                            'tecnico'
+                        ) || '';
+
+                    const texto =
+                        montarResumoInstalacao();
+
+
+                    if (
+                        solicitacaoId &&
+                        idProblema
+                    ) {
+
+                        const qs =
+                            new URLSearchParams({
+
+                                solicitacaoId:
+                                solicitacaoId,
+
+                                idProblema:
+                                idProblema,
+
+                                tecnico:
+                                tecnico,
+
+                                resumoInstalacao:
+                                texto
+
+                            }).toString();
+
+
+                        window.location.href =
+                            '/form_execucao?' +
+                            qs;
+
+                    } else {
+
+                        alert(
+                            'Cliente e máquinas cadastrados com sucesso!'
+                        );
+
+                        window.location.href =
+                            '/menu';
+                    }
+
+                } else {
+
+                    return response
+                        .text()
+                        .then(text => {
+
+                            throw new Error(
+                                text ||
+                                (
+                                    'Status ' +
+                                    response.status
+                                )
+                            );
+
+                        });
+                }
+
+            })
+
+            .catch(err => {
+
+                console.error(
+                    'Erro ao cadastrar:',
+                    err
+                );
+
+                alert(
+                    'Erro ao cadastrar: ' +
+                    (
+                        err &&
+                        err.message
+                            ? err.message
+                            : err
+                    )
+                );
+
+            });
     }
 
-    /* ========= PONTE COM O FORM_EXECUCAO (localStorage) ========= */
-    const BRIDGE_KEY = 'form_execucao_o_que_foi_feito';
 
-    /** Monta um texto-resumo formatado no padrão solicitado */
+    /* ========= PONTE COM O FORM_EXECUCAO ========= */
+
+    const BRIDGE_KEY =
+        'form_execucao_o_que_foi_feito';
+
+
     function montarResumoInstalacao() {
-        // Dados do cliente
-        const nomCliente = (document.getElementById('nomCliente').value || '').trim();
-        const logradouro = (document.getElementById('logradouro').value || '').trim();
-        const bairro = (document.getElementById('bairro').value || '').trim();
-        const telefone = (document.getElementById('telefone').value || '').trim();
-        const contato = (document.getElementById('contato').value || '').trim();
-        const praca = (document.getElementById('praca').value || '').trim();
 
-        // Cabeçalho no formato do exemplo
-        let resumo = `NOVO PONTO \n`;
-        resumo += `${nomCliente || '-'}\n`;
-        resumo += `${logradouro || '-'} - ${bairro || '-'}\n`;
-        resumo += `Contato: ${contato || '-'}\n`;
-        resumo += `Tel.: ${telefone || '-'}\n`;
-        resumo += `Praça: ${praca || '-'}\n\n`;
+        const nomCliente =
+            (
+                document.getElementById(
+                    'nomCliente'
+                ).value || ''
+            ).trim();
 
-        // Máquinas (LEITURA INICIAL)
-        if (Array.isArray(maquinasAdicionadas) && maquinasAdicionadas.length > 0) {
-            resumo += `LEITURA INICIAL \n`;
-            maquinasAdicionadas.forEach((m, i) => {
-                const num = m.nom_maq || '-';
-                const jogo = m.nom_jogo || '-';
-                const e = (m.entrada ?? '').toString().trim() || '0';
-                const s = (m.saida ?? '').toString().trim() || '0';
-                const placa = m.numeroPlaca || '-';
-                const obs = (m.obs || '').toString().trim();
+        const logradouro =
+            (
+                document.getElementById(
+                    'logradouro'
+                ).value || ''
+            ).trim();
 
-                resumo += `Maq.${num} - ${jogo} \n`;
-                resumo += `E-${e}\n`;
-                resumo += `S-${s}\n`;
-                resumo += `Pl.: ${placa}\n`;
-                if (obs) resumo += `${obs}\n`;
+        const bairro =
+            (
+                document.getElementById(
+                    'bairro'
+                ).value || ''
+            ).trim();
 
-                if (i < maquinasAdicionadas.length - 1) resumo += `\n`;
-            });
+        const telefone =
+            (
+                document.getElementById(
+                    'telefone'
+                ).value || ''
+            ).trim();
+
+        const contato =
+            (
+                document.getElementById(
+                    'contato'
+                ).value || ''
+            ).trim();
+
+        const praca =
+            (
+                document.getElementById(
+                    'praca'
+                ).value || ''
+            ).trim();
+
+
+        let resumo =
+            `NOVO PONTO \n`;
+
+        resumo +=
+            `${nomCliente || '-'}\n`;
+
+        resumo +=
+            `${logradouro || '-'} - ${bairro || '-'}\n`;
+
+        resumo +=
+            `Contato: ${contato || '-'}\n`;
+
+        resumo +=
+            `Tel.: ${telefone || '-'}\n`;
+
+        resumo +=
+            `Praça: ${praca || '-'}\n\n`;
+
+
+        if (
+            Array.isArray(
+                maquinasAdicionadas
+            ) &&
+            maquinasAdicionadas.length > 0
+        ) {
+
+            resumo +=
+                `LEITURA INICIAL \n`;
+
+
+            maquinasAdicionadas.forEach(
+                (m, i) => {
+
+                    const num =
+                        m.nom_maq || '-';
+
+                    const jogo =
+                        m.nom_jogo || '-';
+
+                    const e =
+                        (
+                            m.entrada ??
+                            ''
+                        )
+                            .toString()
+                            .trim() || '0';
+
+                    const s =
+                        (
+                            m.saida ??
+                            ''
+                        )
+                            .toString()
+                            .trim() || '0';
+
+                    const placa =
+                        m.numeroPlaca ||
+                        '-';
+
+                    const obs =
+                        (
+                            m.obs || ''
+                        )
+                            .toString()
+                            .trim();
+
+
+                    resumo +=
+                        `Maq.${num} - ${jogo} \n`;
+
+                    resumo +=
+                        `E-${e}\n`;
+
+                    resumo +=
+                        `S-${s}\n`;
+
+                    resumo +=
+                        `Pl.: ${placa}\n`;
+
+
+                    if (obs)
+                        resumo +=
+                            `${obs}\n`;
+
+
+                    if (
+                        i <
+                        maquinasAdicionadas.length - 1
+                    )
+                        resumo +=
+                            `\n`;
+                }
+            );
+
         } else {
-            resumo += `Máquinas: (nenhuma adicionada)\n`;
+
+            resumo +=
+                `Máquinas: (nenhuma adicionada)\n`;
         }
+
 
         return resumo;
     }
 
-    /** Escreve/atualiza o texto no localStorage para o Form_execucao capturar */
+
     function sincronizarPonteExecucao() {
+
         try {
-            const texto = montarResumoInstalacao();
-            localStorage.setItem(BRIDGE_KEY, texto);
+
+            const texto =
+                montarResumoInstalacao();
+
+            localStorage.setItem(
+                BRIDGE_KEY,
+                texto
+            );
+
         } catch (e) {
-            console.warn('Falha ao sincronizar ponte com o Form_execucao:', e);
+
+            console.warn(
+                'Falha ao sincronizar ponte com o Form_execucao:',
+                e
+            );
         }
     }
-
 
 </script>
 
 </body>
 </html>
+```
