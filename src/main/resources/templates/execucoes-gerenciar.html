@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Editar Execuções - Sistema Pro</title>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+	<style>
+		:root {
+		   --bg-body: #081418; --bg-card: #10242a; --bg-input: rgba(255,255,255,0.05);
+		   --primary-green: #1ee4ac; --accent-blue: #3d8bff; --danger: #ff4d4d; --amber: #ffb020;
+		   --text-white: #ffffff; --text-gray: #8ea1a7; --border-color: rgba(255,255,255,0.07);
+		}
+		/* fonte de máquina de escrever / terminal antigo (do próprio sistema, não precisa baixar) */
+		body, .btn, .form-control, .form-select, .badge, .modal-content, #toast {
+		   font-family: 'Courier New', Courier, monospace !important;
+		}
+		body { background: var(--bg-body); color: var(--text-white); padding: 14px 0 40px; font-size: 12px; line-height: 1.3; }
+		h3 { font-size: 12px; font-weight: bold !important; }
+		b, strong, .fw-bold { font-weight: bold !important; color: #fff; }
+		.small, small { font-size: 12px; }
+		.container { max-width: 1100px; }
+
+		.card-dark { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; padding: 16px 18px; margin-bottom: 16px; }
+		.card-dark h5 { font-size: 12px; font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+		.card-dark h5 i { color: var(--primary-green); }
+
+		.form-label { color: var(--text-gray); font-size: 12px; text-transform: uppercase; letter-spacing: .3px; margin-bottom: 2px; }
+		.form-control, .form-select {
+		   background-color: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-white); border-radius: 6px;
+		   font-size: 12px; padding: 3px 8px; line-height: 1.3;
+		}
+		.form-control:focus, .form-select:focus {
+		   background-color: rgba(255,255,255,0.08); color: var(--text-white); border-color: var(--primary-green);
+		   box-shadow: 0 0 0 .2rem rgba(30,228,172,.15);
+		}
+		.form-control:disabled, .form-control[readonly], .form-select:disabled {
+		   background-color: rgba(255,255,255,0.02); color: #c4d2d6; opacity: 1;
+		}
+		.form-control::placeholder { color: #5f7479; }
+		.form-select option { background: var(--bg-card); color: var(--text-white); }
+		/* seta do select visível no tema escuro (a padrão do Bootstrap é cinza escuro) */
+		.form-select {
+		   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%231ee4ac' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+		   background-repeat: no-repeat;
+		   background-position: right .75rem center;
+		   background-size: 16px 12px;
+		   padding-right: 2.25rem;
+		   cursor: pointer;
+		}
+		.form-select:disabled { cursor: not-allowed; }
+		.form-label.editavel { color: var(--primary-green); }
+		.form-label i { font-size: 11px; margin-right: 2px; }
+		.campo-alterado { border-color: var(--amber) !important; }
+		.info-alterado { color: var(--amber); }
+		.info-normal { color: var(--text-gray); }
+		textarea.form-control { min-height: 96px; }
+		textarea#fProblema { min-height: 0; resize: vertical; }
+
+		.nf-busca { display: flex; gap: 8px; }
+		.nf-busca input { font-size: 12px; font-weight: bold; max-width: 160px; color: var(--primary-green) !important; }
+
+		.btn { font-size: 12px; padding: 3px 10px; border-radius: 6px !important; }
+		.btn-sm { font-size: 12px; }
+		.btn-green { background: var(--primary-green); color: #062019; border: none; }
+		.btn-green:hover { background: #18c896; color: #062019; }
+		.btn-ghost { background: var(--bg-input); color: var(--text-white); border: 1px solid var(--border-color); }
+		.btn-ghost:hover { border-color: var(--accent-blue); color: var(--accent-blue); }
+		.btn-danger-soft { background: rgba(255,77,77,.12); color: var(--danger); border: 1px solid rgba(255,77,77,.35); }
+		.btn-danger-soft:hover:not(:disabled) { background: var(--danger); color: #fff; }
+		.btn:disabled { opacity: .45; }
+
+		.badge { font-size: 12px; font-weight: normal !important; border-radius: 4px; padding: 3px 9px !important; }
+		.badge-info-soft { background: rgba(61,139,255,.15); color: #8cb8ff; }
+		.badge-warn-soft { background: rgba(255,176,32,.15); color: var(--amber); }
+		.badge-ok-soft { background: rgba(30,228,172,.12); color: var(--primary-green); }
+
+		.ficha-vazia { color: var(--text-gray); text-align: center; padding: 14px 10px; }
+		.ficha-vazia i { font-size: 34px; display: block; margin-bottom: 8px; color: #3a5258; }
+
+		/* Lista */
+		.lista-filtro { max-width: 340px; }
+		.tabela { width: 100%; font-size: 12px; }
+		.tabela th { color: var(--text-gray); font-weight: normal; font-size: 12px; text-transform: uppercase; letter-spacing: .3px; padding: 5px 8px; border-bottom: 1px solid var(--border-color); }
+		.tabela td { padding: 5px 8px; border-bottom: 1px solid var(--border-color); vertical-align: top; }
+		.tabela tbody tr { cursor: pointer; transition: background .15s; }
+		.tabela tbody tr:hover { background: rgba(255,255,255,0.04); }
+		.tabela tbody tr.selecionada { background: rgba(30,228,172,0.09); box-shadow: inset 3px 0 0 var(--primary-green); }
+		.tabela .nf { color: var(--primary-green); font-weight: bold; white-space: nowrap; }
+		.tabela .data { white-space: nowrap; color: var(--text-gray); }
+		.tabela .problema { color: #c4d2d6; }
+
+		/* Modal */
+		.modal-content { background: var(--bg-card); color: var(--text-white); border: 1px solid rgba(255,77,77,.35); border-radius: 18px; }
+		.modal-header, .modal-footer { border-color: var(--border-color); }
+		.btn-close { filter: invert(1); }
+		.aviso-exclusao { background: rgba(255,77,77,.08); border: 1px solid rgba(255,77,77,.25); border-radius: 12px; padding: 14px; }
+
+		/* Toast */
+		#toast { position: fixed; right: 20px; bottom: 20px; z-index: 2000; min-width: 260px; max-width: 420px; padding: 10px 14px; border-radius: 6px; font-size: 12px; display: none; box-shadow: 0 10px 30px rgba(0,0,0,.4); }
+		#toast.ok { background: #0f3b30; border: 1px solid var(--primary-green); color: var(--primary-green); }
+		#toast.erro { background: #3b1414; border: 1px solid var(--danger); color: #ffb3b3; }
+
+		@media (max-width: 768px) {
+		   .card-dark { padding: 16px; }
+		   .nf-busca input { max-width: none; }
+		   .col-tecnico, .col-data { display: none; }
+		}
+	</style>
+</head>
+<body>
+
+<div class="container">
+	<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+		<div>
+			<a href="/" class="text-secondary small text-decoration-none d-inline-flex align-items-center gap-1">
+				<i class="bi bi-arrow-left"></i> Voltar ao Dashboard
+			</a>
+			<h3 class="fw-bold mt-1 mb-0">Editar Execuções</h3>
+		</div>
+		<div class="d-flex gap-2">
+			<a href="/relatorioExecucoes" class="btn btn-ghost btn-sm"><i class="bi bi-clipboard-data"></i> Relatório de Execuções</a>
+			<span class="badge badge-info-soft align-self-center px-3 py-2">
+				<i class="bi bi-person-lock"></i> <span th:text="${usuarioLogado.username}">usuário</span>
+			</span>
+		</div>
+	</div>
+
+	<!-- ===================== FORMULÁRIO ===================== -->
+	<div class="card-dark">
+		<h5><i class="bi bi-pencil-square"></i> Ficha</h5>
+
+		<form id="formBusca" class="mb-3" autocomplete="off">
+			<label class="form-label" for="inpNf">Número da ficha (NF)</label>
+			<div class="nf-busca">
+				<input type="number" min="1" class="form-control" id="inpNf" placeholder="Ex.: 1192" required>
+				<button type="submit" class="btn btn-green px-4"><i class="bi bi-search"></i> Buscar</button>
+				<button type="button" class="btn btn-ghost" id="btnLimpar" title="Limpar"><i class="bi bi-x-lg"></i></button>
+			</div>
+		</form>
+
+		<div id="fichaVazia" class="ficha-vazia">
+			<i class="bi bi-file-earmark-text"></i>
+			Digite a NF acima ou clique numa ficha da lista abaixo.
+		</div>
+
+		<form id="formFicha" class="d-none" autocomplete="off">
+			<div class="d-flex flex-wrap gap-2 mb-3" id="badges"></div>
+
+			<div class="row g-2">
+				<div class="col-md-5">
+					<label class="form-label"><i class="bi bi-lock"></i> Cliente</label>
+					<input type="text" class="form-control" id="fCliente" readonly>
+				</div>
+				<div class="col-md-3">
+					<label class="form-label"><i class="bi bi-lock"></i> Técnico</label>
+					<input type="text" class="form-control" id="fTecnico" readonly>
+				</div>
+				<div class="col-md-4">
+					<label class="form-label"><i class="bi bi-lock"></i> Data</label>
+					<input type="text" class="form-control" id="fData" readonly>
+				</div>
+
+				<div class="col-md-5">
+					<label class="form-label editavel" for="fMaquina"><i class="bi bi-pencil"></i> Máquina</label>
+					<select class="form-select" id="fMaquina"></select>
+					<div class="small mt-1" id="infoMaquina"></div>
+				</div>
+				<div class="col-md-7">
+					<label class="form-label editavel" for="fProblema"><i class="bi bi-pencil"></i> Problema</label>
+					<textarea class="form-control" id="fProblema" rows="2" maxlength="1000"></textarea>
+					<div class="small mt-1" id="infoProblema"></div>
+				</div>
+
+				<div class="col-12">
+					<label class="form-label editavel" for="fExecucao"><i class="bi bi-pencil"></i> Execução (o que foi feito)</label>
+					<textarea class="form-control" id="fExecucao" rows="5"></textarea>
+				</div>
+			</div>
+
+			<div class="d-flex flex-wrap justify-content-between gap-2 mt-3">
+				<button type="button" class="btn btn-danger-soft px-3" id="btnExcluir">
+					<i class="bi bi-trash3"></i> Excluir ficha
+				</button>
+				<div class="d-flex gap-2">
+					<button type="button" class="btn btn-ghost px-3" id="btnDesfazer"><i class="bi bi-arrow-counterclockwise"></i> Desfazer</button>
+					<button type="submit" class="btn btn-green px-4" id="btnSalvar"><i class="bi bi-check2"></i> Salvar</button>
+				</div>
+			</div>
+		</form>
+	</div>
+
+	<!-- ===================== LISTA ===================== -->
+	<div class="card-dark">
+		<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+			<h5 class="mb-0"><i class="bi bi-list-ul"></i> Últimas fichas</h5>
+			<input type="search" class="form-control form-control-sm lista-filtro" id="inpFiltro"
+				   placeholder="Filtrar por cliente, máquina, problema ou técnico">
+		</div>
+		<div class="table-responsive">
+			<table class="tabela">
+				<thead>
+				<tr>
+					<th>NF</th>
+					<th>Cliente</th>
+					<th>Máquina</th>
+					<th>Problema</th>
+					<th class="col-tecnico">Técnico</th>
+					<th class="col-data">Data</th>
+				</tr>
+				</thead>
+				<tbody id="corpoLista">
+				<tr><td colspan="6" class="text-center text-secondary py-4">Carregando…</td></tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="small text-secondary mt-1">Mostrando as 5 fichas mais recentes que batem com o filtro.</div>
+	</div>
+</div>
+
+<!-- ===================== MODAL EXCLUIR ===================== -->
+<div class="modal fade" id="modalExcluir" tabindex="-1" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<form class="modal-content" id="formExcluir" autocomplete="off">
+			<div class="modal-header">
+				<h5 class="modal-title fw-bold" style="color: var(--danger);"><i class="bi bi-exclamation-triangle"></i> Excluir ficha</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+			</div>
+			<div class="modal-body">
+				<div class="aviso-exclusao mb-3">
+					A ficha <strong>Nº <span id="exNf"></span></strong>
+					(<span id="exCliente"></span> – máquina <span id="exMaquina"></span>)
+					será <strong>apagada definitivamente</strong>, junto com o problema dela.
+					<div class="small mt-2" style="color: var(--text-gray);">Esta ação não pode ser desfeita.</div>
+				</div>
+				<label class="form-label" for="exSenha">Confirme com a sua senha</label>
+				<input type="password" class="form-control" id="exSenha" autocomplete="current-password" required>
+				<div class="small mt-2" id="exErro" style="color: #ffb3b3; display: none;"></div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-ghost" data-bs-dismiss="modal">Cancelar</button>
+				<button type="submit" class="btn btn-danger px-4" id="btnConfirmarExclusao">
+					<i class="bi bi-trash3"></i> Excluir
+				</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script th:inline="javascript">
+	const NF_INICIAL = /*[[${nfInicial}]]*/ null;
+</script>
+<script>
+	const API = '/api/execucoes-crud';
+	let fichaAtual = null;   // DTO carregado
+	let timerFiltro = null;
+
+	const $ = id => document.getElementById(id);
+	const modalExcluir = new bootstrap.Modal($('modalExcluir'));
+
+	// ---------------------------------------------------- utilidades
+	function esc(t) {
+		return (t ?? '').toString()
+			.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+			.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+	}
+
+	function toast(msg, tipo = 'ok') {
+		const el = $('toast');
+		el.className = tipo;
+		el.textContent = msg;
+		el.style.display = 'block';
+		clearTimeout(el._t);
+		el._t = setTimeout(() => el.style.display = 'none', 4000);
+	}
+
+	async function api(url, opcoes = {}) {
+		const resp = await fetch(url, {
+			headers: { 'Content-Type': 'application/json' },
+			credentials: 'same-origin',
+			...opcoes
+		});
+		let corpo = null;
+		try { corpo = await resp.json(); } catch (_) { /* sem corpo */ }
+		if (resp.status === 401 && corpo && corpo.erro && corpo.erro.startsWith('Sessão')) {
+			toast(corpo.erro, 'erro');
+			setTimeout(() => location.href = '/login', 1500);
+		}
+		if (!resp.ok) {
+			const err = new Error((corpo && corpo.erro) || ('Erro ' + resp.status));
+			err.status = resp.status;
+			throw err;
+		}
+		return corpo;
+	}
+
+	// mantém a NF na URL (F5 reabre a mesma ficha); falha aqui nunca derruba a tela
+	function trocarUrl(u) {
+		try { history.replaceState(null, '', u); } catch (_) { /* ignora */ }
+	}
+
+	// ---------------------------------------------------- lista
+	async function carregarLista() {
+		const busca = $('inpFiltro').value.trim();
+		try {
+			const linhas = await api(API + (busca ? '?busca=' + encodeURIComponent(busca) : ''));
+			const corpo = $('corpoLista');
+			if (!linhas.length) {
+				corpo.innerHTML = '<tr><td colspan="6" class="text-center text-secondary py-4">Nenhuma ficha encontrada.</td></tr>';
+				return;
+			}
+			corpo.innerHTML = linhas.map(l => `
+				<tr data-nf="${l.nf}" class="${fichaAtual && fichaAtual.nf === l.nf ? 'selecionada' : ''}">
+					<td class="nf">${l.nf}</td>
+					<td>${esc(l.nomeCliente)}</td>
+					<td>${esc(l.nomeMaquina)}</td>
+					<td class="problema">${esc(l.descricaoProblema)}</td>
+					<td class="col-tecnico">${esc(l.tecnico)}</td>
+					<td class="data col-data">${esc(l.dataExecucao)}</td>
+				</tr>`).join('');
+		} catch (e) {
+			$('corpoLista').innerHTML = `<tr><td colspan="6" class="text-center py-4" style="color:#ffb3b3">${esc(e.message)}</td></tr>`;
+		}
+	}
+
+	$('corpoLista').addEventListener('click', ev => {
+		const tr = ev.target.closest('tr[data-nf]');
+		if (!tr) return;
+		$('inpNf').value = tr.dataset.nf;
+		buscarFicha(Number(tr.dataset.nf));
+		window.scrollTo({ top: 0, behavior: 'smooth' });
+	});
+
+	$('inpFiltro').addEventListener('input', () => {
+		clearTimeout(timerFiltro);
+		timerFiltro = setTimeout(carregarLista, 300);
+	});
+
+	// ---------------------------------------------------- ficha
+	async function buscarFicha(nf) {
+		if (!nf) return;
+		try {
+			const dto = await api(`${API}/${nf}`);
+			preencher(dto);
+			trocarUrl('/execucoes/gerenciar?nf=' + dto.nf);
+		} catch (e) {
+			limparFicha(false);
+			toast(e.message, 'erro');
+		}
+		marcarSelecionada();
+	}
+
+	function preencher(dto) {
+		fichaAtual = dto;
+		$('fichaVazia').classList.add('d-none');
+		$('formFicha').classList.remove('d-none');
+
+		$('fCliente').value = dto.nomeCliente || '';
+		$('fTecnico').value = dto.tecnico || '';
+		$('fData').value = dto.dataExecucao || '';
+		$('fProblema').value = dto.descricaoProblema || '';
+		$('fExecucao').value = dto.descricaoExecucao || '';
+
+		// lista com TODAS as máquinas do cliente, já selecionada na que foi cadastrada na ficha
+		const sel = $('fMaquina');
+		sel.innerHTML = dto.maquinasDoCliente.map(m => {
+			const cadastrada = m.id === dto.maquinaId;
+			return `<option value="${m.id}">${esc(m.nome)}${m.jogo ? ' – ' + esc(m.jogo) : ''}`
+				+ `${m.ativa ? '' : ' (inativa)'}${cadastrada ? '  ★ cadastrada na ficha' : ''}</option>`;
+		}).join('') || '<option value="">(sem máquina)</option>';
+		if (dto.maquinaId) sel.value = String(dto.maquinaId);
+
+		sel.disabled = dto.qtdPecasVinculadas > 0 || !dto.maquinaId;
+		$('fProblema').disabled = dto.descricaoProblema === null && !dto.maquinaId;
+		atualizarInfos();
+
+		const b = [];
+		b.push(`<span class="badge badge-ok-soft px-3 py-2">NF ${dto.nf}</span>`);
+		if (dto.solicitacaoId) b.push(`<span class="badge badge-info-soft px-3 py-2">Solicitação ${dto.solicitacaoId}</span>`);
+		if (dto.qtdFichasIrmas > 0) b.push(`<span class="badge badge-info-soft px-3 py-2">+${dto.qtdFichasIrmas} ficha(s) na mesma solicitação</span>`);
+		if (dto.qtdPecasVinculadas > 0) b.push(`<span class="badge badge-warn-soft px-3 py-2"><i class="bi bi-box-seam"></i> ${dto.qtdPecasVinculadas} troca(s) de peça</span>`);
+		if (dto.emailEnviado) b.push(`<span class="badge badge-warn-soft px-3 py-2"><i class="bi bi-envelope-check"></i> E-mail já enviado ao cliente</span>`);
+		$('badges').innerHTML = b.join('');
+
+		$('btnExcluir').disabled = dto.qtdPecasVinculadas > 0;
+		$('btnExcluir').title = dto.qtdPecasVinculadas > 0 ? 'Ficha com troca de peça não pode ser excluída' : '';
+	}
+
+	// mostra embaixo de Máquina/Problema o que foi cadastrado e destaca quando muda
+	function atualizarInfos() {
+		if (!fichaAtual) return;
+		const d = fichaAtual;
+		const sel = $('fMaquina');
+		const infoM = $('infoMaquina');
+		const original = d.maquinasDoCliente.find(m => m.id === d.maquinaId);
+		const nomeOriginal = original ? original.nome + (original.jogo ? ' – ' + original.jogo : '') : (d.nomeMaquina || '—');
+		const trocou = d.maquinaId && sel.value && Number(sel.value) !== d.maquinaId;
+
+		sel.classList.toggle('campo-alterado', !!trocou);
+		if (d.qtdPecasVinculadas > 0) {
+			infoM.className = 'small mt-1 info-normal';
+			infoM.innerHTML = `<i class="bi bi-lock"></i> Cadastrada: <b>${esc(nomeOriginal)}</b> — travada (ficha tem troca de peça).`;
+		} else if (trocou) {
+			const nova = sel.options[sel.selectedIndex].text.replace('  ★ cadastrada na ficha', '');
+			infoM.className = 'small mt-1 info-alterado';
+			infoM.innerHTML = `<i class="bi bi-arrow-left-right"></i> Trocando de <b>${esc(nomeOriginal)}</b> para <b>${esc(nova)}</b> ao salvar.`;
+		} else {
+			infoM.className = 'small mt-1 info-normal';
+			infoM.innerHTML = `Cadastrada: <b>${esc(nomeOriginal)}</b> · ${d.maquinasDoCliente.length} máquina(s) ativa(s) do cliente`;
+		}
+
+		const prob = $('fProblema');
+		const infoP = $('infoProblema');
+		const mudouProb = (d.descricaoProblema || '') !== prob.value;
+		prob.classList.toggle('campo-alterado', mudouProb);
+		infoP.className = 'small mt-1 ' + (mudouProb ? 'info-alterado' : 'info-normal');
+		infoP.innerHTML = mudouProb
+			? `<i class="bi bi-pencil"></i> Original: <b>${esc(d.descricaoProblema || '—')}</b>`
+			: '';
+
+		const exec = $('fExecucao');
+		exec.classList.toggle('campo-alterado', (d.descricaoExecucao || '') !== exec.value);
+	}
+	$('fMaquina').addEventListener('change', atualizarInfos);
+	$('fProblema').addEventListener('input', atualizarInfos);
+	$('fExecucao').addEventListener('input', atualizarInfos);
+
+	function limparFicha(limparCampoNf = true) {
+		fichaAtual = null;
+		$('formFicha').classList.add('d-none');
+		$('fichaVazia').classList.remove('d-none');
+		if (limparCampoNf) $('inpNf').value = '';
+		trocarUrl('/execucoes/gerenciar');
+		marcarSelecionada();
+	}
+
+	function marcarSelecionada() {
+		document.querySelectorAll('#corpoLista tr[data-nf]').forEach(tr =>
+			tr.classList.toggle('selecionada', !!fichaAtual && Number(tr.dataset.nf) === fichaAtual.nf));
+	}
+
+	$('formBusca').addEventListener('submit', ev => {
+		ev.preventDefault();
+		buscarFicha(Number($('inpNf').value));
+	});
+	$('btnLimpar').addEventListener('click', () => limparFicha());
+	$('btnDesfazer').addEventListener('click', () => fichaAtual && preencher(fichaAtual));
+
+	// ---------------------------------------------------- salvar
+	$('formFicha').addEventListener('submit', async ev => {
+		ev.preventDefault();
+		if (!fichaAtual) return;
+		const btn = $('btnSalvar');
+		btn.disabled = true;
+		try {
+			const dto = await api(`${API}/${fichaAtual.nf}`, {
+				method: 'PUT',
+				body: JSON.stringify({
+					descricaoExecucao: $('fExecucao').value,
+					descricaoProblema: $('fProblema').value,
+					maquinaId: $('fMaquina').value ? Number($('fMaquina').value) : null
+				})
+			});
+			preencher(dto);
+			toast(`Ficha Nº ${dto.nf} salva.`);
+			carregarLista();
+		} catch (e) {
+			toast(e.message, 'erro');
+		} finally {
+			btn.disabled = false;
+		}
+	});
+
+	// ---------------------------------------------------- excluir
+	$('btnExcluir').addEventListener('click', () => {
+		if (!fichaAtual) return;
+		$('exNf').textContent = fichaAtual.nf;
+		$('exCliente').textContent = fichaAtual.nomeCliente || '?';
+		$('exMaquina').textContent = fichaAtual.nomeMaquina || '?';
+		$('exSenha').value = '';
+		$('exErro').style.display = 'none';
+		modalExcluir.show();
+	});
+	$('modalExcluir').addEventListener('shown.bs.modal', () => $('exSenha').focus());
+
+	$('formExcluir').addEventListener('submit', async ev => {
+		ev.preventDefault();
+		if (!fichaAtual) return;
+		const btn = $('btnConfirmarExclusao');
+		btn.disabled = true;
+		$('exErro').style.display = 'none';
+		try {
+			const nf = fichaAtual.nf;
+			await api(`${API}/${nf}/excluir`, {
+				method: 'POST',
+				body: JSON.stringify({ senha: $('exSenha').value })
+			});
+			modalExcluir.hide();
+			limparFicha();
+			toast(`Ficha Nº ${nf} excluída.`);
+			carregarLista();
+		} catch (e) {
+			$('exErro').textContent = e.message;
+			$('exErro').style.display = 'block';
+			$('exSenha').select();
+		} finally {
+			btn.disabled = false;
+		}
+	});
+
+	// ---------------------------------------------------- início
+	carregarLista();
+	if (NF_INICIAL) {
+		$('inpNf').value = NF_INICIAL;
+		buscarFicha(NF_INICIAL);
+	}
+</script>
+</body>
+</html>

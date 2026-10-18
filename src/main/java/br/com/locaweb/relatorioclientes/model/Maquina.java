@@ -57,6 +57,19 @@ private Integer modPlaca;
 @Column(name = "jogosegundo")
 private Integer jogoSegundo;
 
+// Modelo do coletor instalado (FK para Tbl_coletor.Cod_coletor), assim como
+// Mod_Placa é o modelo da placa (Tbl_Placa). Preenchido junto com o slot "Coletor".
+@Column(name = "modelo_coletor")
+private Integer modeloColetor;
+
+// Leitura dos contadores (relógio) de Entrada e Saída no cadastro da máquina.
+// Colunas novas, criadas pelo próprio Hibernate (ddl-auto=update), aceitam NULL.
+@Column(name = "entrada")
+private Integer entrada;
+
+@Column(name = "saida")
+private Integer saida;
+
 @Column(name = "ativo")
 private Boolean ativo;
 }

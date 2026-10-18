@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
 
@@ -335,6 +334,20 @@
         /* =========================================================
            LEITURA
         ========================================================= */
+
+        /* Peças da máquina (estoque / avulsa) */
+        .pecas-ajuda { color: var(--text-gray); font-size: 13px; margin: -4px 0 12px; }
+        .pecas-ajuda b { color: var(--text-soft); }
+        .obrig { color: var(--primary-green); font-weight: 700; }
+        .peca-row { padding: 10px 0; border-top: 1px dashed var(--border-color); }
+        .peca-row:first-child { border-top: none; padding-top: 0; }
+        .peca-row .peca-nome { font-weight: 600; color: var(--text-white); font-size: 14px; }
+        .peca-row .peca-cat { color: var(--text-gray); font-size: 12px; }
+        .peca-avulsa { margin-top: 8px; padding: 10px; border-radius: 10px;
+                       background: rgba(255, 176, 32, 0.06); border: 1px solid rgba(255, 176, 32, 0.25); }
+        .peca-avulsa .form-label { font-size: 12px; }
+        .tag-avulsa { color: #ffb020; }
+        .peca-erro { color: var(--danger); font-size: 13px; }
 
         .reading-box {
 
@@ -1022,7 +1035,7 @@
 
                     <!-- Jogo -->
 
-                    <div class="col-md-4">
+                    <div class="col-md-8">
 
                         <label class="form-label">
                             Nome do Jogo
@@ -1032,26 +1045,12 @@
                                 type="text"
                                 id="maq_jogo"
                                 class="form-control"
-                                placeholder="Ex.: Bingo 90">
+                                maxlength="25"
+                                placeholder="Ex.: Bingo 90 (se escolher a peça Jogo do catálogo, ele preenche)">
 
                     </div>
 
-
-                    <!-- Placa -->
-
-                    <div class="col-md-4">
-
-                        <label class="form-label">
-                            Nº da Placa
-                        </label>
-
-                        <input
-                                type="text"
-                                id="maq_placa"
-                                class="form-control"
-                                placeholder="Número da placa">
-
-                    </div>
+                    <!-- O Nº da Placa agora vem da peça Placa escolhida abaixo -->
 
 
                     <!-- Observação -->
@@ -1066,7 +1065,38 @@
                                 type="text"
                                 id="maq_obs"
                                 class="form-control"
+                                maxlength="255"
                                 placeholder="Alguma informação importante sobre a máquina">
+
+                    </div>
+
+
+                    <!-- PEÇAS (conversa com o estoque) -->
+
+                    <div class="col-12">
+
+                        <div class="reading-box">
+
+                            <div class="reading-title">
+
+                                <i class="bi bi-cpu"></i>
+
+                                <span>
+                                    Peças da máquina
+                                </span>
+
+                            </div>
+
+                            <div class="pecas-ajuda">
+                                Escolha a peça do <b>estoque</b> ou marque <b>avulsa</b> para uma peça que já está
+                                na máquina e nunca entrou no estoque. <span class="obrig">*</span> obrigatória.
+                            </div>
+
+                            <div id="pecas_box">
+                                <p class="text-muted mb-0">Carregando peças do estoque…</p>
+                            </div>
+
+                        </div>
 
                     </div>
 
@@ -1234,6 +1264,7 @@
      NÃO ALTERADO
 ========================================================= -->
 
+<script src="/js/pecas-maquina.js"></script>
 <script>
 
     /* ========= CONFIG ========= */
@@ -1359,6 +1390,33 @@
     );
 
 
+    /* ========= PEÇAS (estoque / avulsa) ========= */
+
+    document.addEventListener('DOMContentLoaded', () => {
+        PecasMaquina.init('pecas_box', {
+            // Jogo escolhido do catálogo → preenche o nome do jogo se estiver vazio
+            onJogo: nome => {
+                const campo = document.getElementById('maq_jogo');
+                if (campo && !campo.value) campo.value = nome.substring(0, 25);
+            }
+        });
+    });
+
+    // peças do estoque já usadas nas máquinas da lista (não podem ir em outra)
+    function atualizarPecasReservadas() {
+        const ids = [];
+        maquinasAdicionadas.forEach(m =>
+            (m.pecas || []).forEach(p => { if (!p.avulsa && p.pecaId) ids.push(p.pecaId); }));
+        PecasMaquina.reservar(ids);
+    }
+
+    function escHtml(t) {
+        return (t === null || t === undefined ? '' : String(t))
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+
     /* ========= UI ========= */
 
     function toggleListaMaquinas() {
@@ -1454,7 +1512,7 @@
                                     Máquina:
                                 </strong>
 
-                                ${maq.nom_maq}
+                                ${escHtml(maq.nom_maq)}
 
                                 <span class="mx-1 text-muted">
                                     •
@@ -1464,27 +1522,23 @@
                                     Jogo:
                                 </strong>
 
-                                ${maq.nom_jogo}
+                                ${escHtml(maq.nom_jogo || '-')}
 
                             </div>
 
                             <small>
 
-                                <strong>
-                                    Placa:
-                                </strong>
+                                ${Object.keys(maq.resumoPecas || {}).map(slot =>
+                                    `<div><strong>${escHtml(PecasMaquina.rotulo(slot))}:</strong> ${escHtml(maq.resumoPecas[slot])}</div>`
+                                ).join('')}
 
-                                ${maq.numeroPlaca || '-'}
+                                <div>
+                                    <strong>
+                                        Obs:
+                                    </strong>
 
-                                <span class="mx-1">
-                                    •
-                                </span>
-
-                                <strong>
-                                    Obs:
-                                </strong>
-
-                                ${maq.obs || '-'}
+                                    ${escHtml(maq.obs || '-')}
+                                </div>
 
                             </small>
 
@@ -1552,11 +1606,6 @@
                 'maq_jogo'
             ).value;
 
-        const placa =
-            document.getElementById(
-                'maq_placa'
-            ).value;
-
         const obs =
             document.getElementById(
                 'maq_obs'
@@ -1573,29 +1622,55 @@
             ).value;
 
 
-        if (!nome || !jogo) {
+        if (!nome.trim()) {
 
             alert(
-                'Preencha pelo menos o Nº da Máquina e o Nome do Jogo.'
+                'Preencha o Nº da Máquina.'
             );
 
+            return;
+        }
+
+        if (maquinasAdicionadas.some(m => (m.nom_maq || '').trim().toUpperCase() === nome.trim().toUpperCase())) {
+            alert('A máquina ' + nome.trim() + ' já está na lista.');
+            return;
+        }
+
+        if ((entrada && !/^\d{1,9}$/.test(entrada.trim())) || (saida && !/^\d{1,9}$/.test(saida.trim()))) {
+            alert('Entrada e Saída: use só números.');
+            return;
+        }
+
+        const pecasLidas = PecasMaquina.ler();
+
+        if (!pecasLidas.ok) {
+            alert(pecasLidas.erro);
+            return;
+        }
+
+        if (!jogo.trim() && !pecasLidas.resumo.JOGO) {
+            alert('Informe o Nome do Jogo (ou escolha a peça Jogo).');
             return;
         }
 
 
         const maquina = {
 
-            nom_maq: nome,
+            nom_maq: nome.trim(),
 
-            nom_jogo: jogo,
+            nom_jogo: jogo.trim(),
 
-            numeroPlaca: placa,
+            numeroPlaca: pecasLidas.placaTexto,
 
             obs: obs,
 
-            entrada: entrada,
+            entrada: entrada.trim(),
 
-            saida: saida
+            saida: saida.trim(),
+
+            pecas: pecasLidas.pecas,
+
+            resumoPecas: pecasLidas.resumo
         };
 
 
@@ -1616,10 +1691,6 @@
         ).value = '';
 
         document.getElementById(
-            'maq_placa'
-        ).value = '';
-
-        document.getElementById(
             'maq_obs'
         ).value = '';
 
@@ -1630,6 +1701,9 @@
         document.getElementById(
             'Saida'
         ).value = '';
+
+        PecasMaquina.limpar();
+        atualizarPecasReservadas();
 
 
         document.getElementById(
@@ -1665,6 +1739,8 @@
 
         renderizarMaquinas();
 
+        atualizarPecasReservadas();
+
 
         if (
             typeof sincronizarPonteExecucao ===
@@ -1684,7 +1760,7 @@
     }
 
 
-    function salvarTudo() {
+    function salvarTudo(confirmarDuplicado = false) {
 
         const pracaSelecionada =
             document.getElementById(
@@ -1763,28 +1839,33 @@
 
             cliente: cliente,
 
+            confirmarDuplicado: confirmarDuplicado,
+
             maquinas:
                 maquinasAdicionadas.map(
                     m => ({
 
-                        nom_maq:
-                        m.nom_maq,
+                        nomMaq: m.nom_maq,
 
-                        nom_jogo:
-                        m.nom_jogo,
+                        nomJogo: m.nom_jogo,
 
-                        numeroPlaca:
-                        m.numeroPlaca,
+                        obs: m.obs,
 
-                        obs:
-                        m.obs
+                        entrada: m.entrada,
+
+                        saida: m.saida,
+
+                        pecas: m.pecas || []
                     })
                 )
         };
 
+        const btnSalvar = document.querySelector('.btn-save');
+        if (btnSalvar) btnSalvar.disabled = true;
+
 
         fetch(
-            '/api/cadastros/cliente-com-maquinas',
+            '/api/cadastro-maquina/cliente-com-maquinas',
             {
 
                 method: 'POST',
@@ -1867,11 +1948,19 @@
                 } else {
 
                     return response
-                        .text()
-                        .then(text => {
+                        .json()
+                        .catch(() => ({}))
+                        .then(corpo => {
+
+                            // nº de máquina já existe na praça → pergunta e reenvia confirmando
+                            if (response.status === 409 && corpo.precisaConfirmar) {
+                                if (btnSalvar) btnSalvar.disabled = false;
+                                if (confirm(corpo.erro)) salvarTudo(true);
+                                return;
+                            }
 
                             throw new Error(
-                                text ||
+                                corpo.erro ||
                                 (
                                     'Status ' +
                                     response.status
@@ -1884,6 +1973,8 @@
             })
 
             .catch(err => {
+
+                if (btnSalvar) btnSalvar.disabled = false;
 
                 console.error(
                     'Erro ao cadastrar:',
@@ -2034,6 +2125,12 @@
                     resumo +=
                         `Pl.: ${placa}\n`;
 
+                    Object.keys(m.resumoPecas || {})
+                        .filter(slot => slot !== 'PLACA')
+                        .forEach(slot => {
+                            resumo += `${PecasMaquina.rotulo(slot)}: ${m.resumoPecas[slot]}\n`;
+                        });
+
 
                     if (obs)
                         resumo +=
@@ -2085,4 +2182,3 @@
 
 </body>
 </html>
-```

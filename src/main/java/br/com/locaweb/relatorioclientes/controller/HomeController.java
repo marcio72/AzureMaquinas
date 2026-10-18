@@ -1,6 +1,9 @@
 package br.com.locaweb.relatorioclientes.controller;
 
+import br.com.locaweb.relatorioclientes.model.Usuario;
 import br.com.locaweb.relatorioclientes.repository.ClienteRepository;
+import br.com.locaweb.relatorioclientes.service.ExecucaoCrudService;
+import jakarta.servlet.http.HttpSession;
 import br.com.locaweb.relatorioclientes.repository.LoteRepository;
 import br.com.locaweb.relatorioclientes.repository.PecaRepository;
 import br.com.locaweb.relatorioclientes.repository.SolicitacaoManutencaoRepository;
@@ -32,7 +35,11 @@ public class HomeController {
     }
     
     @GetMapping("/")
-    public String home(Model model) {
+    public String home(Model model, HttpSession session) {
+
+        // Card "Editar Execuções" só aparece para Admin (Marcio) e Mirlania
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogado");
+        model.addAttribute("podeGerenciarExecucoes", ExecucaoCrudService.podeGerenciar(usuario));
 
         // Lotes Ativos = lotes que ainda têm peça disponível (não esgotados)
         model.addAttribute("totalLotes", loteRepository.countByQuantidadeAtualGreaterThan(0));

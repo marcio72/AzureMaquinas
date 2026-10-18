@@ -89,8 +89,10 @@
       aviso.classList.add('d-none');
       status.textContent = '';
       status.className = 'me-auto small';
-      btn.disabled = false;
+      btn.disabled = true; // só libera depois que o relatório carregar
       btn.innerHTML = '<i class="bi bi-send"></i> Enviar';
+      document.getElementById('emailDestinatario').value = '';
+      document.getElementById('emailAssunto').value = '';
       document.getElementById('emailCorpo').innerHTML =
         '<p class="text-muted">Carregando relatório...</p>';
 
@@ -98,12 +100,14 @@
 
       try {
         const r = await fetch(`/api/email/solicitacao/${id}/preview`);
+        if (r.status === 401) throw new Error('Sessão expirada. Faça login novamente.');
         if (!r.ok) throw new Error();
         const d = await r.json();
 
         document.getElementById('emailDestinatario').value = d.destinatario || '';
         document.getElementById('emailAssunto').value = d.assunto || '';
         document.getElementById('emailCorpo').innerHTML = d.html;
+        btn.disabled = false;
         document.getElementById('emailSalvarCliente').checked = !d.destinatario;
 
         if (!d.destinatario) {
@@ -116,7 +120,7 @@
         }
       } catch (e) {
         document.getElementById('emailCorpo').innerHTML =
-          '<p class="text-danger">Não foi possível carregar o relatório. Feche e tente de novo.</p>';
+          '<p class="text-danger">' + (e.message || 'Não foi possível carregar o relatório. Feche e tente de novo.') + '</p>';
       }
     }
 
@@ -147,8 +151,8 @@
             salvarNoCliente: document.getElementById('emailSalvarCliente').checked
           })
         });
-        const d = await r.json();
-        if (!r.ok) throw new Error(d.erro || 'Falha no envio.');
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(d.erro || d.error || ('Falha no envio (HTTP ' + r.status + ').'));
 
         status.textContent = 'E-mail enviado.';
         status.className = 'me-auto small text-success';

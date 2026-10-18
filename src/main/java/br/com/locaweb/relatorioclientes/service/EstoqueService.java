@@ -30,19 +30,50 @@ public class EstoqueService {
      * Novas categorias entram aqui, uma de cada vez, conforme forem
      * cadastradas e mapeadas (Coletor, Cadeado, Chave1, Chave2, etc.).
      */
-    private void atualizarSlotMaquina(Maquina maquina, Peca peca, boolean instalando) {
+    // ------------------------------------------------------------------
+    // Slots da máquina: um lugar só que diz qual categoria vai em qual coluna.
+    // Aceita "Fonte"/"Fontes", maiúscula/minúscula e com/sem acento.
+    // ------------------------------------------------------------------
+    public static final String SLOT_PLACA = "PLACA";
+    public static final String SLOT_MONITOR = "MONITOR";
+    public static final String SLOT_FONTE = "FONTE";
+    public static final String SLOT_COLETOR = "COLETOR";
+    public static final String SLOT_JOGO = "JOGO";
+
+    /** Slot da máquina para a categoria (ou null se a categoria não tem slot). */
+    public static String slotDaCategoria(Categoria categoria) {
+        if (categoria == null || categoria.getNome() == null) return null;
+        String n = java.text.Normalizer.normalize(categoria.getNome(), java.text.Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .trim()
+                .toLowerCase();
+        if (n.equals("monitor") || n.equals("monitores")) return SLOT_MONITOR;
+        if (n.equals("fonte") || n.equals("fontes")) return SLOT_FONTE;
+        if (n.equals("jogo") || n.equals("jogos")) return SLOT_JOGO;
+        if (n.equals("placa mae") || n.equals("placa-mae") || n.equals("placas mae")) return SLOT_PLACA;
+        if (n.equals("coletor") || n.equals("coletores")) return SLOT_COLETOR;
+        return null;
+    }
+
+    /** Na troca: Coletor, Jogo e Placa voltam ao estoque; Monitor e Fonte viram descarte. */
+    private static boolean pecaAntigaVoltaProEstoque(String slot) {
+        return SLOT_COLETOR.equals(slot) || SLOT_JOGO.equals(slot) || SLOT_PLACA.equals(slot);
+    }
+
+    /** Usado também pelo cadastro de máquina, para gravar igual à execução. */
+    public void atualizarSlotMaquina(Maquina maquina, Peca peca, boolean instalando) {
         if (maquina == null || peca.getCategoria() == null) return;
 
-        String categoriaNome = peca.getCategoria().getNome();
-        if (categoriaNome == null) return;
+        String slot = slotDaCategoria(peca.getCategoria());
+        if (slot == null) return;
 
-        if (categoriaNome.equalsIgnoreCase("Monitor")) {
+        if (SLOT_MONITOR.equals(slot)) {
             maquina.setMonitor(instalando ? peca.getIdPeca().intValue() : null);
         }
-        if (categoriaNome.equalsIgnoreCase("Fontes")) {
+        if (SLOT_FONTE.equals(slot)) {
             maquina.setFonte(instalando ? peca.getIdPeca().intValue() : null);
         }
-        if (categoriaNome.equalsIgnoreCase("Jogo")) {
+        if (SLOT_JOGO.equals(slot)) {
             maquina.setJogoSegundo(instalando ? peca.getIdPeca().intValue() : null);
 
             // Se a peça tem um jogo vinculado do catálogo (Tbl_Jogos), grava o
@@ -52,7 +83,7 @@ public class EstoqueService {
                 maquina.setNom_jogo(instalando ? peca.getJogo().getDescricaojogo() : null);
             }
         }
-        if (categoriaNome.equalsIgnoreCase("Placa Mãe")) {
+        if (SLOT_PLACA.equals(slot)) {
             if (instalando) {
                 String apenasNumeros = peca.getCodigo().replaceAll("\\D+", "");
                 maquina.setNumeroPlaca(apenasNumeros);
@@ -63,8 +94,14 @@ public class EstoqueService {
                 maquina.setModPlaca(instalando ? peca.getPlaca().getId().intValue() : null);
             }
         }
-        if (categoriaNome.equalsIgnoreCase("Coletor")) {
+        if (SLOT_COLETOR.equals(slot)) {
             maquina.setColetor(instalando ? peca.getIdPeca().intValue() : null);
+            // modelo_coletor = FK para Tbl_coletor (modelo da peça), igual Mod_Placa
+            if (peca.getColetor() != null && peca.getColetor().getId() != null) {
+                maquina.setModeloColetor(instalando ? peca.getColetor().getId().intValue() : null);
+            } else if (!instalando) {
+                maquina.setModeloColetor(null);
+            }
         }
         // TODO: próximas categorias (Cadeado, Cadeado1, Cadeado2,
         // Chave1, Chave2, Tip_Gabinete) entram aqui quando forem mapeadas.
@@ -100,6 +137,13 @@ public class EstoqueService {
         Maquina maquina = maquinaRepository.findById(idMaquina)
                 .orElseThrow(() -> new RuntimeException("Máquina não encontrada"));
 
+
+        // ======================================================
+        // 0) Tira a peça ANTIGA do mesmo slot dessa máquina
+        //    (Coletor/Jogo/Placa → volta ao estoque; Monitor/Fonte → descarte)
+        // ======================================================
+        substituirPecaAntiga(maquina, peca, "Substituída pela peça " + peca.getCodigo()
+                + " na execução NF " + idExecucao, null);
 
         // ======================================================
         // 1) Atualiza dados da peça
@@ -152,6 +196,110 @@ public class EstoqueService {
         historico.setMaquina(maquina);
         historico.setObservacao("Instalada via execução de serviço #" + idExecucao);
         historico.setDataEvento(LocalDateTime.now());
+        historicoPecaRepository.save(historico);
+    }
+
+    /**
+     * Na troca de peça: tira da máquina a peça antiga do MESMO slot (mesma categoria).
+     * - Coletor, Jogo e Placa: voltam para o estoque (lote +1), histórico RETIRADA.
+     * - Monitor e Fonte: quase sempre viram lixo → DESCARTADA, histórico DESCARTE.
+     * Não mexe na coluna da máquina: quem chama instala a peça nova logo em seguida.
+     */
+    private void substituirPecaAntiga(Maquina maquina, Peca nova, String observacao, String usuarioResponsavel) {
+        if (maquina == null || maquina.getId() == null) return;
+        String slot = slotDaCategoria(nova.getCategoria());
+        if (slot == null) return;
+
+        for (Peca antiga : pecaRepository.findByMaquina_IdAndStatus(maquina.getId(), "INSTALADA")) {
+            if (java.util.Objects.equals(antiga.getIdPeca(), nova.getIdPeca())) continue;
+            if (!slot.equals(slotDaCategoria(antiga.getCategoria()))) continue;
+
+            Cliente clienteOrigem = antiga.getCliente();
+            HistoricoPeca historico = new HistoricoPeca();
+            historico.setPeca(antiga);
+            historico.setClienteOrigem(clienteOrigem);
+            historico.setPracaOrigem(clienteOrigem != null ? clienteOrigem.getPraca() : null);
+            historico.setClienteDestino(null);
+            historico.setPracaDestino(null);
+            historico.setMaquina(maquina);
+            historico.setDataEvento(LocalDateTime.now());
+            historico.setUsuarioResponsavel(usuarioResponsavel);
+
+            if (pecaAntigaVoltaProEstoque(slot)) {
+                antiga.setStatus("ESTOQUE");
+                antiga.setDataRetirada(LocalDateTime.now());
+                antiga.setCliente(null);
+                antiga.setMaquina(null);
+                antiga.setDataInstalacao(null);
+                antiga.setObservacao(null);
+                Lote lote = antiga.getLote();
+                if (lote != null) {
+                    lote.setQuantidadeAtual(lote.getQuantidadeAtual() + 1);
+                    loteRepository.save(lote);
+                }
+                historico.setTipoEvento("RETIRADA");
+                historico.setObservacao(observacao + " — voltou para o estoque.");
+            } else {
+                // Igual ao descartarPeca(): mantém cliente/máquina na peça para rastreio
+                antiga.setStatus("DESCARTADA");
+                antiga.setDataRetirada(LocalDateTime.now());
+                historico.setTipoEvento("DESCARTE");
+                historico.setObservacao(observacao + " — descartada (P.T.).");
+            }
+            pecaRepository.save(antiga);
+            historicoPecaRepository.save(historico);
+        }
+    }
+
+    /**
+     * Instala uma peça numa máquina no CADASTRO da máquina (sem ficha de execução).
+     * - Peça do estoque: precisa estar com status ESTOQUE; baixa 1 no lote.
+     * - Peça avulsa (já criada no lote AVULSO pelo cadastro): não mexe no lote.
+     * Grava o histórico (INSTALACAO) e a coluna da máquina, igual à execução.
+     * Não grava MovimentoEstoque (esse fica para as trocas feitas nas execuções).
+     * Quem chama salva a máquina depois.
+     */
+    @Transactional
+    public void instalarPecaNoCadastro(Peca peca, Maquina maquina, Cliente cliente,
+                                       boolean avulsa, String usuarioResponsavel) {
+        if (!avulsa) {
+            if (!"ESTOQUE".equals(peca.getStatus())) {
+                throw new RuntimeException("A peça " + peca.getCodigo()
+                        + " não está disponível no estoque (status atual: " + peca.getStatus() + ").");
+            }
+            Lote lote = peca.getLote();
+            if (lote != null) {
+                if (lote.getQuantidadeAtual() <= 0) {
+                    throw new RuntimeException("O lote da peça " + peca.getCodigo() + " está sem saldo.");
+                }
+                lote.setQuantidadeAtual(lote.getQuantidadeAtual() - 1);
+                loteRepository.save(lote);
+            }
+        }
+
+        peca.setStatus("INSTALADA");
+        peca.setDataInstalacao(LocalDate.now());
+        peca.setCliente(cliente);
+        peca.setMaquina(maquina);
+        peca.setObservacao(avulsa ? "Peça avulsa registrada no cadastro da máquina"
+                                  : "Instalada no cadastro da máquina");
+        pecaRepository.save(peca);
+
+        atualizarSlotMaquina(maquina, peca, true);
+
+        HistoricoPeca historico = new HistoricoPeca();
+        historico.setPeca(peca);
+        historico.setTipoEvento("INSTALACAO");
+        historico.setClienteOrigem(null);
+        historico.setPracaOrigem(null);
+        historico.setClienteDestino(cliente);
+        historico.setPracaDestino(cliente != null ? cliente.getPraca() : null);
+        historico.setMaquina(maquina);
+        historico.setObservacao(avulsa
+                ? "Peça já instalada (fora do estoque), registrada no cadastro da máquina " + maquina.getNom_maq()
+                : "Instalada no cadastro da máquina " + maquina.getNom_maq());
+        historico.setDataEvento(LocalDateTime.now());
+        historico.setUsuarioResponsavel(usuarioResponsavel);
         historicoPecaRepository.save(historico);
     }
 

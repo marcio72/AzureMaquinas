@@ -7,6 +7,7 @@ import br.com.locaweb.relatorioclientes.repository.SolicitacaoManutencaoReposito
 import br.com.locaweb.relatorioclientes.service.EmailService;
 
 import br.com.locaweb.relatorioclientes.service.EnvioEmailRegistroService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -75,7 +76,12 @@ public class EmailController {
         String destinatario = req.destinatario().trim();
         
         // fora de transação: o SMTP pode levar dezenas de segundos
-        emailService.enviarHtml(destinatario, req.assunto(), req.html());
+        try {
+            emailService.enviarHtml(destinatario, req.assunto(), req.html());
+        } catch (IllegalStateException e) {
+            // devolve o motivo real pro modal (sem isso o front só mostra "Falha no envio.")
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(Map.of("erro", e.getMessage()));
+        }
         
         LocalDateTime enviadoEm = registroService.registrar(
                 id, destinatario, Boolean.TRUE.equals(req.salvarNoCliente()));

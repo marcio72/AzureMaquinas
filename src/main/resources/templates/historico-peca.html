@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Histórico de Peças</title>
+    <style>
+        :root {
+            --bg: #081418; --card: #10242a; --card2: #0c1c21; --borda: #1c3a42;
+            --verde: #1ee4ac; --azul: #3d8bff; --amarelo: #f5b942; --vermelho: #ff5d6c;
+            --laranja: #ff8f6b; --texto: #e3f1ee; --suave: #8fa9a6;
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; background: var(--bg); color: var(--texto);
+               font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+        .wrap { max-width: 980px; margin: 0 auto; padding: 20px 16px 60px; }
+        h1 { font-size: 1.4rem; margin: 0 0 16px; }
+        h1 span { color: var(--verde); }
+
+        /* ---------- lista ---------- */
+        .filtro input { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--borda);
+                        background: var(--card); color: var(--texto); font-size: 1rem; outline: none; }
+        .filtro input:focus { border-color: var(--verde); }
+        .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+        .chip { border: 1px solid var(--borda); background: transparent; color: var(--suave);
+                padding: 5px 12px; border-radius: 999px; cursor: pointer; font-size: .85rem; }
+        .chip.on { border-color: var(--verde); color: var(--verde); }
+        .chip small { opacity: .7; margin-left: 4px; }
+        .contagem { color: var(--suave); font-size: .85rem; margin-bottom: 8px; }
+
+        .lista { display: grid; gap: 6px; }
+        .item { background: var(--card); border: 1px solid var(--borda); border-radius: 10px;
+                padding: 10px 14px; cursor: pointer; display: grid; gap: 4px 12px;
+                grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+        .item:hover { border-color: var(--verde); }
+        .item .cod { font-weight: 700; font-size: 1.02rem; }
+        .item .modelo { color: var(--azul); font-weight: 600; }
+        .item .meta { color: var(--suave); font-size: .82rem; }
+        .item .dir { text-align: right; font-size: .8rem; color: var(--suave); white-space: nowrap; }
+        .status { font-size: .7rem; font-weight: 700; letter-spacing: .04em; padding: 2px 7px; border-radius: 6px;
+                  border: 1px solid currentColor; display: inline-block; margin-bottom: 3px; }
+        .st-ESTOQUE { color: var(--verde); }
+        .st-INSTALADA { color: var(--azul); }
+        .st-DESCARTADA { color: var(--laranja); }
+        .st-AVALIACAO { color: var(--vermelho); }
+
+        /* ---------- detalhe ---------- */
+        .voltar { background: transparent; border: 1px solid var(--borda); color: var(--suave);
+                  padding: 7px 14px; border-radius: 8px; cursor: pointer; font-size: .9rem; }
+        .voltar:hover { color: var(--verde); border-color: var(--verde); }
+        .card { background: var(--card); border: 1px solid var(--borda); border-radius: 14px; padding: 18px; margin-top: 14px; }
+        .cab .cod { font-size: 1.5rem; font-weight: 800; color: var(--verde); }
+        .cab .cod .modelo { color: var(--azul); font-weight: 700; }
+        .cab .desc { color: var(--suave); margin-top: 2px; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 14px; }
+        .stat { background: var(--card2); border-radius: 10px; padding: 10px 12px; }
+        .stat .l { font-size: .75rem; color: var(--suave); text-transform: uppercase; letter-spacing: .04em; }
+        .stat .v { font-size: 1rem; font-weight: 700; margin-top: 4px; }
+        .stat .s { font-size: .8rem; color: var(--suave); margin-top: 2px; }
+
+        .timeline { position: relative; margin-top: 10px; padding-left: 26px; }
+        .timeline::before { content: ""; position: absolute; left: 8px; top: 4px; bottom: 4px; width: 2px; background: var(--borda); }
+        .ev { position: relative; background: var(--card2); border: 1px solid var(--borda); border-radius: 10px;
+              padding: 12px 14px; margin-bottom: 10px; }
+        .ev::before { content: ""; position: absolute; left: -24px; top: 16px; width: 12px; height: 12px;
+                      border-radius: 50%; background: var(--cor); box-shadow: 0 0 0 3px var(--bg); }
+        .ev .top { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+        .tag { font-size: .72rem; font-weight: 800; letter-spacing: .05em; padding: 3px 8px; border-radius: 6px;
+               color: var(--cor); border: 1px solid var(--cor); }
+        .ev .data { color: var(--suave); font-size: .85rem; }
+        .ev .mov { margin-top: 8px; font-size: .95rem; }
+        .ev .seta { color: var(--suave); margin: 0 6px; }
+        .ev .obs { margin-top: 6px; color: var(--suave); font-size: .88rem; white-space: pre-wrap; }
+        .ev .user { margin-top: 6px; font-size: .78rem; color: var(--suave); }
+        .praca { font-size: .75rem; background: #1a3440; color: var(--azul); padding: 1px 6px; border-radius: 4px; margin-left: 4px; }
+
+        .t-ENTRADA_ESTOQUE { --cor: var(--verde); }
+        .t-INSTALACAO      { --cor: var(--azul); }
+        .t-RETIRADA        { --cor: var(--amarelo); }
+        .t-AVALIACAO       { --cor: var(--vermelho); }
+        .t-DESCARTE        { --cor: var(--laranja); }
+
+        .vazio { color: var(--suave); text-align: center; padding: 24px; }
+        [hidden] { display: none !important; }
+        @media (max-width: 520px) { .cab .cod { font-size: 1.25rem; } }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <h1>Histórico de <span>Peças</span></h1>
+
+    <!-- ======== LISTA ======== -->
+    <section id="telaLista">
+        <div class="filtro">
+            <input id="q" placeholder="Filtrar peças utilizadas por código, modelo ou categoria..." autocomplete="off" autofocus>
+        </div>
+        <div class="chips" id="chipsCategoria"></div>
+        <div class="contagem" id="contagem">Carregando peças...</div>
+        <div class="lista" id="lista"></div>
+    </section>
+
+    <!-- ======== DETALHE ======== -->
+    <section id="telaDetalhe" hidden>
+        <button class="voltar" onclick="voltarLista()">← Voltar para a lista</button>
+        <div id="detalhe"></div>
+    </section>
+</div>
+
+<script>
+    const ROTULO = {
+        ENTRADA_ESTOQUE: 'ENTRADA NO ESTOQUE', INSTALACAO: 'INSTALAÇÃO',
+        RETIRADA: 'RETIRADA', AVALIACAO: 'AVALIAÇÃO', DESCARTE: 'DESCARTE'
+    };
+    let pecas = [];
+    let categoria = 'TODAS';
+    let eventosAtuais = [];
+    let filtroEvento = 'TODOS';
+
+    const esc = s => s == null ? '' : String(s).replace(/[&<>"']/g, c =>
+        ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const fmt = d => d ? new Date(d).toLocaleString('pt-BR', {dateStyle: 'short', timeStyle: 'short'}) : '-';
+    const praca = p => p ? `<span class="praca">${esc(p)}</span>` : '';
+    const semAcento = s => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+    /** "PL0123 — H61" quando tiver modelo; só o código caso contrário. */
+    const nomePeca = (p, cls = 'modelo') =>
+        esc(p.codigo) + (p.modelo ? ` <span class="${cls}">— ${esc(p.modelo)}</span>` : '');
+
+    // ================= LISTA =================
+    async function carregarLista() {
+        const res = await fetch('/api/pecas/historico/lista');
+        pecas = await res.json();
+        renderChips();
+        renderLista();
+    }
+
+    function renderChips() {
+        const cont = {};
+        pecas.forEach(p => { const c = p.categoria || 'Sem categoria'; cont[c] = (cont[c] || 0) + 1; });
+        const cats = Object.keys(cont).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+        document.getElementById('chipsCategoria').innerHTML =
+            `<button class="chip ${categoria === 'TODAS' ? 'on' : ''}" onclick="setCategoria('TODAS')">Todas<small>${pecas.length}</small></button>` +
+            cats.map(c => `<button class="chip ${categoria === c ? 'on' : ''}" onclick="setCategoria('${esc(c).replace(/'/g, "\\'")}')">${esc(c)}<small>${cont[c]}</small></button>`).join('');
+    }
+    function setCategoria(c) { categoria = c; renderChips(); renderLista(); }
+
+    function renderLista() {
+        const termo = semAcento(document.getElementById('q').value.trim());
+        const visiveis = pecas.filter(p =>
+            (categoria === 'TODAS' || (p.categoria || 'Sem categoria') === categoria) &&
+            (!termo || semAcento(`${p.codigo} ${p.modelo} ${p.categoria}`).includes(termo)));
+
+        document.getElementById('contagem').textContent =
+            `${visiveis.length} peça(s) utilizada(s)` + (visiveis.length !== pecas.length ? ` de ${pecas.length}` : '');
+
+        const lista = document.getElementById('lista');
+        if (!visiveis.length) { lista.innerHTML = '<div class="vazio">Nenhuma peça encontrada.</div>'; return; }
+        lista.innerHTML = visiveis.map(p => `
+            <div class="item" onclick="abrir(${p.id})">
+                <div>
+                    <div class="cod">${nomePeca(p)}</div>
+                    <div class="meta">${esc(p.categoria)} · ${p.totalEventos} evento(s)</div>
+                </div>
+                <div class="dir">
+                    ${p.status ? `<span class="status st-${esc(p.status)}">${esc(p.status)}</span><br>` : ''}
+                    ${fmt(p.ultimoEvento)}
+                </div>
+            </div>`).join('');
+    }
+    document.getElementById('q').addEventListener('input', renderLista);
+
+    function voltarLista() {
+        document.getElementById('telaDetalhe').hidden = true;
+        document.getElementById('telaLista').hidden = false;
+        history.replaceState(null, '', location.pathname);
+        document.getElementById('q').focus();
+    }
+
+    // ================= DETALHE =================
+    async function abrir(id) {
+        const res = await fetch(`/api/pecas/${id}/linha-do-tempo`);
+        document.getElementById('telaLista').hidden = true;
+        document.getElementById('telaDetalhe').hidden = false;
+        window.scrollTo(0, 0);
+        if (!res.ok) { document.getElementById('detalhe').innerHTML = '<div class="vazio">Peça não encontrada.</div>'; return; }
+        const d = await res.json();
+        history.replaceState(null, '', '?pecaId=' + id);
+        eventosAtuais = d.eventos;
+        filtroEvento = 'TODOS';
+
+        const n = d.nascimento;
+        document.getElementById('detalhe').innerHTML = `
+            <div class="card">
+                <div class="cab">
+                    <div class="cod">${nomePeca(d.peca)}</div>
+                    <div class="desc">${esc(d.peca.categoria)}${d.peca.status ? ' · ' + esc(d.peca.status) : ''}</div>
+                </div>
+                <div class="stats">
+                    <div class="stat"><div class="l">Nasceu em</div>
+                        <div class="v">${n ? fmt(n.dataEvento) : '-'}</div>
+                        <div class="s">${n && n.observacao ? esc(n.observacao) : (n ? 'Entrada no estoque' : '')}</div></div>
+                    <div class="stat"><div class="l">Onde está agora</div><div class="v">${esc(d.localAtual)}</div></div>
+                    <div class="stat"><div class="l">Clientes</div><div class="v">${d.clientesDistintos}</div></div>
+                    <div class="stat"><div class="l">Máquinas</div><div class="v">${d.maquinasDistintas}</div></div>
+                    <div class="stat"><div class="l">Eventos</div><div class="v">${d.eventos.length}</div></div>
+                </div>
+                <div class="chips" id="filtrosEvento"></div>
+                <div class="timeline" id="timeline"></div>
+            </div>`;
+        renderFiltrosEvento();
+        renderTimeline();
+    }
+
+    function renderFiltrosEvento() {
+        const tipos = ['TODOS', 'ENTRADA_ESTOQUE', 'INSTALACAO', 'RETIRADA', 'AVALIACAO', 'DESCARTE'];
+        document.getElementById('filtrosEvento').innerHTML = tipos.map(t =>
+            `<button class="chip ${t === filtroEvento ? 'on' : ''}" onclick="setFiltroEvento('${t}')">${t === 'TODOS' ? 'Todos' : ROTULO[t]}</button>`
+        ).join('');
+    }
+    function setFiltroEvento(t) { filtroEvento = t; renderFiltrosEvento(); renderTimeline(); }
+
+    function renderTimeline() {
+        const evs = eventosAtuais.filter(e => filtroEvento === 'TODOS' || e.tipoEvento === filtroEvento);
+        const tl = document.getElementById('timeline');
+        if (!evs.length) { tl.innerHTML = '<div class="vazio">Sem eventos.</div>'; return; }
+        tl.innerHTML = evs.map(e => `
+            <div class="ev t-${esc(e.tipoEvento)}">
+                <div class="top">
+                    <span class="tag">${ROTULO[e.tipoEvento] || esc(e.tipoEvento)}</span>
+                    <span class="data">${fmt(e.dataEvento)}</span>
+                </div>
+                <div class="mov">${descreve(e)}</div>
+                ${e.observacao ? `<div class="obs">${esc(e.observacao)}</div>` : ''}
+                ${e.usuarioResponsavel ? `<div class="user">por ${esc(e.usuarioResponsavel)}</div>` : ''}
+            </div>`).join('');
+    }
+
+    function descreve(e) {
+        const maq = e.maquinaNome ? ` — Máq. <b>${esc(e.maquinaNome)}</b>` : '';
+        switch (e.tipoEvento) {
+            case 'ENTRADA_ESTOQUE':
+                return 'Peça criada no lote e entrou no <b>estoque</b>';
+            case 'INSTALACAO':
+                return `<b>Estoque</b><span class="seta">→</span><b>${esc(e.clienteDestinoNome || 'Cliente')}</b>${praca(e.pracaDestino)}${maq}`;
+            case 'RETIRADA':
+                return `<b>${esc(e.clienteOrigemNome || 'Cliente')}</b>${praca(e.pracaOrigem)}${maq}<span class="seta">→</span><b>Estoque</b>`;
+            case 'AVALIACAO':
+                return 'Em avaliação no <b>estoque</b>';
+            case 'DESCARTE':
+                return e.clienteOrigemNome
+                    ? `<b>${esc(e.clienteOrigemNome)}</b>${praca(e.pracaOrigem)}${maq}<span class="seta">→</span><b style="color:var(--cor)">Descartada</b>`
+                    : `<b>Estoque</b><span class="seta">→</span><b style="color:var(--cor)">Descartada</b>`;
+            default:
+                return '';
+        }
+    }
+
+    // ================= INÍCIO =================
+    carregarLista();
+    const pid = new URLSearchParams(location.search).get('pecaId');
+    if (pid) abrir(pid);
+</script>
+</body>
+</html>

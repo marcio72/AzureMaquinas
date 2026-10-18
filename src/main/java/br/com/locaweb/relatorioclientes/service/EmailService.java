@@ -139,6 +139,10 @@ public class EmailService {
      * saber se deu certo antes de marcar a data de envio.
      */
     public void enviarHtml(String destinatario, String assunto, String htmlEditado) {
+        if (remetente == null || remetente.isBlank()) {
+            throw new IllegalStateException(
+                    "Servidor sem MAIL_USER/MAIL_PASS configurados (variáveis de ambiente do App Service).");
+        }
         String seguro = sanitizar(htmlEditado);
         try {
             MimeMessage mime = mailSender.createMimeMessage();

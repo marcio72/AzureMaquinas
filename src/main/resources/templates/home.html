@@ -158,6 +158,24 @@
 				</div>
 			</a>
 		</div>
+		<div class="col" th:if="${podeGerenciarExecucoes}">
+			<a href="/execucoes/gerenciar" class="btn-action">
+				<i class="bi bi-pencil-square"></i>
+				<div>
+					<div class="fw-bold">Editar Execuções</div>
+					<div class="small text-secondary">Corrigir ou excluir ficha pela NF</div>
+				</div>
+			</a>
+		</div>
+		<div class="col">
+			<a href="/pecas/historico" class="btn-action">
+				<i class="bi bi-clock-history"></i>
+				<div>
+					<div class="fw-bold">Histórico de Peças</div>
+					<div class="small text-secondary">Por onde cada peça passou</div>
+				</div>
+			</a>
+		</div>
 	</div>
 </div>
 

@@ -44,6 +44,10 @@ public interface PecaRepository extends JpaRepository<Peca, Long> {
     // Busca exata pelo código da peça
     Optional<Peca> findByCodigo(String codigo);
 
+    // Peças com determinado status numa máquina (ex.: INSTALADA) — usado na troca
+    // de peça para achar a peça antiga do mesmo slot e no cadastro de máquina.
+    List<Peca> findByMaquina_IdAndStatus(Long maquinaId, String status);
+
     // 🔍 Contagem de peças por status (ESTOQUE, INSTALADA, DESCARTADA),
     // sem precisar carregar tudo em memória.
     long countByStatus(String status);
