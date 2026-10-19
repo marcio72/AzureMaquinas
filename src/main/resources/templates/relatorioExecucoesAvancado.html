@@ -151,6 +151,8 @@
 						<td>
 							<form th:action="@{'/execucao/' + ${exec.id} + '/valor'}" method="post"
 								  class="d-flex align-items-center gap-2">
+								<input type="hidden" name="page" th:value="${paginaAtual}" />
+								<input type="hidden" name="nf" th:value="${nf}" />
 								
 								<input type="text" name="valor"
 									   th:value="${#numbers.formatDecimal(exec.valor, 1, 'POINT', 2, 'COMMA')}"
@@ -172,6 +174,7 @@
 								</a>
 								
 								<form th:action="@{'/execucao/' + ${exec.id} + '/alternar-pdf'}" method="post">
+									<input type="hidden" name="page" th:value="${paginaAtual}" />
 									<input type="hidden" name="nf" th:value="${nf}" /> <button type="submit"
 																							   class="btn btn-sm"
 																							   th:classappend="${exec.pdfGerado} ? 'btn-success' : 'btn-outline-secondary'"
@@ -192,6 +195,40 @@
 					</tbody>
 				</table>
 			</div>
+			
+			<!-- Paginação: 10 por página, mesmo estilo do Relatório de Execuções -->
+			<nav aria-label="Navegação de páginas" th:if="${totalPaginas > 1}" class="mt-4">
+				<ul class="pagination justify-content-center flex-wrap">
+					<li class="page-item" th:classappend="${paginaAtual == 0} ? 'disabled'">
+						<a class="page-link" th:href="@{/relatorioExecucoesAvancado(page=0, nf=${nf})}"
+						   title="Ir para a primeira página"><span aria-hidden="true">&laquo;</span></a>
+					</li>
+					<li class="page-item" th:classappend="${paginaAtual == 0} ? 'disabled'">
+						<a class="page-link" th:href="@{/relatorioExecucoesAvancado(page=${paginaAtual - 1}, nf=${nf})}"
+						   aria-label="Anterior"><span aria-hidden="true">&lsaquo;</span></a>
+					</li>
+					
+					<li class="page-item"
+						th:each="i : ${#numbers.sequence(inicioPag, fimPag)}"
+						th:classappend="${paginaAtual == i} ? 'active'">
+						<a class="page-link" th:text="${i + 1}"
+						   th:href="@{/relatorioExecucoesAvancado(page=${i}, nf=${nf})}"></a>
+					</li>
+					
+					<li class="page-item" th:classappend="${paginaAtual + 1 >= totalPaginas} ? 'disabled'">
+						<a class="page-link" th:href="@{/relatorioExecucoesAvancado(page=${paginaAtual + 1}, nf=${nf})}"
+						   aria-label="Próxima"><span aria-hidden="true">&rsaquo;</span></a>
+					</li>
+					<li class="page-item" th:classappend="${paginaAtual + 1 >= totalPaginas} ? 'disabled'">
+						<a class="page-link" th:href="@{/relatorioExecucoesAvancado(page=${totalPaginas - 1}, nf=${nf})}"
+						   title="Ir para a última página"><span aria-hidden="true">&raquo;</span></a>
+					</li>
+				</ul>
+				
+				<div class="text-center text-muted small mt-1">
+					Página <span th:text="${paginaAtual + 1}"></span> de <span th:text="${totalPaginas}"></span>
+				</div>
+			</nav>
 		</div>
 	</div>
 </div>

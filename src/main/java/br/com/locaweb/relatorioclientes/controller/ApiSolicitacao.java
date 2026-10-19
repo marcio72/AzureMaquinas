@@ -234,7 +234,8 @@ public class ApiSolicitacao {
     @GetMapping("/relatorioExecucoesAvancado")
     public String mostrarRelatorioAvancado(Model model,
                                            HttpSession session,
-                                           @RequestParam(required = false) Long nf) {
+                                           @RequestParam(required = false) Long nf,
+                                           @RequestParam(defaultValue = "0") int page) {
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogado");
         
         // Se não estiver logado, redireciona para login
@@ -281,7 +282,23 @@ public class ApiSolicitacao {
                                                   })
                                                   .collect(Collectors.toList());
             
-            model.addAttribute("execucoes", execucoes);
+            // Paginação: 10 linhas por página, mesmo estilo do Relatório de Execuções.
+            // Janela de 5 números (a página atual + 4 vizinhas), sempre que houver páginas suficientes.
+            final int size = 10;
+            int total = execucoes.size();
+            int totalPaginas = (int) Math.ceil((double) total / size);
+            if (page < 0) page = 0;
+            if (totalPaginas > 0 && page > totalPaginas - 1) page = totalPaginas - 1;
+            int fromIndex = Math.min(page * size, total);
+            int toIndex = Math.min(fromIndex + size, total);
+            int inicioPag = Math.max(0, Math.min(page - 2, totalPaginas - 5));
+            int fimPag = Math.max(inicioPag, Math.min(totalPaginas - 1, inicioPag + 4));
+
+            model.addAttribute("execucoes", execucoes.subList(fromIndex, toIndex));
+            model.addAttribute("paginaAtual", page);
+            model.addAttribute("totalPaginas", totalPaginas);
+            model.addAttribute("inicioPag", inicioPag);
+            model.addAttribute("fimPag", fimPag);
             model.addAttribute("nf", nf); // <--- 3. Envia de volta para manter no campo de busca
             model.addAttribute("dataAtual", LocalDateTime.now());
             
@@ -335,7 +352,9 @@ public class ApiSolicitacao {
     
 
     @PostMapping("/execucao/{id}/valor")
-    public String atualizarValor(@PathVariable Long id, @RequestParam("valor") String valorStr) {
+    public String atualizarValor(@PathVariable Long id, @RequestParam("valor") String valorStr,
+                                 @RequestParam(required = false) Integer page,
+                                 @RequestParam(required = false) Long nf) {
         try {
             // Converte "1,50" para "1.50"
             String valorConvertido = valorStr.replace(",", ".");
@@ -350,11 +369,21 @@ public class ApiSolicitacao {
             e.printStackTrace(); // opcional: log para debug
         }
 
-        return "redirect:/relatorioExecucoesAvancado";
+        return redirectAvancado(page, nf);
+    }
+
+    // Volta pro Modo Avançado na mesma página/filtro em que o usuário estava.
+    private String redirectAvancado(Integer page, Long nf) {
+        StringBuilder url = new StringBuilder("redirect:/relatorioExecucoesAvancado?page=")
+                .append(page != null && page > 0 ? page : 0);
+        if (nf != null) url.append("&nf=").append(nf);
+        return url.toString();
     }
     
     @PostMapping("/execucao/{id}/alternar-pdf")
-    public String alternarStatusPdf(@PathVariable Long id) {
+    public String alternarStatusPdf(@PathVariable Long id,
+                                    @RequestParam(required = false) Integer page,
+                                    @RequestParam(required = false) Long nf) {
         ExecucaoManutencao execucao = execucaoRepository.findById(id).orElse(null);
         
         if (execucao != null) {
@@ -363,8 +392,8 @@ public class ApiSolicitacao {
             execucaoRepository.save(execucao);
         }
         
-        // Redireciona para a tela onde o botão está (Avançado)
-        return "redirect:/relatorioExecucoesAvancado";
+        // Redireciona para a tela onde o botão está (Avançado), na mesma página
+        return redirectAvancado(page, nf);
     }
     
 }

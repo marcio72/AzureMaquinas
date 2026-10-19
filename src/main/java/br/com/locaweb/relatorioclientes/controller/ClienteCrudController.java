@@ -8,6 +8,9 @@ import br.com.locaweb.relatorioclientes.model.SolicitacaoManutencao;
 import br.com.locaweb.relatorioclientes.repository.ClienteRepository;
 import br.com.locaweb.relatorioclientes.repository.HistoricoAlteracaoRepository;
 import br.com.locaweb.relatorioclientes.repository.MaquinaRepository;
+import br.com.locaweb.relatorioclientes.repository.SolicitacaoManutencaoRepository;
+import br.com.locaweb.relatorioclientes.model.ExecucaoManutencao;
+import br.com.locaweb.relatorioclientes.model.ProblemaMaquina;
 import br.com.locaweb.relatorioclientes.service.InstalacaoService;
 import br.com.locaweb.relatorioclientes.util.ConvertRegiao;
 
@@ -194,10 +197,51 @@ public class ClienteCrudController {
     }
     
 
+    // Cliente genérico "INSTALAÇÃO" (cod_cliente = 1) — não é cliente real (ver CLAUDE.md).
+    private static final Long CLIENTE_ID_INSTALACAO = 1L;
+
+    @Autowired
+    private SolicitacaoManutencaoRepository solicitacaoRepository;
+
+    /**
+     * Histórico do cliente = chamados (SolicitacaoManutencao) e o que foi executado em cada
+     * problema (ExecucaoManutencao), do mais recente pro mais antigo.
+     * Antes mostrava a tabela HistoricoAlteracao (só mudanças de Nome/Bairro), que ficava
+     * quase sempre vazia.
+     */
     @GetMapping("/historico/{id}")
-    public String verHistorico(@PathVariable Integer id, Model model) {
-        List<HistoricoAlteracao> historico = historicoRepo.findByCodClienteOrderByDataAlteracaoDesc(id);
-        model.addAttribute("historico", historico);
+    public String verHistorico(@PathVariable Long id, Model model) {
+        if (CLIENTE_ID_INSTALACAO.equals(id)) {
+            return "redirect:/instalacoes";
+        }
+        Cliente cliente = clienteRepository.findById(id).orElse(null);
+        if (cliente == null) {
+            return "redirect:/clientes/listar";
+        }
+
+        List<SolicitacaoManutencao> chamados =
+                solicitacaoRepository.findByCliente_CodClienteOrderByDataSolicitacaoDesc(id);
+
+        long abertos = chamados.stream().filter(s -> Boolean.TRUE.equals(s.getStatus())).count();
+        long execucoes = 0;
+        double valorTotal = 0;
+        for (SolicitacaoManutencao s : chamados) {
+            if (s.getProblemas() == null) continue;
+            for (ProblemaMaquina p : s.getProblemas()) {
+                ExecucaoManutencao e = p.getExecucao();
+                if (e != null) {
+                    execucoes++;
+                    if (e.getValor() != null) valorTotal += e.getValor();
+                }
+            }
+        }
+
+        model.addAttribute("cliente", cliente);
+        model.addAttribute("chamados", chamados);
+        model.addAttribute("totalChamados", chamados.size());
+        model.addAttribute("totalAbertos", abertos);
+        model.addAttribute("totalExecucoes", execucoes);
+        model.addAttribute("valorTotal", valorTotal);
         return "historico-cliente";
     }
     

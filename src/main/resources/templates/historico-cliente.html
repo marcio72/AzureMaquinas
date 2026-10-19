@@ -1,51 +1,125 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-	<title>Histórico de Alterações</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Histórico do Cliente - Sistema Pro</title>
+
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+	<style>
+		:root {
+			--bg-body: #081418;
+			--bg-card: #10242a;
+			--primary-green: #1ee4ac;
+			--accent-blue: #3d8bff;
+			--text-white: #ffffff;
+			--text-gray: #8ea1a7;
+			--border-color: rgba(255, 255, 255, 0.06);
+		}
+		body { background-color: var(--bg-body) !important; color: var(--text-white) !important; font-family: 'Inter', sans-serif; padding-bottom: 50px; }
+		.hc-head h3 { color: var(--text-white) !important; font-weight: 700; margin: 0; }
+		.hc-sub { color: var(--text-gray) !important; font-size: .85rem; }
+		.hc-btn { border: 1px solid var(--border-color) !important; color: var(--text-white) !important; background: rgba(255,255,255,.04) !important; border-radius: 10px; font-size: .85rem; }
+		.hc-btn:hover { border-color: var(--primary-green) !important; color: var(--primary-green) !important; }
+		.hc-kpi { background: var(--bg-card) !important; border: 1px solid var(--border-color); border-radius: 16px; padding: 14px 16px; height: 100%; }
+		.hc-kpi .n { font-size: 1.5rem; font-weight: 700; color: var(--text-white) !important; }
+		.hc-kpi .l { font-size: .72rem; letter-spacing: .04em; text-transform: uppercase; color: var(--text-gray) !important; }
+		.hc-card { background: var(--bg-card) !important; border: 1px solid var(--border-color); border-radius: 16px; padding: 16px 18px; margin-bottom: 14px; }
+		.hc-card.aberto { border-left: 4px solid #ff6b6b !important; }
+		.hc-card.fechado { border-left: 4px solid var(--primary-green) !important; }
+		.hc-data { color: var(--text-white) !important; font-weight: 600; }
+		.hc-badge { font-size: .7rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; }
+		.hc-badge.aberto { background: rgba(255,107,107,.15) !important; color: #ff8a8a !important; }
+		.hc-badge.fechado { background: rgba(30,228,172,.12) !important; color: var(--primary-green) !important; }
+		.hc-badge.inst { background: rgba(61,139,255,.15) !important; color: #7fb0ff !important; }
+		.hc-prob { border-top: 1px solid var(--border-color); padding-top: 10px; margin-top: 10px; }
+		.hc-maq { color: var(--text-white) !important; font-weight: 600; }
+		.hc-txt { color: #c9d6da !important; font-size: .9rem; white-space: pre-line; }
+		.hc-exec { background: rgba(30,228,172,.06) !important; border: 1px solid rgba(30,228,172,.15); border-radius: 10px; padding: 8px 12px; margin-top: 8px; }
+		.hc-exec .meta { color: var(--text-gray) !important; font-size: .8rem; }
+		.hc-pend { color: #ffb36b !important; font-size: .85rem; margin-top: 6px; }
+		.hc-nf { color: var(--accent-blue) !important; text-decoration: none; font-weight: 600; }
+		.hc-vazio { color: var(--text-gray) !important; text-align: center; padding: 40px 0; }
+	</style>
 </head>
-<body class="bg-light">
+<body>
 
 <div th:replace="~{fragments/menu :: layout(~{::section})}">
-    <section>
+	<section>
 
+	<div class="container mt-4">
 
-<div class="container mt-5">
-    <div class="card shadow">
-        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-            <h4 class="mb-0">Histórico de Alterações</h4>
-            <a th:href="@{/clientes/listar}" class="btn btn-light btn-sm">
-                <i class="bi bi-arrow-left-circle"></i> Voltar
-            </a>
-        </div>
-        <div class="card-body">
-            <table class="table table-bordered table-hover">
-                <thead class="table-secondary">
-                    <tr>
-                        <th>Campo</th>
-                        <th>Valor Anterior</th>
-                        <th>Valor Atual</th>
-                        <th>Data da Alteração</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="h : ${historico}">
-                        <td th:text="${h.campoAlterado}"></td>
-                        <td th:text="${h.valorAnterior}"></td>
-                        <td th:text="${h.valorAtual}"></td>
-                        <td th:text="${#temporals.format(h.dataAlteracao, 'dd/MM/yyyy HH:mm')}"></td>
-                    </tr>
-                    <tr th:if="${#lists.isEmpty(historico)}">
-                        <td colspan="4" class="text-center">Nenhuma alteração registrada.</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
+		<!-- Cabeçalho -->
+		<div class="hc-head d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+			<div>
+				<h3><i class="bi bi-clock-history"></i> Histórico do Cliente</h3>
+				<div class="hc-sub">
+					<span th:text="${cliente.nomCliente}">Cliente</span>
+					<span th:if="${cliente.praca != null}" th:text="' · Praça ' + ${cliente.praca}"></span>
+					<span th:text="' · Cód. ' + ${cliente.codCliente}"></span>
+				</div>
+			</div>
+			<div class="d-flex gap-2">
+				<a th:href="@{/explorer(clienteId=${cliente.codCliente})}" class="btn hc-btn"><i class="bi bi-diagram-3"></i> Ver no Explorer</a>
+				<a th:href="@{/clientes/listar}" class="btn hc-btn"><i class="bi bi-arrow-left"></i> Voltar</a>
+			</div>
+		</div>
+
+		<!-- Resumo -->
+		<div class="row g-2 mb-3">
+			<div class="col-6 col-md-3"><div class="hc-kpi"><div class="n" th:text="${totalChamados}">0</div><div class="l">Chamados</div></div></div>
+			<div class="col-6 col-md-3"><div class="hc-kpi"><div class="n" th:text="${totalAbertos}">0</div><div class="l">Em aberto</div></div></div>
+			<div class="col-6 col-md-3"><div class="hc-kpi"><div class="n" th:text="${totalExecucoes}">0</div><div class="l">Execuções</div></div></div>
+			<div class="col-6 col-md-3"><div class="hc-kpi"><div class="n" th:text="${'R$ ' + #numbers.formatDecimal(valorTotal, 1, 'POINT', 2, 'COMMA')}">R$ 0,00</div><div class="l">Valor executado</div></div></div>
+		</div>
+
+		<!-- Linha do tempo de chamados -->
+		<div th:if="${#lists.isEmpty(chamados)}" class="hc-card hc-vazio">
+			<i class="bi bi-inbox fs-3 d-block mb-2"></i>
+			Nenhum chamado registrado para este cliente.
+		</div>
+
+		<div th:each="s : ${chamados}" class="hc-card" th:classappend="${s.status} ? 'aberto' : 'fechado'">
+			<div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+				<div>
+					<span class="hc-data" th:text="${s.dataSolicitacao != null} ? ${#temporals.format(s.dataSolicitacao, 'dd/MM/yyyy HH:mm')} : '—'">data</span>
+					<span class="hc-sub" th:text="' · Solicitação ' + ${s.id}"></span>
+				</div>
+				<span th:if="${s.status}" class="hc-badge aberto">ABERTO</span>
+				<span th:unless="${s.status}" class="hc-badge fechado">CONCLUÍDO</span>
+			</div>
+
+			<div th:each="p : ${s.problemas}" class="hc-prob">
+				<div class="hc-maq">
+					<i class="bi bi-joystick"></i>
+					<span th:if="${p.maquina != null}" th:text="'Máquina ' + ${p.maquina.nom_maq}">Máquina</span>
+					<span th:if="${p.maquina != null and p.maquina.nom_jogo != null}" th:text="' · ' + ${p.maquina.nom_jogo}"></span>
+					<span th:if="${p.maquina == null}">Sem máquina vinculada</span>
+				</div>
+				<div class="hc-txt"><span class="hc-sub">Problema: </span><span th:text="${p.descricao}">descrição</span></div>
+
+				<div th:if="${p.execucao != null}" class="hc-exec">
+					<div class="meta">
+						<a class="hc-nf" th:href="@{'/execucao/' + ${p.execucao.id} + '/pdf'}" target="_blank" th:text="'NF ' + ${p.execucao.id}">NF</a>
+						<span th:text="' · ' + ${p.execucao.tecnico}"></span>
+						<span th:if="${p.execucao.dataExecucao != null}" th:text="' · ' + ${#temporals.format(p.execucao.dataExecucao, 'dd/MM/yyyy HH:mm')}"></span>
+						<span th:if="${p.execucao.valor != null}" th:text="' · R$ ' + ${#numbers.formatDecimal(p.execucao.valor, 1, 'POINT', 2, 'COMMA')}"></span>
+					</div>
+					<div class="hc-txt" th:text="${p.execucao.descricao}">o que foi feito</div>
+				</div>
+				<div th:if="${p.execucao == null}" class="hc-pend"><i class="bi bi-hourglass-split"></i> Ainda não executado</div>
+			</div>
+
+			<div th:if="${#lists.isEmpty(s.problemas)}" class="hc-prob hc-sub">Chamado sem máquinas registradas.</div>
+		</div>
+
+	</div>
+
+	</section>
 </div>
-</section>
-</div>
+
 </body>
 </html>
