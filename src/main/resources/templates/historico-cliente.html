@@ -25,7 +25,7 @@
 		.hc-btn { border: 1px solid var(--border-color) !important; color: var(--text-white) !important; background: rgba(255,255,255,.04) !important; border-radius: 10px; font-size: .85rem; }
 		.hc-btn:hover { border-color: var(--primary-green) !important; color: var(--primary-green) !important; }
 		.hc-kpi { background: var(--bg-card) !important; border: 1px solid var(--border-color); border-radius: 16px; padding: 14px 16px; height: 100%; }
-		.hc-kpi .n { font-size: 1.5rem; font-weight: 700; color: var(--text-white) !important; }
+		.hc-kpi .n { font-size: 18px !important; font-family: 'Courier New', Courier, monospace !important; font-weight: 700; color: var(--text-white) !important; }
 		.hc-kpi .l { font-size: .72rem; letter-spacing: .04em; text-transform: uppercase; color: var(--text-gray) !important; }
 		.hc-card { background: var(--bg-card) !important; border: 1px solid var(--border-color); border-radius: 16px; padding: 16px 18px; margin-bottom: 14px; }
 		.hc-card.aberto { border-left: 4px solid #ff6b6b !important; }
@@ -42,25 +42,29 @@
 		.hc-exec .meta { color: var(--text-gray) !important; font-size: .8rem; }
 		.hc-pend { color: #ffb36b !important; font-size: .85rem; margin-top: 6px; }
 		.hc-nf { color: var(--accent-blue) !important; text-decoration: none; font-weight: 600; }
+		.hc-cliente { background: var(--bg-card) !important; border: 1px solid var(--border-color); border-left: 4px solid var(--primary-green) !important;
+		              border-radius: 14px; padding: 12px 16px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+		.hc-cli-nome { color: var(--primary-green) !important; font-size: 17px !important; font-weight: bold !important; line-height: 1.2 !important;
+		               font-family: 'Courier New', Courier, monospace !important; letter-spacing: .5px; }
+		.hc-cli-nome i { font-size: 16px; margin-right: 4px; }
+		.hc-cli-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+		.hc-tag { background: rgba(30,228,172,.10) !important; color: #c9f5e8 !important; border: 1px solid rgba(30,228,172,.25);
+		          border-radius: 4px; padding: 2px 8px; }
 		.hc-vazio { color: var(--text-gray) !important; text-align: center; padding: 40px 0; }
 	</style>
 </head>
 <body>
 
 <div th:replace="~{fragments/menu :: layout(~{::section})}">
-	<section>
+	<section class="tema-exec">
+	<link rel="stylesheet" href="/css/tema-exec.css">
 
 	<div class="container mt-4">
 
 		<!-- Cabeçalho -->
 		<div class="hc-head d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
 			<div>
-				<h3><i class="bi bi-clock-history"></i> Histórico do Cliente</h3>
-				<div class="hc-sub">
-					<span th:text="${cliente.nomCliente}">Cliente</span>
-					<span th:if="${cliente.praca != null}" th:text="' · Praça ' + ${cliente.praca}"></span>
-					<span th:text="' · Cód. ' + ${cliente.codCliente}"></span>
-				</div>
+				<h3 class="tema-titulo"><i class="bi bi-clock-history"></i> Histórico do Cliente</h3>
 			</div>
 			<div class="d-flex gap-2">
 				<a th:href="@{/explorer(clienteId=${cliente.codCliente})}" class="btn hc-btn"><i class="bi bi-diagram-3"></i> Ver no Explorer</a>
@@ -68,12 +72,23 @@
 			</div>
 		</div>
 
+		<!-- Faixa do cliente: deixa claro de quem é o histórico -->
+		<div class="hc-cliente mb-3">
+			<div class="hc-cli-nome tema-grande"><i class="bi bi-shop"></i> <span th:text="${cliente.nomCliente}">CLIENTE</span></div>
+			<div class="hc-cli-tags">
+				<span class="hc-tag" th:if="${cliente.praca != null and !#strings.isEmpty(cliente.praca)}" th:text="'Praça ' + ${cliente.praca}">Praça V1</span>
+				<span class="hc-tag" th:if="${cliente.bairro != null and !#strings.isEmpty(cliente.bairro)}" th:text="${cliente.bairro}">Bairro</span>
+				<span class="hc-tag" th:text="'Cód. ' + ${cliente.codCliente}">Cód. 0</span>
+			</div>
+		</div>
+
 		<!-- Resumo -->
 		<div class="row g-2 mb-3">
-			<div class="col-6 col-md-3"><div class="hc-kpi"><div class="n" th:text="${totalChamados}">0</div><div class="l">Chamados</div></div></div>
-			<div class="col-6 col-md-3"><div class="hc-kpi"><div class="n" th:text="${totalAbertos}">0</div><div class="l">Em aberto</div></div></div>
-			<div class="col-6 col-md-3"><div class="hc-kpi"><div class="n" th:text="${totalExecucoes}">0</div><div class="l">Execuções</div></div></div>
-			<div class="col-6 col-md-3"><div class="hc-kpi"><div class="n" th:text="${'R$ ' + #numbers.formatDecimal(valorTotal, 1, 'POINT', 2, 'COMMA')}">R$ 0,00</div><div class="l">Valor executado</div></div></div>
+			<div class="col-6" th:classappend="${podeVerValor} ? 'col-md-3' : 'col-md-4'"><div class="hc-kpi"><div class="n tema-grande" th:text="${totalChamados}">0</div><div class="l">Chamados</div></div></div>
+			<div class="col-6" th:classappend="${podeVerValor} ? 'col-md-3' : 'col-md-4'"><div class="hc-kpi"><div class="n tema-grande" th:text="${totalAbertos}">0</div><div class="l">Em aberto</div></div></div>
+			<div class="col-6" th:classappend="${podeVerValor} ? 'col-md-3' : 'col-md-4'"><div class="hc-kpi"><div class="n tema-grande" th:text="${totalExecucoes}">0</div><div class="l">Execuções</div></div></div>
+			<!-- Valor: só Admin (Marcio) e Mirlania -->
+			<div class="col-6 col-md-3" th:if="${podeVerValor}"><div class="hc-kpi"><div class="n tema-grande" th:text="${'R$ ' + #numbers.formatDecimal(valorTotal, 1, 'POINT', 2, 'COMMA')}">R$ 0,00</div><div class="l">Valor executado</div></div></div>
 		</div>
 
 		<!-- Linha do tempo de chamados -->
@@ -106,7 +121,7 @@
 						<a class="hc-nf" th:href="@{'/execucao/' + ${p.execucao.id} + '/pdf'}" target="_blank" th:text="'NF ' + ${p.execucao.id}">NF</a>
 						<span th:text="' · ' + ${p.execucao.tecnico}"></span>
 						<span th:if="${p.execucao.dataExecucao != null}" th:text="' · ' + ${#temporals.format(p.execucao.dataExecucao, 'dd/MM/yyyy HH:mm')}"></span>
-						<span th:if="${p.execucao.valor != null}" th:text="' · R$ ' + ${#numbers.formatDecimal(p.execucao.valor, 1, 'POINT', 2, 'COMMA')}"></span>
+						<span th:if="${podeVerValor and p.execucao.valor != null}" th:text="' · R$ ' + ${#numbers.formatDecimal(p.execucao.valor, 1, 'POINT', 2, 'COMMA')}"></span>
 					</div>
 					<div class="hc-txt" th:text="${p.execucao.descricao}">o que foi feito</div>
 				</div>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<title>Editar Máquina - Sistema Pro</title>
+
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+	<style>
+		body { background-color: #081418 !important; color: #fff; font-family: 'Inter', sans-serif; }
+		.info-pecas { color: #8ea1a7; }
+		.msg-erro { color: #ff8a8a !important; }
+		.msg-ok { color: #1ee4ac !important; }
+		@media (max-width: 576px) {
+		   .btn-group-mobile { flex-direction: column-reverse; gap: 10px; }
+		   .btn-group-mobile a, .btn-group-mobile button { width: 100%; text-align: center; }
+		}
+	</style>
+</head>
+<body>
+
+<div th:replace="~{fragments/menu :: layout(~{::section})}">
+	<section class="container py-4 tema-exec">
+		<link rel="stylesheet" href="/css/tema-exec.css">
+		<div class="row justify-content-center">
+			<div class="col-lg-10">
+
+				<div class="mb-4">
+					<h2 class="fw-bold m-0 tema-titulo"><i class="bi bi-pencil-square text-success me-2"></i> Editar Máquina</h2>
+					<p class="text-secondary small">Altere os dados da máquina <b th:text="${maquina.nom_maq}">101</b> (ID <span th:text="${maquina.id}">0</span>).</p>
+				</div>
+
+				<div class="card-custom">
+					<form id="formEditar" autocomplete="off" novalidate
+						  th:attr="data-id=${maquina.id},data-placa=${maquina.numeroPlaca}">
+
+						<div class="row g-4">
+							<div class="col-md-12">
+								<label class="form-label" for="codCliente">Ponto / Cliente Responsável</label>
+								<div class="input-group">
+									<span class="input-group-text"><i class="bi bi-person-check"></i></span>
+									<select class="form-select" id="codCliente" required>
+										<option th:each="cliente : ${clientes}"
+												th:value="${cliente.codCliente}"
+												th:text="${cliente.nomCliente}"
+												th:selected="${maquina.codCliente != null and cliente.codCliente.intValue() == maquina.codCliente}">
+										</option>
+									</select>
+								</div>
+							</div>
+
+							<div class="col-md-6">
+								<label class="form-label" for="nom_maq">Identificação / Nome da Máquina</label>
+								<div class="input-group">
+									<span class="input-group-text"><i class="bi bi-cpu"></i></span>
+									<input type="text" class="form-control" id="nom_maq" maxlength="15" th:value="${maquina.nom_maq}" required>
+								</div>
+							</div>
+
+							<div class="col-md-6">
+								<label class="form-label" for="nom_jogo">Software / Jogo Instalado</label>
+								<div class="input-group">
+									<span class="input-group-text"><i class="bi bi-controller"></i></span>
+									<input type="text" class="form-control" id="nom_jogo" maxlength="25" th:value="${maquina.nom_jogo}">
+								</div>
+							</div>
+
+							<div class="col-md-12">
+								<label class="form-label" for="obs">Informações Adicionais</label>
+								<textarea class="form-control" id="obs" rows="3" maxlength="255" th:text="${maquina.obs}"></textarea>
+							</div>
+
+							<div class="col-md-12 info-pecas">
+								<i class="bi bi-info-circle"></i>
+								Placa: <b th:text="${maquina.numeroPlaca != null and !#strings.isEmpty(maquina.numeroPlaca) ? maquina.numeroPlaca : '-'}">-</b>.
+								As peças da máquina (placa, fonte, monitor, coletor, jogo) não mudam aqui: a troca é registrada pela execução.
+							</div>
+
+							<div class="col-md-12">
+								<div id="msgForm" class="small"></div>
+							</div>
+						</div>
+
+						<div class="mt-5 d-flex justify-content-end gap-3 btn-group-mobile">
+							<a href="/form-maquinas" class="btn btn-cancel" id="btnVoltar">
+								<i class="bi bi-arrow-left"></i> Voltar
+							</a>
+							<button type="submit" class="btn btn-save" id="btnSalvar">
+								<i class="bi bi-check2 me-1"></i> Salvar Alterações
+							</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+	(function () {
+		const $ = id => document.getElementById(id);
+		const form = $('formEditar');
+		const id = form.dataset.id;
+
+		// "Voltar" volta pra consulta já com o cliente da máquina selecionado
+		$('btnVoltar').href = '/form-maquinas?cliente=' + encodeURIComponent($('codCliente').value);
+
+		function mostrar(msg, erro) {
+			$('msgForm').className = 'small ' + (erro ? 'msg-erro' : 'msg-ok');
+			$('msgForm').textContent = msg || '';
+		}
+
+		form.addEventListener('submit', async ev => {
+			ev.preventDefault();
+			mostrar('');
+			const codCliente = $('codCliente').value;
+			const nome = $('nom_maq').value.trim();
+			if (!codCliente) return mostrar('Selecione o cliente.', true);
+			if (!nome) return mostrar('Informe o número da máquina.', true);
+
+			$('btnSalvar').disabled = true;
+			try {
+				const resp = await fetch('/maquinas/editar/' + id, {
+					method: 'PUT',
+					headers: { 'Content-Type': 'application/json' },
+					credentials: 'same-origin',
+					body: JSON.stringify({
+						nom_maq: nome,
+						nom_jogo: $('nom_jogo').value.trim(),
+						obs: $('obs').value.trim(),
+						codCliente: Number(codCliente),
+						numeroPlaca: form.dataset.placa || null   // a placa não muda aqui: manda a atual de volta
+					})
+				});
+				if (resp.ok) {
+					mostrar('Máquina atualizada.');
+					setTimeout(() => window.location.href = '/form-maquinas?cliente=' + encodeURIComponent(codCliente), 700);
+					return;
+				}
+				mostrar(resp.status === 404 ? 'Máquina não encontrada.' : ('Erro ao salvar (' + resp.status + ').'), true);
+			} catch (e) {
+				mostrar('Erro ao salvar: ' + e.message, true);
+			}
+			$('btnSalvar').disabled = false;
+		});
+	})();
+</script>
+</body>
+</html>

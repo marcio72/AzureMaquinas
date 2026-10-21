@@ -5,6 +5,7 @@ import br.com.locaweb.relatorioclientes.model.Cliente;
 import br.com.locaweb.relatorioclientes.model.HistoricoAlteracao;
 import br.com.locaweb.relatorioclientes.model.Maquina;
 import br.com.locaweb.relatorioclientes.model.SolicitacaoManutencao;
+import br.com.locaweb.relatorioclientes.model.Usuario;
 import br.com.locaweb.relatorioclientes.repository.ClienteRepository;
 import br.com.locaweb.relatorioclientes.repository.HistoricoAlteracaoRepository;
 import br.com.locaweb.relatorioclientes.repository.MaquinaRepository;
@@ -14,6 +15,7 @@ import br.com.locaweb.relatorioclientes.model.ProblemaMaquina;
 import br.com.locaweb.relatorioclientes.service.InstalacaoService;
 import br.com.locaweb.relatorioclientes.util.ConvertRegiao;
 
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 //import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties.Pageable;
 
@@ -210,7 +212,7 @@ public class ClienteCrudController {
      * quase sempre vazia.
      */
     @GetMapping("/historico/{id}")
-    public String verHistorico(@PathVariable Long id, Model model) {
+    public String verHistorico(@PathVariable Long id, Model model, HttpSession session) {
         if (CLIENTE_ID_INSTALACAO.equals(id)) {
             return "redirect:/instalacoes";
         }
@@ -241,8 +243,22 @@ public class ClienteCrudController {
         model.addAttribute("totalChamados", chamados.size());
         model.addAttribute("totalAbertos", abertos);
         model.addAttribute("totalExecucoes", execucoes);
-        model.addAttribute("valorTotal", valorTotal);
+
+        // Valor só para os usuários Admin e Mirlania (nenhum outro, nem o usuário "Marcio").
+        // Para os outros a tela abre normal, só sem o valor (nem chega no HTML).
+        boolean podeVerValor = podeVerValor((Usuario) session.getAttribute("usuarioLogado"));
+        model.addAttribute("podeVerValor", podeVerValor);
+        if (podeVerValor) {
+            model.addAttribute("valorTotal", valorTotal);
+        }
         return "historico-cliente";
+    }
+
+    /** Quem vê valores no Histórico do cliente: só os usuários Admin e Mirlania. */
+    private static boolean podeVerValor(Usuario usuario) {
+        if (usuario == null || usuario.getUsername() == null) return false;
+        String u = usuario.getUsername().trim();
+        return u.equalsIgnoreCase("Admin") || u.equalsIgnoreCase("Mirlania");
     }
     
 

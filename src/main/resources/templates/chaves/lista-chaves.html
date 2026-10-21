@@ -185,7 +185,7 @@
 		</form>
 
 		<div class="resumo" th:unless="${#lists.isEmpty(chaves)}">
-			<strong th:text="${#lists.size(chaves)}">0</strong> chave(s) ·
+			<strong th:text="${totalChaves}">0</strong> chave(s) ·
 			<strong th:text="${totalCopias}">0</strong> cópia(s) ·
 			<strong th:text="${totalCadeados}">0</strong> cadeado(s)
 		</div>
@@ -246,6 +246,9 @@
 				</tbody>
 			</table>
 		</div>
+
+		<!-- Paginação: 7 por página -->
+		<div th:replace="~{fragments/paginacao :: barra}"></div>
 	</div>
 </div>
 

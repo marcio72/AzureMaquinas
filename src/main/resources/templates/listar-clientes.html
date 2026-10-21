@@ -104,10 +104,11 @@
 <body>
 
 <div th:replace="~{fragments/menu :: layout(~{::section})}">
-	<section class="container mt-4">
+	<section class="container mt-4 tema-exec">
+		<link rel="stylesheet" href="/css/tema-exec.css">
 		
 		<div class="d-flex justify-content-between align-items-center mb-4">
-			<h2 class="fw-bold m-0 text-white"><i class="bi bi-people-fill text-primary me-2"></i> Clientes</h2>
+			<h2 class="fw-bold m-0 text-white tema-titulo"><i class="bi bi-people-fill text-primary me-2"></i> Clientes</h2>
 			<a href="/clientes/novo-com-maquinas" class="btn btn-success rounded-pill px-4 fw-bold">
 				<i class="bi bi-plus-lg"></i> Novo
 			</a>

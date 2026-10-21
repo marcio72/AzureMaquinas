@@ -1,0 +1,135 @@
+/*
+ * Tema "Editar Execuções" (execucoes-gerenciar.html) para outras telas.
+ * Uso: classe "tema-exec" no bloco da página e "tema-titulo" no título (o título não muda).
+ * Tudo com !important porque o fragments/menu.html carrega o Bootstrap de novo depois do CSS da página.
+ */
+.tema-exec {
+	--te-bg-card: #10242a; --te-bg-input: rgba(255,255,255,0.05);
+	--te-green: #1ee4ac; --te-blue: #3d8bff; --te-danger: #ff4d4d; --te-amber: #ffb020;
+	--te-white: #ffffff; --te-gray: #8ea1a7; --te-border: rgba(255,255,255,0.07);
+}
+
+/* ---------- Fonte (menos no título) ---------- */
+.tema-exec, .tema-exec *:not(.tema-titulo):not(.tema-titulo *) {
+	font-family: 'Courier New', Courier, monospace !important;
+}
+.tema-exec *:not(.tema-titulo):not(.tema-titulo *):not(i):not(.tema-grande):not(.tema-grande *) {
+	font-size: 12px !important;
+	line-height: 1.3 !important;
+}
+.tema-exec { font-size: 12px; color: var(--te-white); }
+/* o título continua com a fonte original das telas (Inter) */
+.tema-exec .tema-titulo, .tema-exec .tema-titulo *:not(i) { font-family: 'Inter', system-ui, sans-serif !important; }
+.tema-exec b, .tema-exec strong, .tema-exec .fw-bold:not(.tema-titulo):not(label) { font-weight: bold !important; }
+
+/* ---------- Cards ---------- */
+.tema-exec .card-custom, .tema-exec .card, .tema-exec .card-dark,
+.tema-exec .hc-card, .tema-exec .hc-kpi {
+	background: var(--te-bg-card) !important; border: 1px solid var(--te-border) !important;
+	border-radius: 14px !important; box-shadow: none !important; color: var(--te-white) !important;
+}
+.tema-exec .card-custom, .tema-exec .card-dark { padding: 16px 18px !important; margin-bottom: 16px; }
+.tema-exec .card-custom > .card-body { padding: 0 !important; }
+.tema-exec .card-custom.overflow-hidden { padding: 0 !important; }
+
+/* ---------- Rótulos ---------- */
+.tema-exec .form-label, .tema-exec .filtro label, .tema-exec label {
+	color: var(--te-gray) !important; text-transform: uppercase; letter-spacing: .3px;
+	font-weight: normal !important; margin-bottom: 2px !important;
+}
+
+/* ---------- Campos ---------- */
+.tema-exec .form-control, .tema-exec .form-select,
+.tema-exec input[type=text], .tema-exec input[type=number], .tema-exec input[type=search],
+.tema-exec input:not([type]), .tema-exec input[type=date], .tema-exec input[type=email], .tema-exec input[type=tel],
+.tema-exec select, .tema-exec textarea {
+	background-color: var(--te-bg-input) !important; border: 1px solid var(--te-border) !important;
+	color: var(--te-white) !important; border-radius: 6px !important; padding: 3px 8px !important;
+	box-shadow: none !important; min-height: 0 !important;
+}
+.tema-exec .form-control:focus, .tema-exec .form-select:focus,
+.tema-exec input:focus, .tema-exec select:focus, .tema-exec textarea:focus {
+	background-color: rgba(255,255,255,0.08) !important; border-color: var(--te-green) !important;
+	box-shadow: 0 0 0 .2rem rgba(30,228,172,.15) !important; outline: none !important;
+}
+.tema-exec .form-control:disabled, .tema-exec .form-control[readonly], .tema-exec select:disabled {
+	background-color: rgba(255,255,255,0.02) !important; color: #c4d2d6 !important;
+}
+.tema-exec input[type=date] { color-scheme: dark; }
+.tema-exec ::placeholder { color: #5f7479 !important; }
+.tema-exec select option { background: var(--te-bg-card) !important; color: var(--te-white) !important; }
+.tema-exec .form-select, .tema-exec select {
+	background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%231ee4ac' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+	background-repeat: no-repeat !important; background-position: right .6rem center !important;
+	background-size: 14px 10px !important; padding-right: 2rem !important; cursor: pointer;
+	-webkit-appearance: none; -moz-appearance: none; appearance: none;
+}
+.tema-exec textarea { min-height: 70px !important; }
+.tema-exec input:-webkit-autofill {
+	-webkit-text-fill-color: #fff !important; -webkit-box-shadow: 0 0 0 1000px #13282e inset !important;
+}
+.tema-exec .input-group-text {
+	background: var(--te-bg-input) !important; border: 1px solid var(--te-border) !important;
+	color: var(--te-green) !important; padding: 3px 8px !important; border-radius: 6px 0 0 6px !important;
+}
+.tema-exec .input-group > .form-control, .tema-exec .input-group > .form-select { border-radius: 0 6px 6px 0 !important; }
+
+/* ---------- Botões ---------- */
+.tema-exec .btn, .tema-exec .btn-custom, .tema-exec .btn-action, .tema-exec button:not(.btn-close) {
+	padding: 3px 10px !important; border-radius: 6px !important; font-weight: normal !important;
+	transform: none !important; box-shadow: none !important;
+}
+.tema-exec .btn-save, .tema-exec .btn-green, .tema-exec .btn-success, .tema-exec .btn-primary {
+	background: var(--te-green) !important; color: #062019 !important; border: none !important;
+}
+.tema-exec .btn-save:hover, .tema-exec .btn-green:hover, .tema-exec .btn-success:hover, .tema-exec .btn-primary:hover {
+	background: #18c896 !important; color: #062019 !important;
+}
+.tema-exec .btn-cancel, .tema-exec .btn-ghost, .tema-exec .btn-outline-light, .tema-exec .btn-outline-secondary,
+.tema-exec .btn-secondary, .tema-exec .btn-blue, .tema-exec .hc-btn {
+	background: var(--te-bg-input) !important; color: var(--te-white) !important; border: 1px solid var(--te-border) !important;
+}
+.tema-exec .btn-cancel:hover, .tema-exec .btn-ghost:hover, .tema-exec .btn-outline-light:hover,
+.tema-exec .btn-outline-secondary:hover, .tema-exec .btn-secondary:hover, .tema-exec .btn-blue:hover, .tema-exec .hc-btn:hover {
+	border-color: var(--te-blue) !important; color: var(--te-blue) !important;
+}
+.tema-exec .btn-danger, .tema-exec .btn-deactivate {
+	background: rgba(255,77,77,.12) !important; color: var(--te-danger) !important; border: 1px solid rgba(255,77,77,.35) !important;
+}
+.tema-exec .btn-danger:hover, .tema-exec .btn-deactivate:hover { background: var(--te-danger) !important; color: #fff !important; }
+.tema-exec .btn-edit { border-radius: 6px !important; }
+.tema-exec .btn:disabled, .tema-exec button:disabled { opacity: .45; }
+
+/* ---------- Tabelas ---------- */
+.tema-exec table, .tema-exec .table { color: var(--te-white) !important; background: transparent !important; width: 100%; }
+.tema-exec .table > :not(caption) > * > * { background: transparent !important; box-shadow: none !important; }
+.tema-exec th {
+	color: var(--te-gray) !important; font-weight: normal !important; text-transform: uppercase; letter-spacing: .3px;
+	padding: 5px 8px !important; border-bottom: 1px solid var(--te-border) !important; background: transparent !important;
+}
+.tema-exec td {
+	padding: 5px 8px !important; border-bottom: 1px solid var(--te-border) !important;
+	color: var(--te-white) !important; background: transparent !important;
+}
+.tema-exec tbody tr:hover td { background: rgba(255,255,255,0.04) !important; }
+
+/* ---------- Paginação do Bootstrap (telas que já tinham a sua) ---------- */
+.tema-exec .pagination { gap: 4px; flex-wrap: wrap; }
+.tema-exec .pagination .page-link {
+	min-width: 32px; text-align: center; padding: 4px 9px !important; border-radius: 6px !important;
+	border: 1px solid rgba(255,255,255,0.10) !important; background: rgba(255,255,255,0.05) !important;
+	color: #fff !important; box-shadow: none !important;
+}
+.tema-exec .pagination .page-link:hover { border-color: var(--te-green) !important; color: var(--te-green) !important; }
+.tema-exec .pagination .active .page-link { background: var(--te-green) !important; border-color: var(--te-green) !important; color: #062019 !important; font-weight: bold !important; }
+.tema-exec .pagination .disabled .page-link { opacity: .35; }
+
+/* ---------- Badges / textos de apoio ---------- */
+.tema-exec .badge, .tema-exec .tipo-badge, .tema-exec .status-badge, .tema-exec .codigo-badge, .tema-exec .hc-badge {
+	font-weight: normal !important; border-radius: 4px !important; padding: 2px 8px !important; letter-spacing: 0 !important;
+}
+.tema-exec .text-secondary, .tema-exec .text-muted, .tema-exec .obs, .tema-exec .resumo { color: var(--te-gray) !important; }
+.tema-exec .alert { padding: 8px 12px !important; border-radius: 6px !important; }
+.tema-exec .row.g-4 { --bs-gutter-y: .6rem; --bs-gutter-x: .8rem; }
+.tema-exec .mt-5 { margin-top: 1rem !important; }
+.tema-exec .mb-4 { margin-bottom: 1rem !important; }

@@ -67,11 +67,13 @@
 
     <!-- Gráfico por Região -->
     <div class="card shadow-sm mb-4">
-        <div class="card-header bg-primary text-white">
+        <div class="card-header bg-primary text-white" th:text="${pizzaTitulo}">
             Clientes por Região
         </div>
         <div class="card-body">
-            <canvas id="regiaoChart" width="100%"></canvas>
+            <div style="position: relative; max-width: 520px; margin: 0 auto;">
+                <canvas id="regiaoChart"></canvas>
+            </div>
         </div>
     </div>
 
@@ -81,7 +83,9 @@
             Clientes por Bairro
         </div>
         <div class="card-body">
-            <canvas id="bairroChart" width="100%"></canvas>
+            <div id="bairroBox" style="position: relative; height: 300px;">
+                <canvas id="bairroChart"></canvas>
+            </div>
         </div>
     </div>
 
@@ -116,22 +120,32 @@
 
 <!-- Scripts Chart.js -->
 <script th:inline="javascript">
-    const regiaoLabels = [[${pontosPorRegiao.keySet()}]];
-    const regiaoData = [[${pontosPorRegiao.values()}]];
+    // Pizza: sem filtro = por região; com região filtrada = bairros daquela região (7 maiores + OUTROS)
+    const pizzaLabels = /*[[${pizza.keySet()}]]*/ [];
+    const pizzaData = /*[[${pizza.values()}]]*/ [];
+    const pizzaTotal = pizzaData.reduce((a, b) => a + b, 0);
 
     new Chart(document.getElementById('regiaoChart').getContext('2d'), {
         type: 'pie',
         data: {
-            labels: regiaoLabels,
+            labels: pizzaLabels.map((l, i) => l + ' — ' + pizzaData[i] + ' (' + Math.round(pizzaData[i] * 100 / pizzaTotal) + '%)'),
             datasets: [{
-                data: regiaoData,
-                backgroundColor: ['#0d6efd', '#198754', '#ffc107', '#dc3545', '#20c997', '#6f42c1']
+                data: pizzaData,
+                backgroundColor: ['#0d6efd', '#198754', '#ffc107', '#dc3545', '#20c997', '#6f42c1', '#fd7e14', '#0dcaf0', '#adb5bd']
             }]
+        },
+        options: {
+            plugins: {
+                legend: { position: 'bottom' },
+                tooltip: { callbacks: { label: ctx => ' ' + ctx.label } }
+            }
         }
     });
 
-    const bairroLabels = [[${pontosPorBairro.keySet()}]];
-    const bairroData = [[${pontosPorBairro.values()}]];
+    // Barras: bairros em ordem do maior para o menor; altura acompanha a quantidade de bairros
+    const bairroLabels = /*[[${pontosPorBairro.keySet()}]]*/ [];
+    const bairroData = /*[[${pontosPorBairro.values()}]]*/ [];
+    document.getElementById('bairroBox').style.height = Math.max(200, bairroLabels.length * 24 + 40) + 'px';
 
     new Chart(document.getElementById('bairroChart').getContext('2d'), {
         type: 'bar',
@@ -144,7 +158,10 @@
             }]
         },
         options: {
-            indexAxis: 'y'
+            indexAxis: 'y',
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { x: { beginAtZero: true, ticks: { precision: 0 } } }
         }
     });
 </script>

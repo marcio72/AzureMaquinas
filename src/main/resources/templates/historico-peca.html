@@ -81,6 +81,16 @@
         .t-DESCARTE        { --cor: var(--laranja); }
 
         .vazio { color: var(--suave); text-align: center; padding: 24px; }
+
+        /* paginação da lista (7 por página), mesmo estilo das outras telas */
+        .pag { margin: 14px 0 4px; text-align: center; }
+        .pag ul { display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 4px; list-style: none; padding: 0; margin: 0; }
+        .pag button { min-width: 32px; padding: 4px 9px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.10);
+                      background: rgba(255,255,255,0.05); color: #fff; font-size: 12px; cursor: pointer; font-family: 'Courier New', Courier, monospace; }
+        .pag button:hover:not(:disabled) { border-color: var(--verde); color: var(--verde); }
+        .pag button.ativa { background: var(--verde); border-color: var(--verde); color: #062019; font-weight: bold; }
+        .pag button:disabled:not(.ativa) { opacity: .35; cursor: default; }
+        .pag .info { color: var(--suave); font-size: 12px; margin-top: 6px; font-family: 'Courier New', Courier, monospace; }
         [hidden] { display: none !important; }
         @media (max-width: 520px) { .cab .cod { font-size: 1.25rem; } }
     </style>
@@ -97,6 +107,7 @@
         <div class="chips" id="chipsCategoria"></div>
         <div class="contagem" id="contagem">Carregando peças...</div>
         <div class="lista" id="lista"></div>
+        <div class="pag" id="paginacao"></div>
     </section>
 
     <!-- ======== DETALHE ======== -->
@@ -115,6 +126,8 @@
     let categoria = 'TODAS';
     let eventosAtuais = [];
     let filtroEvento = 'TODOS';
+    const POR_PAGINA = 7;
+    let pagina = 0;
 
     const esc = s => s == null ? '' : String(s).replace(/[&<>"']/g, c =>
         ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -142,7 +155,7 @@
             `<button class="chip ${categoria === 'TODAS' ? 'on' : ''}" onclick="setCategoria('TODAS')">Todas<small>${pecas.length}</small></button>` +
             cats.map(c => `<button class="chip ${categoria === c ? 'on' : ''}" onclick="setCategoria('${esc(c).replace(/'/g, "\\'")}')">${esc(c)}<small>${cont[c]}</small></button>`).join('');
     }
-    function setCategoria(c) { categoria = c; renderChips(); renderLista(); }
+    function setCategoria(c) { categoria = c; pagina = 0; renderChips(); renderLista(); }
 
     function renderLista() {
         const termo = semAcento(document.getElementById('q').value.trim());
@@ -154,8 +167,16 @@
             `${visiveis.length} peça(s) utilizada(s)` + (visiveis.length !== pecas.length ? ` de ${pecas.length}` : '');
 
         const lista = document.getElementById('lista');
-        if (!visiveis.length) { lista.innerHTML = '<div class="vazio">Nenhuma peça encontrada.</div>'; return; }
-        lista.innerHTML = visiveis.map(p => `
+        if (!visiveis.length) {
+            lista.innerHTML = '<div class="vazio">Nenhuma peça encontrada.</div>';
+            renderPaginacao(0);
+            return;
+        }
+        const totalPaginas = Math.ceil(visiveis.length / POR_PAGINA);
+        if (pagina > totalPaginas - 1) pagina = totalPaginas - 1;
+        const daPagina = visiveis.slice(pagina * POR_PAGINA, (pagina + 1) * POR_PAGINA);
+        renderPaginacao(totalPaginas);
+        lista.innerHTML = daPagina.map(p => `
             <div class="item" onclick="abrir(${p.id})">
                 <div>
                     <div class="cod">${nomePeca(p)}</div>
@@ -167,7 +188,22 @@
                 </div>
             </div>`).join('');
     }
-    document.getElementById('q').addEventListener('input', renderLista);
+    document.getElementById('q').addEventListener('input', () => { pagina = 0; renderLista(); });
+
+    // « ‹ 5 números › » — a janela de números acompanha a página atual
+    function renderPaginacao(totalPaginas) {
+        const el = document.getElementById('paginacao');
+        if (totalPaginas <= 1) { el.innerHTML = ''; return; }
+        const ini = Math.max(0, Math.min(pagina - 2, totalPaginas - 5));
+        const fim = Math.max(ini, Math.min(totalPaginas - 1, ini + 4));
+        const bt = (rot, p, off, ativa, tit) =>
+            `<li><button type="button" class="${ativa ? 'ativa' : ''}" ${off ? 'disabled' : ''} title="${tit || ''}" onclick="irPagina(${p})">${rot}</button></li>`;
+        let h = bt('&laquo;', 0, pagina === 0, false, 'Primeira página') + bt('&lsaquo;', pagina - 1, pagina === 0, false, 'Anterior');
+        for (let i = ini; i <= fim; i++) h += bt(i + 1, i, i === pagina, i === pagina);
+        h += bt('&rsaquo;', pagina + 1, pagina >= totalPaginas - 1, false, 'Próxima') + bt('&raquo;', totalPaginas - 1, pagina >= totalPaginas - 1, false, 'Última página');
+        el.innerHTML = `<ul>${h}</ul><div class="info">Página ${pagina + 1} de ${totalPaginas}</div>`;
+    }
+    function irPagina(p) { pagina = p; renderLista(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
     function voltarLista() {
         document.getElementById('telaDetalhe').hidden = true;

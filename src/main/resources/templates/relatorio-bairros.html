@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Pontos por Bairro - Sistema Pro</title>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body>
+
+<div th:replace="~{fragments/menu :: layout(~{::section})}">
+	<section class="container py-4 rel-pontos">
+		<style>
+			/* !important: o fragments/menu carrega o Bootstrap de novo depois do CSS da página */
+			.rel-pontos { font-family: 'Inter', sans-serif !important; color: #fff !important; }
+			.rel-pontos .rp-voltar { border: 1px solid rgba(255,255,255,.1) !important; color: #fff !important; background: rgba(255,255,255,.04) !important; border-radius: 10px !important; }
+			.rel-pontos .rp-voltar:hover { border-color: #1ee4ac !important; color: #1ee4ac !important; }
+			.rel-pontos .rp-kpi { background: #10242a !important; border: 1px solid rgba(255,255,255,.06) !important; border-radius: 16px; padding: 14px 18px; height: 100%; }
+			.rel-pontos .rp-kpi .n { font-size: 1.6rem; font-weight: 700; color: #fff !important; line-height: 1.1; }
+			.rel-pontos .rp-kpi .l { font-size: .72rem; letter-spacing: .05em; text-transform: uppercase; color: #8ea1a7 !important; }
+			.rel-pontos .rp-card { background: #10242a !important; border: 1px solid rgba(255,255,255,.06) !important; border-radius: 16px; overflow: hidden; }
+			.rel-pontos table { width: 100%; margin: 0; }
+			.rel-pontos th { color: #8ea1a7 !important; font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em;
+			                 padding: 12px 16px !important; border-bottom: 1px solid rgba(255,255,255,.06) !important; background: rgba(255,255,255,.02) !important; }
+			.rel-pontos td { padding: 12px 16px !important; border-bottom: 1px solid rgba(255,255,255,.05) !important; color: #fff !important; vertical-align: middle; background: transparent !important; }
+			.rel-pontos tbody tr:last-child td { border-bottom: none !important; }
+			.rel-pontos tbody tr:hover td { background: rgba(255,255,255,.02) !important; }
+			.rel-pontos .rp-pos { color: #8ea1a7 !important; font-weight: 600; width: 48px; }
+			.rel-pontos .rp-nome { font-weight: 600; }
+			.rel-pontos .rp-qtd { font-weight: 700; color: #1ee4ac !important; text-align: right; white-space: nowrap; width: 90px; }
+			.rel-pontos .rp-barra { height: 8px; border-radius: 99px; background: rgba(255,255,255,.06); overflow: hidden; min-width: 120px; }
+			.rel-pontos .rp-barra > div { height: 100%; border-radius: 99px; background: linear-gradient(90deg, #1ee4ac, #3d8bff); }
+			.rel-pontos .rp-pct { color: #8ea1a7 !important; font-size: .8rem; white-space: nowrap; width: 60px; text-align: right; }
+			@media (max-width: 576px) { .rel-pontos .col-barra { display: none; } }
+			/* linha que abre a lista de pontos */
+			.rel-pontos tr.rp-linha { cursor: pointer; }
+			.rel-pontos tr.rp-linha .rp-seta { display: inline-block; width: 14px; color: #8ea1a7; }
+			.rel-pontos tr.rp-linha .rp-seta::before { content: "\25B8"; }
+			.rel-pontos tr.rp-linha.aberta .rp-seta { color: #1ee4ac; }
+			.rel-pontos tr.rp-linha.aberta .rp-seta::before { content: "\25BE"; }
+			.rel-pontos tr.rp-linha.aberta td { background: rgba(30,228,172,.05) !important; }
+			.rel-pontos tr.rp-det > td { background: rgba(0,0,0,.18) !important; padding: 10px 16px 14px 64px !important; }
+			.rel-pontos .rp-lista { list-style: none; margin: 0; padding: 0; columns: 3 220px; column-gap: 24px; }
+			.rel-pontos .rp-lista li { break-inside: avoid; padding: 4px 0; border-bottom: 1px dashed rgba(255,255,255,.06); }
+			/* nomes dos clientes da lista aberta: Courier New, menores */
+			.rel-pontos .rp-lista li { font-family: 'Courier New', Courier, monospace !important; font-size: 12px !important; line-height: 1.3 !important; padding: 3px 0 !important; }
+			.rel-pontos .rp-lista a { color: #ffc94d !important; text-decoration: none; font-weight: bold; font-family: 'Courier New', Courier, monospace !important; font-size: 12px !important; }
+			.rel-pontos .rp-lista a:hover { color: #1ee4ac !important; text-decoration: underline; }
+			.rel-pontos .rp-praca { color: #8ea1a7 !important; font-size: 11px !important; margin-left: 6px; background: rgba(61,139,255,.12); padding: 1px 6px; border-radius: 4px; }
+			@media (max-width: 576px) { .rel-pontos tr.rp-det > td { padding-left: 16px !important; } }
+		</style>
+
+		<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+			<h2 class="fw-bold m-0"><i class="bi bi-geo-alt-fill me-2" style="color:#1ee4ac"></i> Pontos por Bairro</h2>
+			<a href="/relatorio" class="btn rp-voltar"><i class="bi bi-arrow-left"></i> Voltar ao Relatório</a>
+		</div>
+
+		<div class="row g-3 mb-4">
+			<div class="col-6 col-md-3"><div class="rp-kpi"><div class="n" th:text="${totalPontos}">0</div><div class="l">Pontos ativos</div></div></div>
+			<div class="col-6 col-md-3"><div class="rp-kpi"><div class="n" th:text="${totalBairros}">0</div><div class="l">Bairros</div></div></div>
+		</div>
+
+		<div class="rp-card">
+			<div class="table-responsive">
+				<table>
+					<thead>
+					<tr>
+						<th>#</th>
+						<th>Bairro</th>
+						<th class="col-barra"></th>
+						<th class="text-end">Pontos</th>
+						<th class="text-end">%</th>
+					</tr>
+					</thead>
+					<tbody>
+					<tr th:if="${#lists.isEmpty(linhas)}">
+						<td colspan="5" class="text-center py-4" style="color:#8ea1a7 !important">Nenhum ponto ativo.</td>
+					</tr>
+					<th:block th:each="l, st : ${linhas}">
+					<tr class="rp-linha" title="Clique para ver os pontos">
+						<td class="rp-pos" th:text="${posInicial + st.count} + 'º'">1º</td>
+						<td class="rp-nome"><span class="rp-seta"></span> <span th:text="${l.key}">BAIRRO</span></td>
+						<td class="col-barra">
+							<div class="rp-barra"><div th:style="'width:' + ${l.value * 100 / maiorQtd} + '%'"></div></div>
+						</td>
+						<td class="rp-qtd" th:text="${l.value}">0</td>
+						<td class="rp-pct" th:text="${#numbers.formatDecimal(l.value * 100.0 / totalPontos, 1, 'POINT', 1, 'COMMA')} + '%'">0%</td>
+					</tr>
+					<tr class="rp-det" hidden>
+						<td colspan="5">
+							<ul class="rp-lista">
+								<li th:each="c : ${pontos[l.key]}">
+									<a th:href="@{/clientes/historico/{id}(id=${c.codCliente})}" th:text="${c.nomCliente}" title="Abrir o histórico deste cliente">PONTO</a>
+									<span class="rp-praca" th:if="${c.praca != null and !#strings.isEmpty(c.praca)}" th:text="${c.praca}">V1</span>
+								</li>
+							</ul>
+						</td>
+					</tr>
+					</th:block>
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+		<!-- Paginação: 6 por página -->
+		<div th:replace="~{fragments/paginacao :: barra}"></div>
+	</section>
+</div>
+
+<script>
+	// Clique no bairro/região abre a lista de pontos logo abaixo; clicar de novo fecha.
+	// Só uma aberta por vez: abrir outra fecha a anterior.
+	document.querySelectorAll('.rel-pontos tr.rp-linha').forEach(tr => {
+		tr.addEventListener('click', ev => {
+			if (ev.target.closest('a')) return;
+			const det = tr.nextElementSibling;
+			const abrir = det.hidden;
+			document.querySelectorAll('.rel-pontos tr.rp-det').forEach(d => d.hidden = true);
+			document.querySelectorAll('.rel-pontos tr.rp-linha').forEach(l => l.classList.remove('aberta'));
+			if (abrir) { det.hidden = false; tr.classList.add('aberta'); }
+		});
+	});
+</script>
+</body>
+</html>

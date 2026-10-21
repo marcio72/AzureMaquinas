@@ -10,17 +10,42 @@
 
 <div th:replace="~{fragments/menu :: layout(~{::section})}">
     <section>
+<style>
+    /* !important: o fragments/menu carrega o Bootstrap de novo depois do CSS da página */
+    /* Botões no padrão neon do sistema: fundo escuro, borda e texto coloridos com brilho */
+    .btn-neon { background: rgba(255,255,255,.03) !important; border: 1px solid currentColor !important; border-radius: 10px !important;
+                font-weight: 600 !important; transition: .2s; }
+    .btn-neon:hover { background: currentColor !important; }
+    .btn-neon:hover span { color: #081418 !important; }
+    .neon-verde   { color: #1ee4ac !important; box-shadow: 0 0 10px rgba(30,228,172,.25); }
+    .neon-ciano   { color: #22d3ee !important; box-shadow: 0 0 10px rgba(34,211,238,.25); }
+    .neon-vermelho{ color: #ff4d6d !important; box-shadow: 0 0 10px rgba(255,77,109,.25); }
+    .neon-azul    { color: #3d8bff !important; box-shadow: 0 0 10px rgba(61,139,255,.25); }
+    .btn-neon:hover { box-shadow: 0 0 16px currentColor; }
+
+    /* Lista de clientes: fonte Courier New menor (só esta tabela) */
+    .tabela-clientes, .tabela-clientes th, .tabela-clientes td {
+        font-family: 'Courier New', Courier, monospace !important; font-size: 12px !important; line-height: 1.3 !important;
+    }
+    .tabela-clientes th, .tabela-clientes td { padding: 5px 8px !important; }
+</style>
 
 <div class="container-fluid p-4">
 
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
         <h1 class="text-primary mb-0">Relatório de Clientes Ativos</h1>
         <div class="d-flex flex-wrap gap-2">
-            <a href="/relatorio/pdf" class="btn btn-danger" target="_blank">
-                📄 PDF Resumido
+            <a href="/relatorio/bairros" class="btn btn-neon neon-verde">
+                <span>📍 Pontos por Bairro</span>
             </a>
-            <a href="/relatorio/pdf/completo" class="btn btn-primary" target="_blank">
-                📑 PDF Completo com Tabela
+            <a href="/relatorio/regioes" class="btn btn-neon neon-ciano">
+                <span>🗺️ Pontos por Região</span>
+            </a>
+            <a href="/relatorio/pdf" class="btn btn-neon neon-vermelho" target="_blank">
+                <span>📄 PDF Resumido</span>
+            </a>
+            <a href="/relatorio/pdf/completo" class="btn btn-neon neon-azul" target="_blank">
+                <span>📑 PDF Completo com Tabela</span>
             </a>
         </div>
     </div>
@@ -39,7 +64,7 @@
             Lista de Clientes
         </div>
         <div class="card-body table-responsive">
-            <table class="table table-hover table-bordered align-middle text-break">
+            <table class="table table-hover table-bordered align-middle text-break tabela-clientes">
                 <thead class="table-light">
                     <tr>
                         <th>Código</th>
@@ -63,52 +88,8 @@
                     </tr>
                 </tbody>
             </table>
-        </div>
-    </div>
-
-    <!-- Card por bairro -->
-    <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-secondary text-white">
-            Quantidade de Pontos por Bairro
-        </div>
-        <div class="card-body table-responsive">
-            <table class="table table-striped table-bordered text-break">
-                <thead>
-                    <tr>
-                        <th>Bairro</th>
-                        <th>Quantidade</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="entry : ${pontosPorBairro}">
-                        <td th:text="${entry.key}"></td>
-                        <td th:text="${entry.value}"></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Card por região -->
-    <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-secondary text-white">
-            Quantidade de Pontos por Região
-        </div>
-        <div class="card-body table-responsive">
-            <table class="table table-striped table-bordered text-break">
-                <thead>
-                    <tr>
-                        <th>Região</th>
-                        <th>Quantidade</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="entry : ${pontosPorRegiao}">
-                        <td th:text="${entry.key}"></td>
-                        <td th:text="${entry.value}"></td>
-                    </tr>
-                </tbody>
-            </table>
+            <!-- Paginação: 10 por página -->
+            <div class="pag-claro"><div th:replace="~{fragments/paginacao :: barra}"></div></div>
         </div>
     </div>
 

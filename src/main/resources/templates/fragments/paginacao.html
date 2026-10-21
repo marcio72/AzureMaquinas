@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--
+  Barra de paginação « ‹ 1 2 3 4 5 › » (mesmo estilo do Relatório de Execuções), tema escuro.
+  Usa o que o util Paginador coloca no model: paginaAtual, totalPaginas, inicioPag, fimPag, pagBase.
+  Uso: <div th:replace="~{fragments/paginacao :: barra}"></div>  (em tela clara, dentro de <div class="pag-claro">)
+-->
+<div th:fragment="barra" class="pag-tema" th:if="${totalPaginas != null and totalPaginas > 1}">
+	<style>
+		.pag-tema { margin: 14px 0 4px; text-align: center; }
+		.pag-tema ul { display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 4px; list-style: none; padding: 0 !important; margin: 0 !important; }
+		.pag-tema a, .pag-tema span.pg {
+			display: inline-block; min-width: 32px; padding: 4px 9px !important; border-radius: 6px !important;
+			border: 1px solid rgba(255,255,255,0.10) !important; background: rgba(255,255,255,0.05) !important;
+			color: #ffffff !important; text-decoration: none !important; font-size: 12px !important; line-height: 1.3 !important;
+			font-family: inherit !important;
+		}
+		/* telas com o tema do Editar Execuções: Courier */
+		.tema-exec .pag-tema a, .tema-exec .pag-tema span.pg, .tema-exec .pag-tema .info { font-family: 'Courier New', Courier, monospace !important; }
+		.pag-tema a:hover { border-color: #1ee4ac !important; color: #1ee4ac !important; }
+		.pag-tema .ativa span.pg { background: #1ee4ac !important; border-color: #1ee4ac !important; color: #062019 !important; font-weight: bold !important; }
+		.pag-tema .off span.pg { opacity: .35; }
+		/* tela clara (cards brancos): envolver com <div class="pag-claro"> */
+		.pag-claro .pag-tema a, .pag-claro .pag-tema span.pg { background: #fff !important; border-color: #dee2e6 !important; color: #0d6efd !important; font-family: inherit !important; }
+		.pag-claro .pag-tema a:hover { background: #e9ecef !important; }
+		.pag-claro .pag-tema .ativa span.pg { background: #0d6efd !important; border-color: #0d6efd !important; color: #fff !important; }
+		.pag-claro .pag-tema .info { color: #6c757d !important; font-family: inherit !important; }
+		.pag-tema .info { color: #8ea1a7 !important; font-size: 12px !important; margin-top: 6px; font-family: inherit; }
+	</style>
+	<ul>
+		<li th:classappend="${paginaAtual == 0} ? 'off'">
+			<span th:if="${paginaAtual == 0}" class="pg">&laquo;</span>
+			<a th:unless="${paginaAtual == 0}" th:href="${pagBase + 'page=0'}" title="Primeira página">&laquo;</a>
+		</li>
+		<li th:classappend="${paginaAtual == 0} ? 'off'">
+			<span th:if="${paginaAtual == 0}" class="pg">&lsaquo;</span>
+			<a th:unless="${paginaAtual == 0}" th:href="${pagBase + 'page=' + (paginaAtual - 1)}" title="Anterior">&lsaquo;</a>
+		</li>
+		<li th:each="i : ${#numbers.sequence(inicioPag, fimPag)}" th:classappend="${paginaAtual == i} ? 'ativa'">
+			<span th:if="${paginaAtual == i}" class="pg" th:text="${i + 1}">1</span>
+			<a th:unless="${paginaAtual == i}" th:href="${pagBase + 'page=' + i}" th:text="${i + 1}">2</a>
+		</li>
+		<li th:classappend="${paginaAtual + 1 >= totalPaginas} ? 'off'">
+			<span th:if="${paginaAtual + 1 >= totalPaginas}" class="pg">&rsaquo;</span>
+			<a th:unless="${paginaAtual + 1 >= totalPaginas}" th:href="${pagBase + 'page=' + (paginaAtual + 1)}" title="Próxima">&rsaquo;</a>
+		</li>
+		<li th:classappend="${paginaAtual + 1 >= totalPaginas} ? 'off'">
+			<span th:if="${paginaAtual + 1 >= totalPaginas}" class="pg">&raquo;</span>
+			<a th:unless="${paginaAtual + 1 >= totalPaginas}" th:href="${pagBase + 'page=' + (totalPaginas - 1)}" title="Última página">&raquo;</a>
+		</li>
+	</ul>
+	<div class="info">Página <span th:text="${paginaAtual + 1}">1</span> de <span th:text="${totalPaginas}">1</span></div>
+</div>
+</body>
+</html>

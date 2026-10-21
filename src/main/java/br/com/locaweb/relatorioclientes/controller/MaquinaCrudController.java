@@ -2,6 +2,7 @@
 package br.com.locaweb.relatorioclientes.controller;
 
 
+import br.com.locaweb.relatorioclientes.model.Cliente;
 import br.com.locaweb.relatorioclientes.model.Maquina;
 import br.com.locaweb.relatorioclientes.repository.ClienteRepository;
 import br.com.locaweb.relatorioclientes.repository.MaquinaRepository;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -69,6 +71,28 @@ public class MaquinaCrudController {
 
 
     
+    /**
+     * Tela de edição da máquina (botão "Editar" da Consulta de Máquinas).
+     * Antes só existia o PUT abaixo, e o link dava erro 405. A tela salva chamando esse mesmo PUT.
+     * As peças (placa, fonte, monitor...) não mudam aqui: troca de peça é pela execução.
+     */
+    @GetMapping("/editar/{id}")
+    public String telaEditar(@PathVariable Integer id, Model model) {
+        Maquina maquina = maquinaRepository.findById(id).orElse(null);
+        if (maquina == null) {
+            return "redirect:/form-maquinas";
+        }
+        // lista de clientes ativos; se a máquina estiver num cliente inativo, ele entra na lista pra não sumir do select
+        List<Cliente> clientes = new ArrayList<>(clienteRepository.findByAtivoTrueOrderByCodClienteDesc());
+        if (maquina.getCodCliente() != null
+                && clientes.stream().noneMatch(c -> c.getCodCliente() != null && c.getCodCliente().intValue() == maquina.getCodCliente())) {
+            clienteRepository.findById(maquina.getCodCliente().longValue()).ifPresent(c -> clientes.add(0, c));
+        }
+        model.addAttribute("maquina", maquina);
+        model.addAttribute("clientes", clientes);
+        return "form_editmaq";
+    }
+
     @PutMapping("/editar/{id}")
     public ResponseEntity<Maquina> editarMaquina(@PathVariable Integer id, @RequestBody Maquina novaMaquina) {
     	

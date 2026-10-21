@@ -1,5 +1,7 @@
 package br.com.locaweb.relatorioclientes.chave.web;
 
+import br.com.locaweb.relatorioclientes.util.Paginador;
+import jakarta.servlet.http.HttpServletRequest;
 import br.com.locaweb.relatorioclientes.chave.dto.ChaveRequest;
 import br.com.locaweb.relatorioclientes.chave.dto.ChaveResponse;
 import br.com.locaweb.relatorioclientes.chave.dto.FornecedorChaveResponse;
@@ -45,7 +47,8 @@ public class ChaveWebController {
                          @RequestParam(required = false) Long fornecedorId,
                          @RequestParam(required = false) TipoChave tipo,
                          @RequestParam(required = false, defaultValue = "ativas") String status,
-                         Model model) {
+                         @RequestParam(defaultValue = "0") int page,
+                         Model model, HttpServletRequest request) {
 
         Boolean ativo = switch (status) {
             case "inativas" -> false;
@@ -57,7 +60,9 @@ public class ChaveWebController {
         int totalCopias = chaves.stream().mapToInt(c -> c.quantidadeCopias() == null ? 0 : c.quantidadeCopias()).sum();
         int totalCadeados = chaves.stream().mapToInt(c -> c.quantidadeCadeados() == null ? 0 : c.quantidadeCadeados()).sum();
 
-        model.addAttribute("chaves", chaves);
+        // totais acima contam todas as chaves do filtro; a tabela mostra 7 por página
+        model.addAttribute("totalChaves", chaves.size());
+        model.addAttribute("chaves", Paginador.paginar(chaves, page, 7, model, request));
         model.addAttribute("totalCopias", totalCopias);
         model.addAttribute("totalCadeados", totalCadeados);
         model.addAttribute("fornecedores", fornecedorService.listar());
@@ -139,7 +144,8 @@ public class ChaveWebController {
                            @RequestParam(defaultValue = "false") boolean historico,
                            @RequestParam(required = false) String numero,
                            @RequestParam(required = false) String praca,
-                           Model model, RedirectAttributes ra) {
+                           @RequestParam(defaultValue = "0") int page,
+                           Model model, RedirectAttributes ra, HttpServletRequest request) {
         ChaveResponse chave;
         try {
             chave = chaveService.buscarPorId(id);
@@ -160,7 +166,8 @@ public class ChaveWebController {
         }
 
         model.addAttribute("chave", chave);
-        model.addAttribute("vinculos", vinculos);
+        // "Onde essa chave está": 7 por página
+        model.addAttribute("vinculos", Paginador.paginar(vinculos, page, 7, model, request));
         model.addAttribute("historico", historico);
         model.addAttribute("pracas", maquinaChaveService.pracas());
         model.addAttribute("usos", UsoChave.values());
